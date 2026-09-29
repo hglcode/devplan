@@ -8,6 +8,15 @@ repository = "https://github.com/you/devplan"
 keywords = ["cli", "todo", "planning", "adr"]
 categories = ["command-line-utilities", "development-tools"]
 
+[workspace]
+
+[lints.clippy]
+map_unwrap_or = "warn"
+redundant_closure_for_method_calls = "warn"
+unnecessary_wraps = "warn"
+# 想要更严可以加 restriction 的（测试代码里 unwrap 是惯例，需要豁免）：
+# unwrap_used = { level = "warn" }
+
 [dependencies]
 anyhow = "1"
 chrono = "0.4"
@@ -25,10 +34,3 @@ tempfile = "3"
 [profile.release]
 strip = true
 lto = true
-
-[lints.clippy]
-map_unwrap_or = "warn"
-redundant_closure_for_method_calls = "warn"
-unnecessary_wraps = "warn"
-# 想要更严可以加 restriction 的（测试代码里 unwrap 是惯例，需要豁免）：
-# unwrap_used = { level = "warn" }

@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use anyhow::{Context, Result};
 use rusqlite::Connection;
 
-/// v1 — the original 0.1.x layout, kept verbatim so existing databases
-/// upgrade cleanly (all statements are IF NOT EXISTS no-ops on them).
+/// v1 — current schema. Completed tasks stay in `todos` with status='done'
+/// and a `done_at` timestamp; there is no separate `done` table.
 const MIGRATION_V1: &str = r#"
 CREATE TABLE IF NOT EXISTS plans (
     id           INTEGER PRIMARY KEY,
@@ -25,18 +25,9 @@ CREATE TABLE IF NOT EXISTS todos (
     priority    INTEGER NOT NULL DEFAULT 2,
     due_date    TEXT,
     tags        TEXT NOT NULL DEFAULT '',
-    created_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
-    updated_at  TEXT NOT NULL DEFAULT (datetime('now','localtime'))
-);
-CREATE TABLE IF NOT EXISTS done (
-    id          INTEGER PRIMARY KEY,
-    plan_id     INTEGER,
-    title       TEXT NOT NULL,
-    detail      TEXT NOT NULL DEFAULT '',
-    priority    INTEGER,
-    tags        TEXT NOT NULL DEFAULT '',
-    created_at  TEXT,
-    done_at     TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+    created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    updated_at  TEXT NOT NULL DEFAULT (datetime('now','localtime')),
+    done_at     TEXT
 );
 CREATE TABLE IF NOT EXISTS decisions (
     id            INTEGER PRIMARY KEY,
@@ -51,22 +42,10 @@ CREATE TABLE IF NOT EXISTS decisions (
 );
 CREATE INDEX IF NOT EXISTS idx_todos_plan ON todos(plan_id);
 CREATE INDEX IF NOT EXISTS idx_todos_status ON todos(status);
-CREATE INDEX IF NOT EXISTS idx_done_done_at ON done(done_at);
-"#;
-
-/// v2 — drop the separate `done` table (Taskwarrior-style): completed tasks
-/// stay in `todos` with status='done' + done_at. Restores rows whose data
-/// was moved away by 0.1.x (note: their due_date was already lost by the
-/// old code and cannot be recovered).
-const MIGRATION_V2: &str = r#"
-ALTER TABLE todos ADD COLUMN done_at TEXT;
-INSERT OR IGNORE INTO todos (id, plan_id, title, detail, status, priority, due_date, tags, created_at, updated_at, done_at)
-    SELECT id, plan_id, title, detail, 'done', COALESCE(priority, 2), NULL, tags, created_at, done_at, done_at FROM done;
-DROP TABLE done;
 CREATE INDEX IF NOT EXISTS idx_todos_due ON todos(due_date);
 "#;
 
-const MIGRATIONS: &[&str] = &[MIGRATION_V1, MIGRATION_V2];
+const MIGRATIONS: &[&str] = &[MIGRATION_V1];
 
 fn db_path() -> Result<PathBuf> {
     let cwd = std::env::current_dir()?;
