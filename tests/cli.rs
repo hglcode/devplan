@@ -1,0 +1,143 @@
+use assert_cmd::Command;
+use predicates::prelude::*;
+use tempfile::TempDir;
+
+fn dp(dir: &TempDir) -> Command {
+    let mut cmd = Command::cargo_bin("dp").unwrap();
+    cmd.current_dir(dir.path());
+    cmd
+}
+
+#[test]
+fn init_is_idempotent() {
+    let dir = TempDir::new().unwrap();
+    dp(&dir).arg("init").assert().success();
+    dp(&dir)
+        .arg("init")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("already exists"));
+}
+
+#[test]
+fn fails_without_init() {
+    let dir = TempDir::new().unwrap();
+    dp(&dir)
+        .args(["list"])
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("dp init"));
+}
+
+#[test]
+fn rejects_bad_date() {
+    let dir = TempDir::new().unwrap();
+    dp(&dir)
+        .args(["add", "x", "--due", "15/10/2026"])
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("invalid date"));
+}
+
+#[test]
+fn add_list_done_flow() {
+    let dir = TempDir::new().unwrap();
+    dp(&dir).arg("init").assert().success();
+
+    dp(&dir)
+        .args([
+            "add",
+            "write oauth",
+            "--priority",
+            "high",
+            "--tags",
+            "auth,backend",
+        ])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("#1"));
+    dp(&dir).args(["add", "write docs"]).assert().success();
+
+    dp(&dir)
+        .args(["list"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("write oauth"));
+
+    dp(&dir).args(["done", "1"]).assert().success();
+    dp(&dir)
+        .args(["list"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("write oauth").not());
+    dp(&dir)
+        .args(["list", "--done"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("write oauth"));
+
+    dp(&dir)
+        .args(["stats"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("Done total:"));
+}
+
+#[test]
+fn decision_lifecycle() {
+    let dir = TempDir::new().unwrap();
+    dp(&dir).arg("init").assert().success();
+    dp(&dir)
+        .args([
+            "decision",
+            "add",
+            "Use SQLite",
+            "--context",
+            "embedded",
+            "--decision",
+            "rusqlite",
+        ])
+        .assert()
+        .success();
+    dp(&dir)
+        .args([
+            "decision",
+            "add",
+            "Use Postgres",
+            "--context",
+            "managed",
+            "--decision",
+            "sqlx",
+        ])
+        .assert()
+        .success();
+
+    // replacing with a still-proposed decision is rejected (ADR discipline)
+    dp(&dir)
+        .args(["decision", "supersede", "1", "2"])
+        .assert()
+        .failure();
+    dp(&dir)
+        .args(["decision", "accept", "2"])
+        .assert()
+        .success();
+    dp(&dir)
+        .args(["decision", "supersede", "1", "2"])
+        .assert()
+        .success();
+    dp(&dir)
+        .args(["decision", "list"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("superseded"));
+}
+
+#[test]
+fn generate_completions() {
+    let dir = TempDir::new().unwrap();
+    dp(&dir)
+        .args(["generate", "bash"])
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("dp"));
+}

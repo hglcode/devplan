@@ -1,0 +1,34 @@
+[package]
+name = "dp"
+version = "0.2.0"            # schema 变更，minor +1
+edition = "2024"
+description = "Per-project dev plan / todo / done / decision tracker"
+license = "MIT"              # 需要 accompanying LICENSE 文件
+repository = "https://github.com/you/devplan"
+keywords = ["cli", "todo", "planning", "adr"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+anyhow = "1"
+chrono = "0.4"
+clap = { version = "4", features = ["derive", "wrap_help"] }
+clap_complete = "4"
+comfy-table = "8"
+rusqlite = { version = "0.40", features = ["bundled"] }
+thiserror = "2"
+
+[dev-dependencies]
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
+
+[profile.release]
+strip = true
+lto = true
+
+[lints.clippy]
+map_unwrap_or = "warn"
+redundant_closure_for_method_calls = "warn"
+unnecessary_wraps = "warn"
+# 想要更严可以加 restriction 的（测试代码里 unwrap 是惯例，需要豁免）：
+# unwrap_used = { level = "warn" }
