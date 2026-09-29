@@ -1,0 +1,221 @@
+.\" dp(1) — manual page for dp, the per-project dev plan tracker.
+.TH DP 1 "2026-09-30" "dp 0.2.0" "User Commands"
+.SH NAME
+dp \- per\-project dev plan, todo and decision tracker
+.SH SYNOPSIS
+.B dp \fICOMMAND\fR [\fIOPTIONS\fR] [\fIARGUMENTS\fR]
+.SH DESCRIPTION
+.B dp
+tracks plans (milestones), todos, and architecture decisions (ADRs) for a
+single project in one SQLite database at
+.IR .dp/dp.db .
+Like
+.BR git (1),
+it locates the database by walking up from the current directory, so
+commands work from any subdirectory. Run
+.B "dp init"
+in the project root once, before other commands.
+.PP
+The database uses WAL journaling, enforced foreign keys and a 5s busy
+timeout; schema migrations are applied automatically on startup. Commit
+.I .dp/
+to version control or add it to
+.I .gitignore
+as you prefer. Inspect the data directly with
+.BR sqlite3 (1).
+.SH COMMANDS
+.TP
+.B init
+If a database exists in the current directory or any parent, print its
+path and change nothing. Otherwise create
+.I .dp/dp.db
+in the current directory and apply migrations. Idempotent.
+.TP
+.BI "add " TITLE
+Create a new todo.
+.RS
+.TP
+\fB\-\-plan\fR \fIID\fR
+Attach the todo to plan \fIID\fR (must exist).
+.TP
+\fB\-\-due\fR \fIDATE\fR
+Due date, \fIYYYY\-MM\-DD\fR.
+.TP
+\fB\-p\fR, \fB\-\-priority\fR \fIP\fR
+Priority; see
+.BR PRIORITIES .
+.TP
+\fB\-t\fR, \fB\-\-tags\fR \fILIST\fR
+Comma\-separated tags; surrounding whitespace is trimmed.
+.TP
+\fB\-\-detail\fR \fITEXT\fR
+Longer free\-form description, shown by \fBdp show\fR.
+.RE
+.TP
+.B list
+Print todos as a table (ID, Plan, Prio, Due, Status, Title, Tags)
+followed by the task count, ordered by priority (high first), then due
+date (todos without one last), then id. Open todos by default.
+.RS
+.TP
+\fB\-\-plan\fR \fIID\fR
+Only todos attached to plan \fIID\fR.
+.TP
+\fB\-\-overdue\fR
+Only todos whose due date lies in the past; combines with the view flags
+below.
+.TP
+\fB\-\-all\fR
+Open plus \fIin_progress\fR and \fIblocked\fR.
+.TP
+\fB\-\-done\fR
+Only completed todos; takes precedence over \fB\-\-all\fR.
+.RE
+.TP
+.BI "show " ID
+Print one todo in full detail.
+.TP
+.BI "done " ID
+Mark a todo as done: sets status to \fIdone\fR and records \fIdone_at\fR.
+Idempotent \(em an already\-done todo prints a notice and is left
+unchanged. Reopen with \fBdp mod ID \-\-status open\fR, which clears
+\fIdone_at\fR.
+.TP
+.BI "rm " ID
+Delete a todo permanently.
+.TP
+.BI "mod " ID
+Change the given fields of a todo; omitted flags leave the field
+unchanged. There is no \fB\-\-plan\fR \(em a todo's plan assignment
+cannot be changed. With no flags at all, prints \(dqNothing to modify\(dq.
+.RS
+.TP
+\fB\-\-title\fR \fITEXT\fR
+New title.
+.TP
+\fB\-\-status\fR \fISTATUS\fR
+New status; see
+.BR STATES .
+.TP
+\fB\-p\fR, \fB\-\-priority\fR \fIP\fR
+New priority.
+.TP
+\fB\-\-due\fR \fIDATE\fR
+New due date.
+.TP
+\fB\-t\fR, \fB\-\-tags\fR \fILIST\fR
+Replace the tag list.
+.RE
+.TP
+.B plan
+Operate on plans (milestones / phases).
+.RS
+.TP
+.BI "add " TITLE
+Create a plan; accepts \fB\-\-due\fR \fIDATE\fR,
+\fB\-p\fR/\fB\-\-priority\fR and \fB\-\-description\fR \fITEXT\fR.
+.TP
+.B list
+Summarize plans with per\-plan open\-task counts.
+.TP
+.BI "show " ID
+Print a plan in detail, its open todos, and how many todos in it are
+done.
+.TP
+.BI "done " ID
+Mark a plan as done.
+.RE
+.TP
+.B decision
+Operate on decision records (ADRs).
+.RS
+.TP
+.BI "add " TITLE
+Record a decision. \fB\-\-context\fR \fITEXT\fR and \fB\-\-decision\fR
+\fITEXT\fR are required; \fB\-\-consequence\fR \fITEXT\fR is optional.
+.TP
+.B list
+List all decisions, accepted ones first.
+.TP
+.BI "accept " ID
+Move a proposed decision to accepted. Refuses if the decision is already
+superseded.
+.TP
+.BI "supersede " "OLD NEW"
+Mark OLD as superseded by NEW. NEW must already be accepted; a decision
+cannot supersede itself, and only once.
+.RE
+.TP
+.B stats
+Print counters: active plans, open / in_progress / blocked / overdue
+todos, and todos done today, in the last 7 days, and in total.
+.TP
+.BI "generate " SHELL
+Print a completion script for
+.IR bash ", " zsh ", " fish ", " elvish " or " powershell
+to stdout; redirect it into your shell's completion directory
+(e.g.\& ~/.config/fish/completions/dp.fish).
+.TP
+.BI "help " "[COMMAND]"
+Print help for dp or for one subcommand.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Print help; with a subcommand, print its help.
+.TP
+.B \-V, \-\-version
+Print version.
+.SH PRIORITIES
+\fBhigh\fR/1, \fBmedium\fR/2 and \fBlow\fR/3; names and numbers are
+interchangeable, names are case\-insensitive. The default is
+\fBmedium\fR.
+.SH STATES
+Tasks move \fIopen\fR -> \fIin_progress\fR -> \fIdone\fR, with
+\fIblocked\fR as a side state. Both \fBdp done\fR and
+\fBdp mod \-\-status done\fR record \fIdone_at\fR; moving to any other
+status clears it. A todo is overdue when its due date lies in the past
+and it is not done.
+.PP
+Plans move \fIactive\fR -> \fIdone\fR, set only by \fBdp plan done\fR.
+.PP
+Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR.
+.SH EXAMPLES
+.nf
+dp init
+dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
+dp add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
+dp list
+dp list --overdue
+dp mod 2 --status in_progress
+dp done 2
+dp plan done 1
+dp decision add "Use SQLite" --context "Need zero-config embedded storage" --decision "rusqlite with bundled SQLite" --consequence "Single-file db, easy to back up"
+dp decision accept 1
+dp decision supersede 1 4
+dp stats
+dp generate fish > ~/.config/fish/completions/dp.fish
+.fi
+.SH FILES
+.TP
+.I .dp/dp.db
+SQLite database for the project, created in the directory where
+.B "dp init"
+ran. Transient
+.I .dp/dp.db\-wal
+and
+.I .dp/dp.db\-shm
+files may sit next to it while dp is running.
+.PP
+The database is found by walking up from the current directory. With no
+database in any parent directory, commands other than
+.B init
+fail and point at the current directory as the place to run
+.BR init .
+.SH EXIT STATUS
+.B dp
+exits 0 on success (including \-\-help and \-\-version), 1 on runtime
+failure with a diagnostic on stderr (database not initialized, unknown
+id, invalid date or status, plan referenced by \fBdp add \-\-plan\fR does
+not exist), and 2 on usage errors detected by the argument parser.
+.SH SEE ALSO
+.BR sqlite3 (1), git (1)

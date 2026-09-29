@@ -27,7 +27,6 @@ dp list
 dp list --overdue
 dp show 2
 dp mod 2 --status in_progress
-dp done 2                              # moves row: todos -> done
 dp rm 3
 
 # decisions (ADR)
