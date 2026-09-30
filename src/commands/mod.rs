@@ -8,6 +8,7 @@ use comfy_table::presets::UTF8_FULL;
 use rusqlite::Connection;
 
 use crate::cli::{Commands, Format};
+use crate::commands::task::ModifyArgs;
 use crate::models::Task;
 
 fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
@@ -78,7 +79,18 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
             status,
             tags,
             detail,
-        } => task::modify(conn, id, title, due, priority, status, tags, detail),
+        } => task::modify(
+            conn,
+            ModifyArgs {
+                id,
+                title,
+                due,
+                priority,
+                status,
+                tags,
+                detail,
+            },
+        ),
         Commands::Plan { cmd } => plan::run(conn, cmd, fmt),
         Commands::Decision { cmd } => decision::run(conn, cmd, fmt),
         Commands::Stats => stats::run(conn, fmt),

@@ -2,7 +2,7 @@
 name = "devplan"
 version = "0.2.0"            # schema 变更，minor +1
 edition = "2024"
-description = "Per-project dev plan / todo / done / decision tracker"
+description = "Project dev plan / todo / done / decision tracker"
 license = "MIT"              # 需要 accompanying LICENSE 文件
 repository = "https://github.com/hglcode/devplan"
 keywords = ["cli", "todo", "planning", "adr"]
@@ -26,6 +26,7 @@ anyhow = "1"
 chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive", "wrap_help"] }
 clap_complete = "4"
+clap_mangen = "0.3"
 comfy-table = "8"
 rusqlite = { version = "0.40", features = ["bundled"] }
 thiserror = "2"
@@ -35,6 +36,7 @@ serde_json = "1"
 assert_cmd = "2"
 predicates = "3"
 tempfile = "3"
+
 
 [profile.release]
 strip = true

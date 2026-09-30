@@ -1,4 +1,4 @@
-# dp — per-project dev plan tracker
+# dp — project dev plan tracker
 
 A small Rust CLI to track **plans / todos / done / decisions** for one project.
 Data lives in `.dp/dp.db` (SQLite) next to your project root; `dp` discovers it by walking up from the current directory (like `git` finds `.git`).

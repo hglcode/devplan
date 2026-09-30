@@ -8,6 +8,16 @@ use crate::models::{Priority, TaskStatus, split_tags};
 use crate::repo;
 use crate::repo::task::{NewTask, TaskFilter, TaskUpdate, TaskView};
 
+pub struct ModifyArgs {
+    pub id: i64,
+    pub title: Option<String>,
+    pub due: Option<NaiveDate>,
+    pub priority: Option<Priority>,
+    pub status: Option<TaskStatus>,
+    pub tags: Option<String>,
+    pub detail: Option<String>,
+}
+
 pub fn add(
     conn: &Connection,
     title: &str,
@@ -115,16 +125,16 @@ pub fn rm(conn: &Connection, id: i64) -> Result<()> {
     Ok(())
 }
 
-pub fn modify(
-    conn: &Connection,
-    id: i64,
-    title: Option<String>,
-    due: Option<NaiveDate>,
-    priority: Option<Priority>,
-    status: Option<TaskStatus>,
-    tags: Option<String>,
-    detail: Option<String>,
-) -> Result<()> {
+pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
+    let ModifyArgs {
+        id,
+        title,
+        due,
+        priority,
+        status,
+        tags,
+        detail,
+    } = args;
     let provided = title.is_some()
         || due.is_some()
         || priority.is_some()

@@ -158,3 +158,14 @@ fn format_json_is_parseable() {
         serde_json::from_str::<serde_json::Value>(&stdout).expect("stdout must be pure JSON");
     }
 }
+
+#[test]
+fn generate_man() {
+    Command::cargo_bin("dp")
+        .unwrap()
+        .arg("generate")
+        .arg("man")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains(".TH dp"));
+}

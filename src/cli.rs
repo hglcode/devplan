@@ -14,7 +14,7 @@ pub enum Format {
 #[command(
     name = "dp",
     version,
-    about = "Per-project plan / todo / done / decision tracker"
+    about = "project plan / todo / done / decision tracker"
 )]
 pub struct Cli {
     /// Output format: table, json, or markdown
@@ -108,11 +108,21 @@ pub enum Commands {
     /// Show project stats
     Stats,
 
-    /// Generate shell completions, e.g. `dp generate bash > ~/.local/share/bash-completion/completions/dp`
     Generate {
+        /// Target: a shell for completions, or "man" for a manual page
         #[arg(value_enum)]
-        shell: clap_complete::Shell,
+        target: GenerateTarget,
     },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum GenerateTarget {
+    Bash,
+    Zsh,
+    Fish,
+    Elvish,
+    PowerShell,
+    Man,
 }
 
 #[derive(Debug, Subcommand)]
