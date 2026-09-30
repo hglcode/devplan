@@ -108,15 +108,21 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     let mut sets: Vec<String> = Vec::new();
     let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
 
-    if let Some(title) = &u.title {
+    if let Some(title) = &u.title
+        && *title != existing.title
+    {
         sets.push("title = ?".into());
         owned.push(Box::new(title.clone()));
     }
-    if let Some(due) = u.due {
+    if let Some(due) = u.due
+        && Some(due) != existing.due
+    {
         sets.push("due_date = ?".into());
         owned.push(Box::new(due.to_string()));
     }
-    if let Some(p) = u.priority {
+    if let Some(p) = u.priority
+        && p != existing.priority
+    {
         sets.push("priority = ?".into());
         owned.push(Box::new(p.as_int()));
     }
@@ -133,7 +139,9 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
             _ => sets.push("done_at = NULL".into()),
         }
     }
-    if let Some(tags) = &u.tags {
+    if let Some(tags) = &u.tags
+        && *tags != existing.tags
+    {
         sets.push("tags = ?".into());
         owned.push(Box::new(join_tags(tags)));
     }
@@ -266,5 +274,29 @@ mod tests {
         let c = conn();
         let err = get(&c, 123).unwrap_err();
         assert!(err.to_string().contains("#123 not found"));
+    }
+
+    #[test]
+    fn update_same_value_reports_no_change() {
+        let c = conn();
+        let id = add(&c, &sample("t1")).unwrap();
+        // priority 已是 Medium,再设 Medium:
+        let changed = update(
+            &c,
+            id,
+            &TaskUpdate {
+                priority: Some(Priority::Medium),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        assert!(!changed);
+    }
+
+    #[test]
+    fn update_no_fields_reports_no_change() {
+        let c = conn();
+        let id = add(&c, &sample("t1")).unwrap();
+        assert!(!update(&c, id, &TaskUpdate::default()).unwrap());
     }
 }

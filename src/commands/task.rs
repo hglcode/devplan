@@ -124,6 +124,11 @@ pub fn modify(
     status: Option<TaskStatus>,
     tags: Option<String>,
 ) -> Result<()> {
+    let provided = title.is_some()
+        || due.is_some()
+        || priority.is_some()
+        || status.is_some()
+        || tags.is_some();
     let update = TaskUpdate {
         title,
         due,
@@ -131,10 +136,12 @@ pub fn modify(
         status,
         tags: tags.map(|t| split_tags(&t)),
     };
-    if repo::task::update(conn, id, &update)? {
+    if provided && repo::task::update(conn, id, &update)? {
         println!("Updated todo #{id}");
+    } else if provided {
+        println!("Nothing to modify: values already as requested"); // 有 flag 但值未变
     } else {
-        println!("Nothing to modify");
+        println!("Nothing to modify: no fields given"); // 零 flag
     }
     Ok(())
 }
