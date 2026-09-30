@@ -65,9 +65,9 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
         Commands::List {
             plan,
             overdue,
-            all,
+            active,
             done,
-        } => task::list(conn, plan, overdue, all, done, fmt),
+        } => task::list(conn, plan, overdue, active, done, fmt),
         Commands::Show { id } => task::show(conn, id, fmt),
         Commands::Done { id } => task::done(conn, id),
         Commands::Rm { id } => task::rm(conn, id),

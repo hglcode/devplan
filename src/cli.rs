@@ -58,9 +58,9 @@ pub enum Commands {
         /// Show only overdue tasks
         #[arg(long)]
         overdue: bool,
-        /// Include in_progress and blocked (default: open only)
+        /// Include in_progress and blocked, but not done (default: open only)
         #[arg(long)]
-        all: bool,
+        active: bool,
         /// Show only completed tasks
         #[arg(long)]
         done: bool,

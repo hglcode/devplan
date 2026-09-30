@@ -46,13 +46,13 @@ pub fn list(
     conn: &Connection,
     plan: Option<i64>,
     overdue: bool,
-    all: bool,
+    active: bool,
     done: bool,
     fmt: Format,
 ) -> Result<()> {
     let view = if done {
         TaskView::Done
-    } else if all {
+    } else if active {
         TaskView::Active
     } else {
         TaskView::Open
