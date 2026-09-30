@@ -49,7 +49,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
         Format::Json => println!("{}", serde_json::to_string_pretty(&summaries)?),
         Format::Markdown => {
             println!("| ID | Status | Prio | Due | Open# | Title |");
-            println!("|----|--------|------|-----|-------|-------|");
+            println!("| -- | ------ | ---- | --- | ----- | ----- |");
             for s in &summaries {
                 let p = &s.plan;
                 println!(

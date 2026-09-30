@@ -43,6 +43,7 @@ pub struct TaskUpdate {
     pub priority: Option<Priority>,
     pub status: Option<TaskStatus>,
     pub tags: Option<Vec<String>>,
+    pub detail: Option<String>,
 }
 
 pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
@@ -144,6 +145,12 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     {
         sets.push("tags = ?".into());
         owned.push(Box::new(join_tags(tags)));
+    }
+    if let Some(detail) = &u.detail
+        && *detail != existing.detail
+    {
+        sets.push("detail = ?".into());
+        owned.push(Box::new(detail.clone()));
     }
     if sets.is_empty() {
         return Ok(false);
@@ -258,6 +265,7 @@ mod tests {
             &TaskUpdate {
                 priority: Some(Priority::High),
                 tags: Some(vec!["a".into(), "b".into()]),
+                detail: Some("new detail".into()),
                 ..Default::default()
             },
         )
@@ -266,6 +274,7 @@ mod tests {
         let t = get(&c, id).unwrap();
         assert_eq!(t.priority, Priority::High);
         assert_eq!(t.tags.join(","), "a,b");
+        assert_eq!(t.detail, "new detail");
         assert!(!update(&c, id, &TaskUpdate::default()).unwrap());
     }
 

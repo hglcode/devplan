@@ -123,18 +123,21 @@ pub fn modify(
     priority: Option<Priority>,
     status: Option<TaskStatus>,
     tags: Option<String>,
+    detail: Option<String>,
 ) -> Result<()> {
     let provided = title.is_some()
         || due.is_some()
         || priority.is_some()
         || status.is_some()
-        || tags.is_some();
+        || tags.is_some()
+        || detail.is_some();
     let update = TaskUpdate {
         title,
         due,
         priority,
         status,
         tags: tags.map(|t| split_tags(&t)),
+        detail,
     };
     if provided && repo::task::update(conn, id, &update)? {
         println!("Updated todo #{id}");

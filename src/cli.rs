@@ -89,6 +89,8 @@ pub enum Commands {
         status: Option<TaskStatus>,
         #[arg(long)]
         tags: Option<String>,
+        #[arg(long)]
+        detail: Option<String>,
     },
 
     /// Plan (milestone) operations
