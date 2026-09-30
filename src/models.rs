@@ -1,6 +1,8 @@
 use chrono::NaiveDate;
+use serde::Serialize;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum Priority {
     High,
     #[default]
@@ -36,7 +38,8 @@ impl std::fmt::Display for Priority {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TaskStatus {
     Open,
     InProgress,
@@ -70,7 +73,8 @@ impl std::fmt::Display for TaskStatus {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum PlanStatus {
     Active,
     Done,
@@ -98,7 +102,8 @@ impl std::fmt::Display for PlanStatus {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "lowercase")]
 pub enum DecisionStatus {
     Proposed,
     Accepted,
@@ -129,7 +134,7 @@ impl std::fmt::Display for DecisionStatus {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Task {
     pub id: i64,
     pub plan_id: Option<i64>,
@@ -144,7 +149,7 @@ pub struct Task {
     pub done_at: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Plan {
     pub id: i64,
     pub title: String,
@@ -156,7 +161,7 @@ pub struct Plan {
     pub updated_at: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Decision {
     pub id: i64,
     pub title: String,

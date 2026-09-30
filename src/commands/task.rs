@@ -1,8 +1,9 @@
 use anyhow::Result;
 use chrono::NaiveDate;
-use comfy_table::{Table, presets::UTF8_FULL};
 use rusqlite::Connection;
 
+use crate::cli::Format;
+use crate::commands::print_tasks;
 use crate::models::{Priority, TaskStatus, split_tags};
 use crate::repo;
 use crate::repo::task::{NewTask, TaskFilter, TaskUpdate, TaskView};
@@ -37,6 +38,7 @@ pub fn list(
     overdue: bool,
     all: bool,
     done: bool,
+    fmt: Format,
 ) -> Result<()> {
     let view = if done {
         TaskView::Done
@@ -53,33 +55,15 @@ pub fn list(
             overdue,
         },
     )?;
-    if tasks.is_empty() {
-        println!("(no todos)");
-        return Ok(());
-    }
-
-    let mut table = Table::new();
-    table.load_style(UTF8_FULL);
-    table.set_header(vec!["ID", "Plan", "Prio", "Due", "Status", "Title", "Tags"]);
-    for t in &tasks {
-        table.add_row(vec![
-            t.id.to_string(),
-            t.plan_id.map(|p| p.to_string()).unwrap_or_default(),
-            t.priority.to_string(),
-            t.due.map(|d| d.to_string()).unwrap_or_default(),
-            t.status.to_string(),
-            t.title.clone(),
-            t.tags.join(", "),
-        ]);
-    }
-    println!("{table}");
-    println!("{} task(s)", tasks.len());
-    Ok(())
+    print_tasks(&tasks, fmt)
 }
 
-pub fn show(conn: &Connection, id: i64) -> Result<()> {
+pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     let t = repo::task::get(conn, id)?;
-
+    if fmt == Format::Json {
+        println!("{}", serde_json::to_string_pretty(&t)?);
+        return Ok(());
+    }
     println!("Todo #{}", t.id);
     println!("  Title:    {}", t.title);
     println!(

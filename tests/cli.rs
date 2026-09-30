@@ -141,3 +141,20 @@ fn generate_completions() {
         .success()
         .stdout(predicates::str::contains("dp"));
 }
+
+#[test]
+fn format_json_is_parseable() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd().arg("add").arg("t1").assert().success();
+    for args in [["--format=json", "list"], ["list", "--format=json"]] {
+        let out = cmd().args(args).assert().success();
+        let stdout = String::from_utf8(out.get_output().stdout.clone()).unwrap();
+        serde_json::from_str::<serde_json::Value>(&stdout).expect("stdout must be pure JSON");
+    }
+}

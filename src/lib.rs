@@ -16,21 +16,19 @@ pub fn run() -> Result<()> {
 
 /// Execute a parsed command. Init and completion generation run before any
 /// database is opened.
-pub fn execute(cmd: cli::Commands) -> Result<()> {
-    match cmd {
+pub fn execute(cli: cli::Cli) -> Result<()> {
+    let cli::Cli { format, command } = cli;
+    match command {
         cli::Commands::Init => return db::init(),
         cli::Commands::Generate { shell } => {
-            return {
-                print_completions(shell);
-                Ok(())
-            };
+            print_completions(shell);
+            return Ok(());
         }
         _ => {}
     }
     let conn = db::open()?;
-    commands::dispatch(cmd, &conn)
+    commands::dispatch(command, &conn, format)
 }
-
 fn print_completions(shell: clap_complete::Shell) {
     let mut cmd = cli::build();
     let name = cmd.get_name().to_string();

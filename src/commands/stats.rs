@@ -1,8 +1,14 @@
 use anyhow::Result;
 use rusqlite::Connection;
 
-pub fn run(conn: &Connection) -> Result<()> {
+use crate::cli::Format;
+
+pub fn run(conn: &Connection, fmt: Format) -> Result<()> {
     let s = crate::repo::stats::get(conn)?;
+    if fmt == Format::Json {
+        println!("{}", serde_json::to_string_pretty(&s)?);
+        return Ok(());
+    }
     println!("=== dp stats ===");
     println!("{:<18}{}", "Active plans:", s.active_plans);
     println!("{:<18}{}", "Open:", s.open);

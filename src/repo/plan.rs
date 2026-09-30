@@ -1,6 +1,7 @@
 use anyhow::Result;
 use chrono::NaiveDate;
 use rusqlite::{Connection, OptionalExtension, params};
+use serde::Serialize;
 
 use crate::error::DpError;
 use crate::models::{Plan, PlanStatus, Priority};
@@ -14,6 +15,7 @@ pub struct NewPlan {
     pub priority: Priority,
 }
 
+#[derive(Debug, Clone, Serialize)]
 pub struct PlanSummary {
     pub plan: Plan,
     pub open_tasks: i64,

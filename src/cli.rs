@@ -1,7 +1,14 @@
 use chrono::NaiveDate;
-use clap::{CommandFactory, FromArgMatches, Parser, Subcommand};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 
 use crate::models::{Priority, TaskStatus};
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
+pub enum Format {
+    Table,
+    Json,
+    Markdown,
+}
 
 #[derive(Parser)]
 #[command(
@@ -10,6 +17,9 @@ use crate::models::{Priority, TaskStatus};
     about = "Per-project plan / todo / done / decision tracker"
 )]
 pub struct Cli {
+    /// Output format: table, json, or markdown
+    #[arg(long, value_enum, default_value = "table", global = true)]
+    pub format: Format,
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -155,9 +165,8 @@ pub fn build() -> clap::Command {
     Cli::command()
 }
 
-pub fn parse() -> Commands {
-    let matches = build().get_matches();
-    Commands::from_arg_matches(&matches).expect("clap validated the arguments")
+pub fn parse() -> Cli {
+    Cli::parse()
 }
 
 fn parse_date(s: &str) -> Result<NaiveDate, String> {

@@ -1,7 +1,8 @@
 use anyhow::Result;
 use rusqlite::Connection;
+use serde::Serialize;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize)]
 pub struct Stats {
     pub active_plans: i64,
     pub open: i64,
