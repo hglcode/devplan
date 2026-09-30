@@ -1,5 +1,5 @@
 [package]
-name = "dp"
+name = "devplan"
 version = "0.2.0"            # schema 变更，minor +1
 edition = "2024"
 description = "Per-project dev plan / todo / done / decision tracker"
@@ -7,6 +7,10 @@ license = "MIT"              # 需要 accompanying LICENSE 文件
 repository = "https://github.com/hglcode/devplan"
 keywords = ["cli", "todo", "planning", "adr"]
 categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "dp"
+path = "src/main.rs"
 
 [workspace]
 
