@@ -59,6 +59,24 @@ dp stats
 - Add `.dp/` to `.gitignore` if you don't want to commit it, or commit it if you do.
 - Inspect directly: `sqlite3 .dp/dp.db`.
 
+## Output formats
+
+Read commands (`list`, `show`, `stats`, `plan list/show`, `decision list`) accept `--format`:
+
+```bash
+dp list --format=markdown     # GitHub-renderable table for PRs/issues
+dp list --format=json | jq .  # machine-readable
+dp stats --format=json
+```
+
+Default is `table`. Empty results still emit headers/schema (e.g. `[]` for json).
+
+Escape hatch for anything not covered: query the SQLite file directly
+
+```bash
+sqlite3 .dp/dp.db -json "SELECT id,title,status FROM todos"
+```
+
 ## Shell completions
 
 ```bash

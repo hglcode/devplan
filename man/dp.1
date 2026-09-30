@@ -53,9 +53,7 @@ Longer free\-form description, shown by \fBdp show\fR.
 .RE
 .TP
 .B list
-Print todos as a table (ID, Plan, Prio, Due, Status, Title, Tags)
-followed by the task count, ordered by priority (high first), then due
-date (todos without one last), then id. Open todos by default.
+Print todos (table by default; see \fB--format\fR)
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
@@ -160,6 +158,13 @@ to stdout; redirect it into your shell's completion directory
 Print help for dp or for one subcommand.
 .SH OPTIONS
 .TP
+.BI "\-\-format " FORMAT
+Output format for read commands (\fBdp list\fR, \fBdp show\fR, \fBdp stats\fR,
+\fBdp plan list/show\fR, \fBdp decision list\fR): \fBtable\fR (default),
+\fBjson\fR or \fBmarkdown\fR. May be given before or after the subcommand.
+In json mode stdout carries only JSON; empty results print \fB[]\fR.
+Write commands ignore this flag and keep human\-readable confirmations.
+.TP
 .B \-h, \-\-help
 Print help; with a subcommand, print its help.
 .TP
@@ -193,6 +198,8 @@ dp decision add "Use SQLite" --context "Need zero-config embedded storage" --dec
 dp decision accept 1
 dp decision supersede 1 4
 dp stats
+dp list --format=markdown
+dp stats --format=json | jq .
 dp generate fish > ~/.config/fish/completions/dp.fish
 .fi
 .SH FILES
