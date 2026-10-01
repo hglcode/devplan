@@ -83,6 +83,8 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
         } => task::list(conn, plan, overdue, active, done, task_type, fmt),
         Commands::Show { id } => task::show(conn, id, fmt),
         Commands::Done { id } => task::done(conn, id),
+        Commands::Abandon { id } => task::abandon(conn, id),
+        Commands::Duplicate { id } => task::duplicate(conn, id),
         Commands::Rm { id } => task::rm(conn, id),
         Commands::Mod {
             id,

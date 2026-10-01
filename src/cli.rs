@@ -78,6 +78,12 @@ pub enum Commands {
     /// Mark a task as done
     Done { id: i64 },
 
+    /// Abandon a task: done with resolution 'abandoned' (excluded from output stats)
+    Abandon { id: i64 },
+
+    /// Close a task as duplicate of another
+    Duplicate { id: i64 },
+
     /// Delete a task
     Rm { id: i64 },
 

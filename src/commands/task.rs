@@ -4,7 +4,7 @@ use rusqlite::Connection;
 
 use crate::cli::Format;
 use crate::commands::print_tasks;
-use crate::models::{Priority, TaskStatus, TaskType, split_tags};
+use crate::models::{Priority, Resolution, TaskStatus, TaskType, split_tags};
 use crate::repo;
 use crate::repo::task::{NewTask, TaskFilter, TaskUpdate, TaskView};
 
@@ -116,6 +116,9 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     if let Some(done_at) = &t.done_at {
         println!("  Done at:  {done_at}");
     }
+    if let Some(r) = &t.resolution {
+        println!("  Resolution: {}", r);
+    }
     if !t.description.is_empty() {
         println!("  Description:");
         for line in t.description.lines() {
@@ -133,6 +136,20 @@ pub fn done(conn: &Connection, id: i64) -> Result<()> {
     }
     repo::task::set_status(conn, id, TaskStatus::Done)?;
     println!("Done: todo #{id} — {}", t.title);
+    Ok(())
+}
+
+pub fn abandon(conn: &Connection, id: i64) -> Result<()> {
+    let t = repo::task::get(conn, id)?;
+    repo::task::set_resolution(conn, id, Resolution::Abandoned)?;
+    println!("Abandoned: task #{id} — {}", t.title);
+    Ok(())
+}
+
+pub fn duplicate(conn: &Connection, id: i64) -> Result<()> {
+    let t = repo::task::get(conn, id)?;
+    repo::task::set_resolution(conn, id, Resolution::Duplicate)?;
+    println!("Closed as duplicate: task #{id} — {}", t.title);
     Ok(())
 }
 

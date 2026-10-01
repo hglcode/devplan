@@ -201,6 +201,20 @@ pub fn set_status(conn: &Connection, id: i64, status: TaskStatus) -> Result<()> 
     Ok(())
 }
 
+/// Marks a task finished with a non-default resolution.
+pub fn set_resolution(conn: &Connection, id: i64, resolution: Resolution) -> Result<()> {
+    let t = get(conn, id)?;
+    if t.status == TaskStatus::Done && t.resolution == Some(resolution) {
+        return Ok(()); // idempotent
+    }
+    conn.execute(
+        "UPDATE tasks SET status = 'done', resolution = ?1, done_at = ?2,
+         updated_at = datetime('now','localtime') WHERE id = ?3",
+        params![resolution.as_str(), now_ts(), id],
+    )?;
+    Ok(())
+}
+
 pub fn delete(conn: &Connection, id: i64) -> Result<()> {
     let n = conn.execute("DELETE FROM tasks WHERE id = ?1", params![id])?;
     if n == 0 {
@@ -336,5 +350,17 @@ mod tests {
         let c = conn();
         let id = add(&c, &sample("t1")).unwrap();
         assert!(!update(&c, id, &TaskUpdate::default()).unwrap());
+    }
+
+    #[test]
+    fn abandon_sets_resolution_and_stats_exclude_it() {
+        let c = conn();
+        let id = add(&c, &sample("t1")).unwrap();
+        set_resolution(&c, id, Resolution::Abandoned).unwrap();
+        let t = get(&c, id).unwrap();
+        assert_eq!(t.resolution, Some(Resolution::Abandoned));
+        // stats 的 done_total 不含它:
+        let s = crate::repo::stats::get(&c).unwrap();
+        assert_eq!(s.done_total, 0);
     }
 }
