@@ -11,6 +11,7 @@ const COLS: &str = "id, plan_id, adr_id, type, title, description, status, resol
 pub struct NewTask<'a> {
     pub title: &'a str,
     pub plan: Option<i64>,
+    pub task_type: TaskType,
     pub due_date: Option<NaiveDate>,
     pub priority: Priority,
     pub tags: Vec<String>,
@@ -38,6 +39,7 @@ pub enum TaskView {
 #[derive(Debug, Default, Clone)]
 pub struct TaskUpdate {
     pub title: Option<String>,
+    pub task_type: Option<TaskType>,
     pub due_date: Option<NaiveDate>,
     pub priority: Option<Priority>,
     pub status: Option<TaskStatus>,
@@ -50,14 +52,15 @@ pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
         crate::repo::plan::get(conn, plan_id)?; // clean "plan #N not found" instead of raw FK error
     }
     conn.execute(
-        "INSERT INTO tasks (plan_id, title, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        "INSERT INTO tasks (plan_id, type, title, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
         params![
             t.plan,
+            t.task_type.as_str(),
             t.title,
             t.description,
             t.priority.as_int(),
             t.due_date.map(|d| d.to_string()),
-            join_tags(&t.tags)
+            join_tags(&t.tags),
         ],
     )?;
     Ok(conn.last_insert_rowid())
@@ -113,6 +116,12 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     {
         sets.push("title = ?".into());
         owned.push(Box::new(title.clone()));
+    }
+    if let Some(tsk) = &u.task_type
+        && *tsk != existing.r#type
+    {
+        sets.push("type = ?".into());
+        owned.push(Box::new(tsk.to_string()));
     }
     if let Some(due) = u.due_date
         && Some(due) != existing.due_date
@@ -242,6 +251,7 @@ mod tests {
         NewTask {
             title,
             plan: None,
+            task_type: TaskType::Feature,
             due_date: None,
             priority: Priority::Normal,
             tags: vec![],

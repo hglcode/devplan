@@ -1,7 +1,7 @@
 use chrono::NaiveDate;
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 
-use crate::models::{Priority, TaskStatus};
+use crate::models::{Priority, TaskStatus, TaskType};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum Format {
@@ -48,6 +48,9 @@ pub enum Commands {
         /// Long description
         #[arg(long)]
         description: Option<String>,
+        /// Type: feature / bug / chore / refactor/docs
+        #[arg(long = "type", value_parser = parse_task_type)]
+        task_type: Option<TaskType>,
     },
 
     /// List tasks
@@ -91,6 +94,9 @@ pub enum Commands {
         tags: Option<String>,
         #[arg(short, long)]
         description: Option<String>,
+        /// Type: feature / bug / chore / refactor / docs
+        #[arg(long = "type", value_parser = parse_task_type)]
+        task_type: Option<TaskType>,
     },
 
     /// Plan (milestone) operations
@@ -200,4 +206,9 @@ fn parse_priority(s: &str) -> Result<Priority, String> {
 fn parse_status(s: &str) -> Result<TaskStatus, String> {
     TaskStatus::from_label(s)
         .ok_or_else(|| format!("status must be todo/active/blocked/done, got '{s}'"))
+}
+
+fn parse_task_type(s: &str) -> Result<TaskType, String> {
+    TaskType::from_label(s)
+        .ok_or_else(|| format!("type must be feature/bug/chore/refactor/docs, got '{s}'"))
 }

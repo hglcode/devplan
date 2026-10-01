@@ -4,13 +4,24 @@ use rusqlite::Connection;
 
 use crate::cli::Format;
 use crate::commands::print_tasks;
-use crate::models::{Priority, TaskStatus, split_tags};
+use crate::models::{Priority, TaskStatus, TaskType, split_tags};
 use crate::repo;
 use crate::repo::task::{NewTask, TaskFilter, TaskUpdate, TaskView};
+
+pub struct AddArgs {
+    pub title: String,
+    pub plan: Option<i64>,
+    pub task_type: Option<TaskType>,
+    pub due_date: Option<NaiveDate>,
+    pub priority: Option<Priority>,
+    pub tags: Option<String>,
+    pub desc: Option<String>,
+}
 
 pub struct ModifyArgs {
     pub id: i64,
     pub title: Option<String>,
+    pub task_type: Option<TaskType>,
     pub due_date: Option<NaiveDate>,
     pub prio: Option<Priority>,
     pub stat: Option<TaskStatus>,
@@ -18,20 +29,22 @@ pub struct ModifyArgs {
     pub desc: Option<String>,
 }
 
-pub fn add(
-    conn: &Connection,
-    title: &str,
-    plan: Option<i64>,
-    due_date: Option<NaiveDate>,
-    priority: Option<Priority>,
-    tags: Option<String>,
-    desc: Option<String>,
-) -> Result<()> {
+pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
+    let AddArgs {
+        title,
+        plan,
+        task_type,
+        due_date,
+        priority,
+        tags,
+        desc,
+    } = args;
     let id = repo::task::add(
         conn,
         &NewTask {
-            title,
+            title: &title,
             plan,
+            task_type: task_type.unwrap_or_default(),
             due_date,
             priority: priority.unwrap_or_default(),
             tags: tags.map(|t| split_tags(&t)).unwrap_or_default(),
@@ -129,6 +142,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
     let ModifyArgs {
         id,
         title,
+        task_type,
         due_date,
         prio,
         stat,
@@ -136,6 +150,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         desc,
     } = args;
     let provided = title.is_some()
+        || task_type.is_some()
         || due_date.is_some()
         || prio.is_some()
         || stat.is_some()
@@ -144,6 +159,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
     let update = TaskUpdate {
         title,
         due_date,
+        task_type,
         priority: prio,
         status: stat,
         tags: tags.map(|t| split_tags(&t)),
