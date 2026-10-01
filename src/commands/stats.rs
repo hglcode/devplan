@@ -12,7 +12,7 @@ pub fn run(conn: &Connection, fmt: Format) -> Result<()> {
     println!("=== dp stats ===");
     println!("{:<18}{}", "Active plans:", s.active_plans);
     println!("{:<18}{}", "Open:", s.open);
-    println!("{:<18}{}", "In progress:", s.in_progress);
+    println!("{:<18}{}", "Active:", s.active);
     println!("{:<18}{}", "Blocked:", s.blocked);
     println!("{:<18}{}", "Overdue:", s.overdue);
     println!("{:<18}{}", "Done today:", s.done_today);

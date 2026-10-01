@@ -4,18 +4,17 @@ use rusqlite::types::ToSql;
 use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::error::DpError;
-use crate::models::{Priority, Task, TaskStatus, join_tags, split_tags};
+use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str =
-    "id, plan_id, title, detail, status, priority, due_date, tags, created_at, updated_at, done_at";
+const COLS: &str = "id, plan_id, adr_id, type, title, description, status, resolution, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
     pub plan: Option<i64>,
-    pub due: Option<NaiveDate>,
+    pub due_date: Option<NaiveDate>,
     pub priority: Priority,
     pub tags: Vec<String>,
-    pub detail: &'a str,
+    pub description: &'a str,
 }
 
 #[derive(Debug, Clone, Copy, Default)]
@@ -27,10 +26,10 @@ pub struct TaskFilter {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TaskView {
-    /// status = 'open' (historical `dp list` default)
+    /// status = 'todo' (historical `dp list` default)
     #[default]
-    Open,
-    /// everything not done yet
+    Todo,
+    /// status = 'active'
     Active,
     /// status = 'done'
     Done,
@@ -39,11 +38,11 @@ pub enum TaskView {
 #[derive(Debug, Default, Clone)]
 pub struct TaskUpdate {
     pub title: Option<String>,
-    pub due: Option<NaiveDate>,
+    pub due_date: Option<NaiveDate>,
     pub priority: Option<Priority>,
     pub status: Option<TaskStatus>,
     pub tags: Option<Vec<String>>,
-    pub detail: Option<String>,
+    pub description: Option<String>,
 }
 
 pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
@@ -51,13 +50,13 @@ pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
         crate::repo::plan::get(conn, plan_id)?; // clean "plan #N not found" instead of raw FK error
     }
     conn.execute(
-        "INSERT INTO todos (plan_id, title, detail, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
+        "INSERT INTO tasks (plan_id, title, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
         params![
             t.plan,
             t.title,
-            t.detail,
+            t.description,
             t.priority.as_int(),
-            t.due.map(|d| d.to_string()),
+            t.due_date.map(|d| d.to_string()),
             join_tags(&t.tags)
         ],
     )?;
@@ -66,7 +65,7 @@ pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
 
 pub fn get(conn: &Connection, id: i64) -> Result<Task> {
     conn.query_row(
-        &format!("SELECT {COLS} FROM todos WHERE id = ?1"),
+        &format!("SELECT {COLS} FROM tasks WHERE id = ?1"),
         params![id],
         map_row,
     )
@@ -76,11 +75,11 @@ pub fn get(conn: &Connection, id: i64) -> Result<Task> {
 }
 
 pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
-    let mut sql = format!("SELECT {COLS} FROM todos WHERE 1=1");
+    let mut sql = format!("SELECT {COLS} FROM tasks WHERE 1=1");
     let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
     match f.view {
-        TaskView::Open => sql.push_str(" AND status = 'open'"),
-        TaskView::Active => sql.push_str(" AND status != 'done'"),
+        TaskView::Todo => sql.push_str(" AND status = 'todo'"),
+        TaskView::Active => sql.push_str(" AND status = 'active'"),
         TaskView::Done => sql.push_str(" AND status = 'done'"),
     }
     if let Some(p) = f.plan {
@@ -90,7 +89,7 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
     if f.overdue {
         sql.push_str(" AND due_date IS NOT NULL AND due_date < date('now','localtime')");
     }
-    sql.push_str(" ORDER BY priority ASC, due_date IS NULL, due_date ASC, id ASC");
+    sql.push_str(" ORDER BY priority DESC, due_date IS NULL, due_date ASC, id ASC");
 
     let args: Vec<&dyn ToSql> = owned.iter().map(std::convert::AsRef::as_ref).collect();
     let mut stmt = conn.prepare(&sql)?;
@@ -115,8 +114,8 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
         sets.push("title = ?".into());
         owned.push(Box::new(title.clone()));
     }
-    if let Some(due) = u.due
-        && Some(due) != existing.due
+    if let Some(due) = u.due_date
+        && Some(due) != existing.due_date
     {
         sets.push("due_date = ?".into());
         owned.push(Box::new(due.to_string()));
@@ -146,11 +145,11 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
         sets.push("tags = ?".into());
         owned.push(Box::new(join_tags(tags)));
     }
-    if let Some(detail) = &u.detail
-        && *detail != existing.detail
+    if let Some(desc) = &u.description
+        && *desc != existing.description
     {
-        sets.push("detail = ?".into());
-        owned.push(Box::new(detail.clone()));
+        sets.push("description = ?".into());
+        owned.push(Box::new(desc.clone()));
     }
     if sets.is_empty() {
         return Ok(false);
@@ -158,7 +157,7 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
 
     sets.push("updated_at = datetime('now','localtime')".into());
     owned.push(Box::new(id));
-    let sql = format!("UPDATE todos SET {} WHERE id = ?", sets.join(", "));
+    let sql = format!("UPDATE tasks SET {} WHERE id = ?", sets.join(", "));
     let args: Vec<&dyn ToSql> = owned.iter().map(std::convert::AsRef::as_ref).collect();
     conn.execute(&sql, args.as_slice())?;
     Ok(true)
@@ -174,14 +173,14 @@ pub fn set_status(conn: &Connection, id: i64, status: TaskStatus) -> Result<()> 
         _ => None,
     };
     conn.execute(
-        "UPDATE todos SET status = ?1, done_at = ?2, updated_at = datetime('now','localtime') WHERE id = ?3",
+        "UPDATE tasks SET status = ?1, done_at = ?2, updated_at = datetime('now','localtime') WHERE id = ?3",
         params![status.as_str(), done_at, id],
     )?;
     Ok(())
 }
 
 pub fn delete(conn: &Connection, id: i64) -> Result<()> {
-    let n = conn.execute("DELETE FROM todos WHERE id = ?1", params![id])?;
+    let n = conn.execute("DELETE FROM tasks WHERE id = ?1", params![id])?;
     if n == 0 {
         return Err(DpError::TaskNotFound(id).into());
     }
@@ -190,7 +189,7 @@ pub fn delete(conn: &Connection, id: i64) -> Result<()> {
 
 pub fn count_done(conn: &Connection, plan_id: i64) -> Result<i64> {
     Ok(conn.query_row(
-        "SELECT COUNT(*) FROM todos WHERE plan_id = ?1 AND status = 'done'",
+        "SELECT COUNT(*) FROM tasks WHERE plan_id = ?1 AND status = 'done'",
         params![plan_id],
         |r| r.get(0),
     )?)
@@ -201,23 +200,30 @@ fn now_ts() -> String {
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
-    let status: String = row.get(4)?;
-    let prio: i64 = row.get(5)?;
-    let due: Option<String> = row.get(6)?;
-    let tags: String = row.get(7)?;
+    let status: String = row.get(6)?;
+    let resolution: Option<String> = row.get(7)?;
+    let prio: i64 = row.get(8)?;
+    let tags: String = row.get(9)?;
+    let typ: String = row.get(3)?;
+    let due: Option<String> = row.get(11)?;
+    let start: Option<String> = row.get(12)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
-        title: row.get(2)?,
-        detail: row.get(3)?,
-        // unknown labels only occur in hand-edited databases
-        status: TaskStatus::from_label(&status).unwrap_or(TaskStatus::Open),
+        adr_id: row.get(2)?,
+        r#type: TaskType::from_label(&typ).unwrap_or_default(),
+        title: row.get(4)?,
+        description: row.get(5)?,
+        status: TaskStatus::from_label(&status).unwrap_or_default(),
+        resolution: resolution.and_then(|r| Resolution::from_label(&r)),
         priority: Priority::from_int(prio).unwrap_or_default(),
-        due: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         tags: split_tags(&tags),
-        created_at: row.get(8)?,
-        updated_at: row.get(9)?,
-        done_at: row.get(10)?,
+        time_spent: row.get(10)?,
+        due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
+        started_at: start,
+        done_at: row.get(13)?,
+        created_at: row.get(14)?,
+        updated_at: row.get(15)?,
     })
 }
 
@@ -236,10 +242,10 @@ mod tests {
         NewTask {
             title,
             plan: None,
-            due: None,
-            priority: Priority::Medium,
+            due_date: None,
+            priority: Priority::Normal,
             tags: vec![],
-            detail: "",
+            description: "",
         }
     }
 
@@ -251,7 +257,7 @@ mod tests {
         let t = get(&c, id).unwrap();
         assert_eq!(t.status, TaskStatus::Done);
         assert!(t.done_at.is_some());
-        set_status(&c, id, TaskStatus::Open).unwrap();
+        set_status(&c, id, TaskStatus::Todo).unwrap();
         assert!(get(&c, id).unwrap().done_at.is_none());
     }
 
@@ -265,7 +271,7 @@ mod tests {
             &TaskUpdate {
                 priority: Some(Priority::High),
                 tags: Some(vec!["a".into(), "b".into()]),
-                detail: Some("new detail".into()),
+                description: Some("new description".into()),
                 ..Default::default()
             },
         )
@@ -274,7 +280,7 @@ mod tests {
         let t = get(&c, id).unwrap();
         assert_eq!(t.priority, Priority::High);
         assert_eq!(t.tags.join(","), "a,b");
-        assert_eq!(t.detail, "new detail");
+        assert_eq!(t.description, "new description");
         assert!(!update(&c, id, &TaskUpdate::default()).unwrap());
     }
 
@@ -294,7 +300,7 @@ mod tests {
             &c,
             id,
             &TaskUpdate {
-                priority: Some(Priority::Medium),
+                priority: Some(Priority::Normal),
                 ..Default::default()
             },
         )

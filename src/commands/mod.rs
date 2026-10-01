@@ -1,4 +1,4 @@
-pub mod decision;
+pub mod adr;
 pub mod plan;
 pub mod stats;
 pub mod task;
@@ -23,7 +23,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
                     t.id,
                     t.plan_id.map_or_else(|| "-".into(), |p| p.to_string()),
                     t.priority,
-                    t.due.map_or_else(|| "-".into(), |d| d.to_string()),
+                    t.due_date.map_or_else(|| "-".into(), |d| d.to_string()),
                     t.status,
                     t.title.replace('|', "\\|"),
                     t.tags.join(", ")
@@ -39,7 +39,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
                     t.id.to_string(),
                     t.plan_id.map(|p| p.to_string()).unwrap_or_default(),
                     t.priority.to_string(),
-                    t.due.map(|d| d.to_string()).unwrap_or_default(),
+                    t.due_date.map(|d| d.to_string()).unwrap_or_default(),
                     t.status.to_string(),
                     t.title.clone(),
                     t.tags.join(", "),
@@ -57,11 +57,11 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
         Commands::Add {
             title,
             plan,
-            due,
+            due_date,
             priority,
             tags,
-            detail,
-        } => task::add(conn, &title, plan, due, priority, tags, detail),
+            description,
+        } => task::add(conn, &title, plan, due_date, priority, tags, description),
         Commands::List {
             plan,
             overdue,
@@ -74,25 +74,25 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
         Commands::Mod {
             id,
             title,
-            due,
+            due_date,
             priority,
             status,
             tags,
-            detail,
+            description,
         } => task::modify(
             conn,
             ModifyArgs {
                 id,
                 title,
-                due,
-                priority,
-                status,
+                due_date,
+                prio: priority,
+                stat: status,
                 tags,
-                detail,
+                desc: description,
             },
         ),
         Commands::Plan { cmd } => plan::run(conn, cmd, fmt),
-        Commands::Decision { cmd } => decision::run(conn, cmd, fmt),
+        Commands::Decision { cmd } => adr::run(conn, cmd, fmt),
         Commands::Stats => stats::run(conn, fmt),
         // handled in lib::execute before the database is opened
         Commands::Init | Commands::Generate { .. } => Ok(()),

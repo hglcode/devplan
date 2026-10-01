@@ -13,10 +13,10 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
     match cmd {
         PlanCommands::Add {
             title,
-            due,
+            due_date,
             priority,
             description,
-        } => add(conn, &title, due, priority, description),
+        } => add(conn, &title, due_date, priority, description),
         PlanCommands::List => list(conn, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
         PlanCommands::Done { id } => done(conn, id),
@@ -26,7 +26,7 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
 fn add(
     conn: &Connection,
     title: &str,
-    due: Option<NaiveDate>,
+    due_date: Option<NaiveDate>,
     priority: Option<Priority>,
     description: Option<String>,
 ) -> Result<()> {
@@ -35,7 +35,7 @@ fn add(
         &NewPlan {
             title: title.to_string(),
             description: description.unwrap_or_default(),
-            due,
+            due_date,
             priority: priority.unwrap_or_default(),
         },
     )?;
@@ -57,7 +57,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
                     p.id,
                     p.status,
                     p.priority,
-                    p.due.map_or_else(|| "-".into(), |d| d.to_string()),
+                    p.due_date.map_or_else(|| "-".into(), |d| d.to_string()),
                     s.open_tasks,
                     p.title.replace('|', "\\|"),
                 );
@@ -73,7 +73,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
                     p.id.to_string(),
                     p.status.to_string(),
                     p.priority.to_string(),
-                    p.due.map(|d| d.to_string()).unwrap_or_default(),
+                    p.due_date.map(|d| d.to_string()).unwrap_or_default(),
                     s.open_tasks.to_string(),
                     p.title.clone(),
                 ]);
@@ -119,14 +119,14 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     println!("  Priority:    {}", p.priority);
     println!(
         "  Due:         {}",
-        p.due.map_or_else(|| "-".into(), |d| d.to_string())
+        p.due_date.map_or_else(|| "-".into(), |d| d.to_string())
     );
     println!("  Created:     {}", p.created_at);
     if !p.description.is_empty() {
         println!("  Description: {}", p.description);
     }
 
-    println!("\nOpen todos:");
+    println!("\nOpen tasks:");
     if tasks.is_empty() {
         println!("  (none)");
     } else {
@@ -138,7 +138,7 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
                 t.id.to_string(),
                 t.status.to_string(),
                 t.priority.to_string(),
-                t.due.map(|d| d.to_string()).unwrap_or_default(),
+                t.due_date.map(|d| d.to_string()).unwrap_or_default(),
                 t.title.clone(),
             ]);
         }

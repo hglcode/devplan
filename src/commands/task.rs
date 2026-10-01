@@ -11,31 +11,31 @@ use crate::repo::task::{NewTask, TaskFilter, TaskUpdate, TaskView};
 pub struct ModifyArgs {
     pub id: i64,
     pub title: Option<String>,
-    pub due: Option<NaiveDate>,
-    pub priority: Option<Priority>,
-    pub status: Option<TaskStatus>,
+    pub due_date: Option<NaiveDate>,
+    pub prio: Option<Priority>,
+    pub stat: Option<TaskStatus>,
     pub tags: Option<String>,
-    pub detail: Option<String>,
+    pub desc: Option<String>,
 }
 
 pub fn add(
     conn: &Connection,
     title: &str,
     plan: Option<i64>,
-    due: Option<NaiveDate>,
+    due_date: Option<NaiveDate>,
     priority: Option<Priority>,
     tags: Option<String>,
-    detail: Option<String>,
+    desc: Option<String>,
 ) -> Result<()> {
     let id = repo::task::add(
         conn,
         &NewTask {
             title,
             plan,
-            due,
+            due_date,
             priority: priority.unwrap_or_default(),
             tags: tags.map(|t| split_tags(&t)).unwrap_or_default(),
-            detail: detail.as_deref().unwrap_or(""),
+            description: desc.as_deref().unwrap_or(""),
         },
     )?;
     println!("Added todo #{id}: {title}");
@@ -55,7 +55,7 @@ pub fn list(
     } else if active {
         TaskView::Active
     } else {
-        TaskView::Open
+        TaskView::Todo
     };
     let tasks = repo::task::list(
         conn,
@@ -84,7 +84,7 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     println!("  Priority: {}", t.priority);
     println!(
         "  Due:      {}",
-        t.due.map_or_else(|| "-".into(), |d| d.to_string())
+        t.due_date.map_or_else(|| "-".into(), |d| d.to_string())
     );
     println!(
         "  Tags:     {}",
@@ -99,9 +99,9 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     if let Some(done_at) = &t.done_at {
         println!("  Done at:  {done_at}");
     }
-    if !t.detail.is_empty() {
-        println!("  Detail:");
-        for line in t.detail.lines() {
+    if !t.description.is_empty() {
+        println!("  Description:");
+        for line in t.description.lines() {
             println!("    {line}");
         }
     }
@@ -129,25 +129,25 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
     let ModifyArgs {
         id,
         title,
-        due,
-        priority,
-        status,
+        due_date,
+        prio,
+        stat,
         tags,
-        detail,
+        desc,
     } = args;
     let provided = title.is_some()
-        || due.is_some()
-        || priority.is_some()
-        || status.is_some()
+        || due_date.is_some()
+        || prio.is_some()
+        || stat.is_some()
         || tags.is_some()
-        || detail.is_some();
+        || desc.is_some();
     let update = TaskUpdate {
         title,
-        due,
-        priority,
-        status,
+        due_date,
+        priority: prio,
+        status: stat,
         tags: tags.map(|t| split_tags(&t)),
-        detail,
+        description: desc,
     };
     if provided && repo::task::update(conn, id, &update)? {
         println!("Updated todo #{id}");

@@ -37,9 +37,9 @@ pub enum Commands {
         #[arg(long)]
         plan: Option<i64>,
         /// Due date, YYYY-MM-DD
-        #[arg(long, value_parser = parse_date)]
-        due: Option<NaiveDate>,
-        /// Priority: high / medium / low (or 1 / 2 / 3)
+        #[arg(long = "due", value_parser = parse_date)]
+        due_date: Option<NaiveDate>,
+        /// Priority: low/normal/high/urgent or 0/1/2/3
         #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
         /// Comma-separated tags
@@ -47,10 +47,10 @@ pub enum Commands {
         tags: Option<String>,
         /// Long description
         #[arg(long)]
-        detail: Option<String>,
+        description: Option<String>,
     },
 
-    /// List todos
+    /// List tasks
     List {
         /// Filter by plan id
         #[arg(long)]
@@ -58,7 +58,7 @@ pub enum Commands {
         /// Show only overdue tasks
         #[arg(long)]
         overdue: bool,
-        /// Include in_progress and blocked, but not done (default: open only)
+        /// Only tasks with status active
         #[arg(long)]
         active: bool,
         /// Show only completed tasks
@@ -66,31 +66,31 @@ pub enum Commands {
         done: bool,
     },
 
-    /// Show one todo in detail
+    /// Show one task in description
     Show { id: i64 },
 
-    /// Mark a todo as done
+    /// Mark a task as done
     Done { id: i64 },
 
-    /// Delete a todo
+    /// Delete a task
     Rm { id: i64 },
 
-    /// Modify a todo's fields
+    /// Modify a task's fields
     Mod {
         id: i64,
         #[arg(long)]
         title: Option<String>,
-        #[arg(long, value_parser = parse_date)]
-        due: Option<NaiveDate>,
-        #[arg(long, value_parser = parse_priority)]
+        #[arg(long = "due", value_parser = parse_date)]
+        due_date: Option<NaiveDate>,
+        #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
-        /// open / in_progress / blocked / done
+        /// todo / active / blocked / done
         #[arg(long, value_parser = parse_status)]
         status: Option<TaskStatus>,
-        #[arg(long)]
+        #[arg(short, long)]
         tags: Option<String>,
-        #[arg(long)]
-        detail: Option<String>,
+        #[arg(short, long)]
+        description: Option<String>,
     },
 
     /// Plan (milestone) operations
@@ -129,15 +129,15 @@ pub enum GenerateTarget {
 pub enum PlanCommands {
     Add {
         title: String,
-        #[arg(long, value_parser = parse_date)]
-        due: Option<NaiveDate>,
+        #[arg(long = "due", value_parser = parse_date)]
+        due_date: Option<NaiveDate>,
         #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
-        #[arg(long)]
+        #[arg(short, long)]
         description: Option<String>,
     },
     List,
-    /// Show a plan with its open todos and done count
+    /// Show a plan with its pending tasks and done count
     Show {
         id: i64,
     },
@@ -188,16 +188,16 @@ fn parse_date(s: &str) -> Result<NaiveDate, String> {
 
 fn parse_priority(s: &str) -> Result<Priority, String> {
     match s.to_lowercase().as_str() {
-        "high" | "1" => Ok(Priority::High),
-        "medium" | "2" => Ok(Priority::Medium),
-        "low" | "3" => Ok(Priority::Low),
+        "low" | "0" => Ok(Priority::Low),
+        "normal" | "1" => Ok(Priority::Normal),
+        "high" | "2" => Ok(Priority::High),
+        "urgent" | "3" => Ok(Priority::Urgent),
         other => Err(format!(
-            "priority must be high/medium/low or 1/2/3, got '{other}'"
+            "priority must be low/normal/high/urgent or 0/1/2/3, got '{other}'"
         )),
     }
 }
-
 fn parse_status(s: &str) -> Result<TaskStatus, String> {
     TaskStatus::from_label(s)
-        .ok_or_else(|| format!("status must be open/in_progress/blocked/done, got '{s}'"))
+        .ok_or_else(|| format!("status must be todo/active/blocked/done, got '{s}'"))
 }
