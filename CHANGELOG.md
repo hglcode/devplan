@@ -1,3 +1,26 @@
+# Changelog
+
+## [0.6.0] — 2026-10-02
+
+### Changed — BREAKING
+
+- `dp decision` renamed to `dp adr` (vocabulary unification: schema → repo → CLI)
+
+### Added
+
+- `--type` flag on add/mod, `--type` filter on list (feature/bug/chore/refactor/docs)
+- `--start` flag on plan add (schedule window left edge)
+- `dp abandon` / `dp duplicate` commands — resolution axis (abandoned excluded from output stats)
+- `dp mod --plan` — reassign a task's plan
+- Type/Resolution lines in `dp show`; Progress column in `dp plan list` (v_plan_progress view)
+- CHANGELOG.md
+
+### Fixed
+
+- plan list ordering (active-first was inverted)
+- plans.start_date column mismatch (started_at)
+- ADR number column in decision list
+
 ## [0.5.2] — 2026-10-01
 
 ### Fixed
