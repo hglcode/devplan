@@ -1,6 +1,6 @@
 # dp — project dev plan tracker
 
-A small Rust CLI to track **plans / todos / done / decisions** for one project.
+A small Rust CLI to track **plans / tasks / decisions (ADRs)** for one project.
 Data lives in `.dp/dp.db` (SQLite) next to your project root; `dp` discovers it by walking up from the current directory (like `git` finds `.git`).
 
 ## Build & install
@@ -21,12 +21,12 @@ dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
 dp plan list
 dp plan show 1
 
-# todos
+# tasks
 dp add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
 dp list
 dp list --overdue
 dp show 2
-dp mod 2 --status in_progress
+dp mod 2 --status active
 dp rm 3
 
 # decisions (ADR)
@@ -44,14 +44,16 @@ dp stats
 
 ## Tables
 
-- `plans` — milestone / phase goal
-- `todos` — all tasks; status: open / in_progress / blocked / done
-  (`dp done <id>` sets status='done' + done_at; undo with `dp mod <id> --status open`)
-- `decisions` — ADR lifecycle: proposed → accepted → superseded
+- `plans` — milestone / phase goal; `start_date` + `due_date` form its schedule window
+- `tasks` — all work items; status: todo / active / blocked / done,
+  plus a resolution axis for finished work: done / abandoned / duplicate
+  (`dp done <id>` sets status='done' + done_at; undo with `dp mod <id> --status todo`)
+- `adrs` — decision records numbered ADR-001, ADR-002, …;
+  lifecycle: proposed → accepted → superseded
 
 ## Priority
 
-`high`/`1`, `medium`/`2` (default), `low`/`3`.
+`low`/`0`, `normal`/`1` (default), `high`/`2`, `urgent`/`3` — a higher number is more urgent.
 
 ## Data file
 
@@ -74,11 +76,11 @@ Default is `table`. Empty results still emit headers/schema (e.g. `[]` for json)
 Escape hatch for anything not covered: query the SQLite file directly
 
 ```bash
-sqlite3 .dp/dp.db -json "SELECT id,title,status FROM todos"
+sqlite3 .dp/dp.db -json "SELECT id,title,status FROM tasks"
 ```
 
 ## Shell completions
 
 ```bash
-dp generate bash | zsh | fish | elvish | powershell
+dp generate bash | zsh | fish | elvish | powershell | man
 ```

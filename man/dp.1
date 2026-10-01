@@ -1,13 +1,13 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-09-30" "dp 0.4.0" "User Commands"
+.TH DP 1 "2026-10-01" "dp 0.5.1" "User Commands"
 .SH NAME
-dp \- per\-project dev plan, todo and decision tracker
+dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
 .B dp \fICOMMAND\fR [\fIOPTIONS\fR] [\fIARGUMENTS\fR]
 .SH DESCRIPTION
 .B dp
-tracks plans (milestones), todos, and architecture decisions (ADRs) for a
-single project in one SQLite database at
+tracks plans (milestones), tasks, and architecture decision records (ADRs)
+for a single project in one SQLite database at
 .IR .dp/dp.db .
 Like
 .BR git (1),
@@ -17,7 +17,8 @@ commands work from any subdirectory. Run
 in the project root once, before other commands.
 .PP
 The database uses WAL journaling, enforced foreign keys and a 5s busy
-timeout; schema migrations are applied automatically on startup. Commit
+timeout; the schema is created on init and upgraded automatically when
+a newer dp opens an older database. Commit
 .I .dp/
 to version control or add it to
 .I .gitignore
@@ -32,11 +33,11 @@ path and change nothing. Otherwise create
 in the current directory and apply migrations. Idempotent.
 .TP
 .BI "add " TITLE
-Create a new todo.
+Create a new task.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
-Attach the todo to plan \fIID\fR (must exist).
+Attach the task to plan \fIID\fR (must exist).
 .TP
 \fB\-\-due\fR \fIDATE\fR
 Due date, \fIYYYY\-MM\-DD\fR.
@@ -48,44 +49,49 @@ Priority; see
 \fB\-t\fR, \fB\-\-tags\fR \fILIST\fR
 Comma\-separated tags; surrounding whitespace is trimmed.
 .TP
-\fB\-\-detail\fR \fITEXT\fR
-New long description, shown by \fBdp show\fR.
+\fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
+Long description, shown by \fBdp show\fR.
 .RE
 .TP
 .B list
-Print todos (table by default; see \fB--format\fR)
+Print tasks (table by default; see \fB\-\-format\fR), ordered by priority
+(urgent first), then due date (tasks without one last), then id. Tasks
+with status \fItodo\fR by default.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
-Only todos attached to plan \fIID\fR.
+Only tasks attached to plan \fIID\fR.
 .TP
 \fB\-\-overdue\fR
-Only todos whose due date lies in the past; combines with the view flags
+Only tasks whose due date lies in the past; combines with the view flags
 below.
 .TP
 \fB\-\-active\fR
-Open plus \fIin_progress\fR and \fIblocked\fR.
+Only tasks with status \fIactive\fR (currently being worked on).
 .TP
 \fB\-\-done\fR
-Only completed todos; takes precedence over \fB\-\-active\fR.
+Only completed tasks; takes precedence over \fB\-\-active\fR.
 .RE
 .TP
 .BI "show " ID
-Print one todo in full detail.
+Print one task in full description.
 .TP
 .BI "done " ID
-Mark a todo as done: sets status to \fIdone\fR and records \fIdone_at\fR.
-Idempotent \(em an already\-done todo prints a notice and is left
-unchanged. Reopen with \fBdp mod ID \-\-status open\fR, which clears
-\fIdone_at\fR.
+Mark a task as done: sets status to \fIdone\fR, resolution to \fIdone\fR
+and records \fIdone_at\fR. Idempotent \(em an already\-done task prints
+a notice and is left unchanged. Reopen with
+.BI "dp mod " "ID \-\-status todo"
+which clears \fIdone_at\fR and \fIresolution\fR.
 .TP
 .BI "rm " ID
-Delete a todo permanently.
+Delete a task permanently.
 .TP
 .BI "mod " ID
-Change the given fields of a todo; omitted flags leave the field
-unchanged. There is no \fB\-\-plan\fR \(em a todo's plan assignment
-cannot be changed. With no flags at all, prints \(dqNothing to modify\(dq.
+Change the given fields of a task; omitted flags leave the field
+unchanged. With no flags at all, prints \(dqNothing to modify: no fields
+given\(dq; with flags whose values equal the current ones, prints a notice
+instead of writing. There is no \fB\-\-plan\fR \(em a task's plan
+assignment cannot be changed.
 .RS
 .TP
 \fB\-\-title\fR \fITEXT\fR
@@ -103,10 +109,17 @@ New due date.
 .TP
 \fB\-t\fR, \fB\-\-tags\fR \fILIST\fR
 Replace the tag list.
+.TP
+\fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
+New description.
 .RE
 .TP
 .B plan
-Operate on plans (milestones / phases).
+Operate on plans (milestones / phases). A plan's
+.I start_date
+(when work is meant to begin) and
+.I due_date
+(deadline) form its schedule window; both are optional.
 .RS
 .TP
 .BI "add " TITLE
@@ -117,15 +130,16 @@ Create a plan; accepts \fB\-\-due\fR \fIDATE\fR,
 Summarize plans with per\-plan open\-task counts.
 .TP
 .BI "show " ID
-Print a plan in detail, its open todos, and how many todos in it are
-done.
+Print a plan in description, its pending (not\-done) tasks, and how many
+tasks in it are done.
 .TP
 .BI "done " ID
 Mark a plan as done.
 .RE
 .TP
 .B decision
-Operate on decision records (ADRs).
+Operate on decision records (ADRs), numbered \fIADR\-NNN\fR in creation
+order. The number is stable and independent of the numeric id.
 .RS
 .TP
 .BI "add " TITLE
@@ -136,8 +150,8 @@ Record a decision. \fB\-\-context\fR \fITEXT\fR and \fB\-\-decision\fR
 List all decisions, accepted ones first.
 .TP
 .BI "accept " ID
-Move a proposed decision to accepted. Refuses if the decision is already
-superseded.
+Move a proposed decision to accepted and stamp \fIdecided_at\fR.
+Refuses if the decision is already superseded.
 .TP
 .BI "supersede " "OLD NEW"
 Mark OLD as superseded by NEW. NEW must already be accepted; a decision
@@ -145,13 +159,17 @@ cannot supersede itself, and only once.
 .RE
 .TP
 .B stats
-Print counters: active plans, open / in_progress / blocked / overdue
-todos, and todos done today, in the last 7 days, and in total.
+Print counters: active plans, todo / active / blocked / overdue tasks,
+and tasks done today, in the last 7 days, and in total. Tasks finished
+with resolution \fIabandoned\fR are excluded from the done counters.
 .TP
-.BI "generate " SHELL
+.BI "generate " TARGET
 Print a completion script for
-.IR bash ", " zsh ", " fish ", " elvish ", " powershell " or " man
-to stdout; redirect it into your shell's completion directory
+.IR bash ", " zsh ", " fish ", " elvish " or " powershell
+to stdout, or a roff manual page skeleton for
+.IR man
+(derived from the CLI definition; useful for cross\-checking flags).
+Redirect into your shell's completion directory
 (e.g.\& ~/.config/fish/completions/dp.fish).
 .TP
 .BI "help " "[COMMAND]"
@@ -171,27 +189,34 @@ Print help; with a subcommand, print its help.
 .B \-V, \-\-version
 Print version.
 .SH PRIORITIES
-\fBhigh\fR/1, \fBmedium\fR/2 and \fBlow\fR/3; names and numbers are
-interchangeable, names are case\-insensitive. The default is
-\fBmedium\fR.
+\fBlow\fR/0, \fBnormal\fR/1, \fBhigh\fR/2 and \fBurgent\fR/3; names and
+numbers are interchangeable, names are case\-insensitive. A higher
+number means more urgent. The default is \fBnormal\fR.
 .SH STATES
-Tasks move \fIopen\fR -> \fIin_progress\fR -> \fIdone\fR, with
-\fIblocked\fR as a side state. Both \fBdp done\fR and
-\fBdp mod \-\-status done\fR record \fIdone_at\fR; moving to any other
-status clears it. A todo is overdue when its due date lies in the past
-and it is not done.
+Tasks have two axes. The
+.I status
+axis moves \fItodo\fR -> \fIactive\fR -> \fIdone\fR, with \fIblocked\fR as
+a side state; \fBdp done\fR and \fBdp mod \-\-status done\fR both record
+\fIdone_at\fR, and moving to any other status clears it. The
+.I resolution
+axis classifies finished work: \fIdone\fR (completed), \fIabandoned\fR
+(deliberately dropped) or \fIduplicate\fR; \fBdp done\fR sets it to
+\fIdone\fR by default. A task is overdue when its due date lies in the
+past and it is not done.
 .PP
-Plans move \fIactive\fR -> \fIdone\fR, set only by \fBdp plan done\fR.
+Plans move \fIactive\fR -> \fIdone\fR (and may later be \fIarchived\fR),
+set only by \fBdp plan done\fR. A plan's actual start can be derived
+from the earliest \fIstarted_at\fR of its tasks.
 .PP
 Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR.
 .SH EXAMPLES
 .nf
 dp init
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
-dp add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
+dp add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend -d "OAuth2 auth code flow"
 dp list
 dp list --overdue
-dp mod 2 --status in_progress
+dp mod 2 --status active
 dp done 2
 dp plan done 1
 dp decision add "Use SQLite" --context "Need zero-config embedded storage" --decision "rusqlite with bundled SQLite" --consequence "Single-file db, easy to back up"
@@ -200,7 +225,7 @@ dp decision supersede 1 4
 dp stats
 dp list --format=markdown
 dp stats --format=json | jq .
-dp generate fish > ~/.config/fish/completions/dp.fish
+dp generate fish > $HOME/.config/fish/completions/dp.fish
 .fi
 .SH FILES
 .TP

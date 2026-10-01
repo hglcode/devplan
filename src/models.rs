@@ -270,7 +270,7 @@ pub struct Plan {
     pub status: PlanStatus,
     pub priority: Priority,
     pub due_date: Option<NaiveDate>,
-    pub started_at: Option<NaiveDate>,
+    pub start_date: Option<NaiveDate>,
     pub created_at: String,
     pub updated_at: String,
 }
