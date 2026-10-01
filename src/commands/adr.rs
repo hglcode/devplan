@@ -2,13 +2,13 @@ use anyhow::Result;
 use comfy_table::{Table, presets::UTF8_FULL};
 use rusqlite::Connection;
 
-use crate::cli::{DecisionCommands, Format};
+use crate::cli::{AdrCommands, Format};
 use crate::repo;
-use crate::repo::adr::NewDecision;
+use crate::repo::adr::NewAdr;
 
-pub fn run(conn: &Connection, cmd: DecisionCommands, fmt: Format) -> Result<()> {
+pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
     match cmd {
-        DecisionCommands::Add {
+        AdrCommands::Add {
             title,
             context,
             decision,
@@ -20,15 +20,15 @@ pub fn run(conn: &Connection, cmd: DecisionCommands, fmt: Format) -> Result<()> 
             &decision,
             consequence.as_deref().unwrap_or(""),
         ),
-        DecisionCommands::List => list(conn, fmt),
-        DecisionCommands::Accept { id } => {
+        AdrCommands::List => list(conn, fmt),
+        AdrCommands::Accept { id } => {
             repo::adr::accept(conn, id)?;
-            println!("Decision #{id} marked as accepted");
+            println!("Adr #{id} marked as accepted");
             Ok(())
         }
-        DecisionCommands::Supersede { old, new } => {
+        AdrCommands::Supersede { old, new } => {
             repo::adr::supersede(conn, old, new)?;
-            println!("Decision #{old} superseded by #{new}");
+            println!("Adr #{old} superseded by #{new}");
             Ok(())
         }
     }
@@ -43,7 +43,7 @@ fn add(
 ) -> Result<()> {
     let id = repo::adr::add(
         conn,
-        &NewDecision {
+        &NewAdr {
             title,
             context,
             decision,

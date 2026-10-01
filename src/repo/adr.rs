@@ -2,19 +2,19 @@ use anyhow::Result;
 use rusqlite::{Connection, OptionalExtension, params};
 
 use crate::error::DpError;
-use crate::models::{Decision, DecisionStatus};
+use crate::models::{Adr, AdrStatus};
 
 const COLS: &str =
     "id, number, title, context, decision, consequence, status, superseded_by, decided_at";
 
-pub struct NewDecision<'a> {
+pub struct NewAdr<'a> {
     pub title: &'a str,
     pub context: &'a str,
     pub decision: &'a str,
     pub consequence: &'a str,
 }
 
-pub fn add(conn: &Connection, d: &NewDecision) -> Result<i64> {
+pub fn add(conn: &Connection, d: &NewAdr) -> Result<i64> {
     let next: i64 = conn.query_row("SELECT COALESCE(MAX(id), 0) + 1 FROM adrs", [], |r| {
         r.get(0)
     })?;
@@ -32,18 +32,18 @@ pub fn add(conn: &Connection, d: &NewDecision) -> Result<i64> {
     Ok(conn.last_insert_rowid())
 }
 
-pub fn get(conn: &Connection, id: i64) -> Result<Decision> {
+pub fn get(conn: &Connection, id: i64) -> Result<Adr> {
     conn.query_row(
         &format!("SELECT {COLS} FROM adrs WHERE id = ?1"),
         params![id],
         map_row,
     )
     .optional()?
-    .ok_or(DpError::DecisionNotFound(id))
+    .ok_or(DpError::AdrNotFound(id))
     .map_err(Into::into)
 }
 
-pub fn list(conn: &Connection) -> Result<Vec<Decision>> {
+pub fn list(conn: &Connection) -> Result<Vec<Adr>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {COLS} FROM adrs ORDER BY (status = 'accepted') DESC, id DESC"
     ))?;
@@ -76,7 +76,7 @@ pub fn supersede(conn: &Connection, old_id: i64, new_id: i64) -> Result<()> {
     if let Some(prev) = old.superseded_by {
         return Err(DpError::AlreadySuperseded(old_id, prev).into());
     }
-    if new.status != DecisionStatus::Accepted {
+    if new.status != AdrStatus::Accepted {
         return Err(DpError::NotAccepted(new_id, old_id).into());
     }
     conn.execute(
@@ -86,16 +86,16 @@ pub fn supersede(conn: &Connection, old_id: i64, new_id: i64) -> Result<()> {
     Ok(())
 }
 
-fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Decision> {
+fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Adr> {
     let status: String = row.get(6)?;
-    Ok(Decision {
+    Ok(Adr {
         id: row.get(0)?,
         number: row.get(1)?,
         title: row.get(2)?,
         context: row.get(3)?,
         decision: row.get(4)?,
         consequence: row.get(5)?,
-        status: DecisionStatus::from_label(&status).unwrap_or(DecisionStatus::Proposed),
+        status: AdrStatus::from_label(&status).unwrap_or(AdrStatus::Proposed),
         superseded_by: row.get(7)?,
         decided_at: row.get(8)?,
     })
@@ -115,7 +115,7 @@ mod tests {
     fn add_one(conn: &Connection, title: &str) -> i64 {
         add(
             conn,
-            &NewDecision {
+            &NewAdr {
                 title,
                 context: "ctx",
                 decision: "dec",
@@ -134,7 +134,7 @@ mod tests {
         accept(&c, b).unwrap();
         supersede(&c, a, b).unwrap();
         let old = get(&c, a).unwrap();
-        assert_eq!(old.status, DecisionStatus::Superseded);
+        assert_eq!(old.status, AdrStatus::Superseded);
         assert_eq!(old.superseded_by, Some(b));
     }
 

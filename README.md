@@ -29,14 +29,14 @@ dp show 2
 dp mod 2 --status active
 dp rm 3
 
-# decisions (ADR)
-dp decision add "Use SQLite" \
+# ADRs (decision records)
+dp adr add "Use SQLite" \
   --context "Need zero-config embedded storage" \
   --decision "rusqlite with bundled SQLite" \
   --consequence "Single-file db, easy to back up"
-dp decision list
-dp decision accept 1
-dp decision supersede 1 4              # old decision 1 replaced by new 4
+dp adr list
+dp adr accept 1
+dp adr supersede 1 4              # old decision 1 replaced by new 4
 
 # stats
 dp stats

@@ -209,13 +209,13 @@ impl std::fmt::Display for PlanStatus {
 // ─────────────────────────────────────────────
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
-pub enum DecisionStatus {
+pub enum AdrStatus {
     Proposed,
     Accepted,
     Superseded,
 }
 
-impl DecisionStatus {
+impl AdrStatus {
     pub fn as_str(self) -> &'static str {
         match self {
             Self::Proposed => "proposed",
@@ -233,7 +233,7 @@ impl DecisionStatus {
     }
 }
 
-impl std::fmt::Display for DecisionStatus {
+impl std::fmt::Display for AdrStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.as_str())
     }
@@ -276,14 +276,14 @@ pub struct Plan {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub struct Decision {
+pub struct Adr {
     pub id: i64,
     pub number: String, // "ADR-001"
     pub title: String,
     pub context: String,
     pub decision: String,
     pub consequence: String,
-    pub status: DecisionStatus,
+    pub status: AdrStatus,
     pub superseded_by: Option<i64>,
     pub decided_at: Option<String>,
 }

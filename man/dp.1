@@ -137,7 +137,7 @@ tasks in it are done.
 Mark a plan as done.
 .RE
 .TP
-.B decision
+.B adr
 Operate on decision records (ADRs), numbered \fIADR\-NNN\fR in creation
 order. The number is stable and independent of the numeric id.
 .RS
@@ -178,7 +178,7 @@ Print help for dp or for one subcommand.
 .TP
 .BI "\-\-format " FORMAT
 Output format for read commands (\fBdp list\fR, \fBdp show\fR, \fBdp stats\fR,
-\fBdp plan list/show\fR, \fBdp decision list\fR): \fBtable\fR (default),
+\fBdp plan list/show\fR, \fBdp adr list\fR): \fBtable\fR (default),
 \fBjson\fR or \fBmarkdown\fR. May be given before or after the subcommand.
 In json mode stdout carries only JSON; empty results print \fB[]\fR.
 Write commands ignore this flag and keep human\-readable confirmations.
@@ -219,9 +219,9 @@ dp list --overdue
 dp mod 2 --status active
 dp done 2
 dp plan done 1
-dp decision add "Use SQLite" --context "Need zero-config embedded storage" --decision "rusqlite with bundled SQLite" --consequence "Single-file db, easy to back up"
-dp decision accept 1
-dp decision supersede 1 4
+dp adr add "Use SQLite" --context "Need zero-config embedded storage" --decision "rusqlite with bundled SQLite" --consequence "Single-file db, easy to back up"
+dp adr accept 1
+dp adr supersede 1 4
 dp stats
 dp list --format=markdown
 dp stats --format=json | jq .

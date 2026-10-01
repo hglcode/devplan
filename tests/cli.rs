@@ -84,12 +84,12 @@ fn add_list_done_flow() {
 }
 
 #[test]
-fn decision_lifecycle() {
+fn adr_lifecycle() {
     let dir = TempDir::new().unwrap();
     dp(&dir).arg("init").assert().success();
     dp(&dir)
         .args([
-            "decision",
+            "adr",
             "add",
             "Use SQLite",
             "--context",
@@ -101,7 +101,7 @@ fn decision_lifecycle() {
         .success();
     dp(&dir)
         .args([
-            "decision",
+            "adr",
             "add",
             "Use Postgres",
             "--context",
@@ -114,19 +114,16 @@ fn decision_lifecycle() {
 
     // replacing with a still-proposed decision is rejected (ADR discipline)
     dp(&dir)
-        .args(["decision", "supersede", "1", "2"])
+        .args(["adr", "supersede", "1", "2"])
         .assert()
         .failure();
+    dp(&dir).args(["adr", "accept", "2"]).assert().success();
     dp(&dir)
-        .args(["decision", "accept", "2"])
+        .args(["adr", "supersede", "1", "2"])
         .assert()
         .success();
     dp(&dir)
-        .args(["decision", "supersede", "1", "2"])
-        .assert()
-        .success();
-    dp(&dir)
-        .args(["decision", "list"])
+        .args(["adr", "list"])
         .assert()
         .success()
         .stdout(predicates::str::contains("superseded"));

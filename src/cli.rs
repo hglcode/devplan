@@ -99,10 +99,10 @@ pub enum Commands {
         cmd: PlanCommands,
     },
 
-    /// Decision record (ADR) operations
-    Decision {
+    /// ADR (architecture decision record) operations
+    Adr {
         #[command(subcommand)]
-        cmd: DecisionCommands,
+        cmd: AdrCommands,
     },
 
     /// Show project stats
@@ -148,7 +148,7 @@ pub enum PlanCommands {
 }
 
 #[derive(Debug, Subcommand)]
-pub enum DecisionCommands {
+pub enum AdrCommands {
     Add {
         title: String,
         /// Background / problem statement

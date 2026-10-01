@@ -92,7 +92,7 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
             },
         ),
         Commands::Plan { cmd } => plan::run(conn, cmd, fmt),
-        Commands::Decision { cmd } => adr::run(conn, cmd, fmt),
+        Commands::Adr { cmd } => adr::run(conn, cmd, fmt),
         Commands::Stats => stats::run(conn, fmt),
         // handled in lib::execute before the database is opened
         Commands::Init | Commands::Generate { .. } => Ok(()),
