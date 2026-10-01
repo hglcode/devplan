@@ -14,7 +14,7 @@ pub enum Format {
 #[command(
     name = "dp",
     version,
-    about = "project plan / todo / done / decision tracker"
+    about = "project plan, task and decision tracker"
 )]
 pub struct Cli {
     /// Output format: table, json, or markdown
@@ -67,7 +67,7 @@ pub enum Commands {
         /// Show only completed tasks
         #[arg(long)]
         done: bool,
-        /// Filter by task type
+        /// Filter by task type: feature / bug / chore / refactor / docs
         #[arg(long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
     },

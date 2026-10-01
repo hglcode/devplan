@@ -71,6 +71,10 @@ Only tasks with status \fIactive\fR (currently being worked on).
 .TP
 \fB\-\-done\fR
 Only completed tasks; takes precedence over \fB\-\-active\fR.
+.TP
+\fB\-\-type\fR \fITYPE\fR
+Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
+\fIrefactor\fR or \fIdocs\fR.
 .RE
 .TP
 .BI "abandon " ID
@@ -101,9 +105,12 @@ Delete a task permanently.
 Change the given fields of a task; omitted flags leave the field
 unchanged. With no flags at all, prints \(dqNothing to modify: no fields
 given\(dq; with flags whose values equal the current ones, prints a notice
-instead of writing. There is no \fB\-\-plan\fR \(em a task's plan
-assignment cannot be changed.
+instead of writing. \fB\-\-plan\fR reassigns the task to another plan
+(must exist).
 .RS
+.TP
+\fB\-\-plan\fR \fIID\fR
+Reassign the task to plan \fIID\fR (must exist).
 .TP
 \fB\-\-title\fR \fITEXT\fR
 New title.
@@ -123,6 +130,9 @@ Replace the tag list.
 .TP
 \fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
 New description.
+.TP
+\fB\-\-type\fR \fITYPE\fR
+New task type.
 .RE
 .TP
 .B plan
