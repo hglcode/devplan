@@ -6,8 +6,12 @@ Data lives in `.dp/dp.db` (SQLite) next to your project root; `dp` discovers it 
 ## Build & install
 
 ```bash
+# build from source
 cargo build --release
 cp target/release/dp ~/.local/bin/    # or anywhere on $PATH
+
+# install with cargo
+cargo install devplan
 ```
 
 ## Quick start
