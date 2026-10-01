@@ -102,3 +102,35 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Plan> {
         updated_at: row.get(8)?,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::db::migrate;
+    use rusqlite::Connection;
+
+    fn conn() -> Connection {
+        let c = Connection::open_in_memory().unwrap();
+        migrate(&c).unwrap();
+        c
+    }
+
+    #[test]
+    fn plan_list_works_on_fresh_db() {
+        let c = conn();
+        let _id = add(
+            &c,
+            &NewPlan {
+                title: "p".into(),
+                description: "".into(),
+                start_date: None,
+                due_date: None,
+                priority: Priority::Normal,
+            },
+        )
+        .unwrap();
+        let s = list(&c).unwrap(); // ← 不是 plan::list
+        assert_eq!(s.len(), 1);
+        assert_eq!(s[0].total_tasks, 0); // 顺手断言视图列读取(空计划的 progress 边界)
+    }
+}
