@@ -100,6 +100,9 @@ pub enum Commands {
         /// Type: feature / bug / chore / refactor / docs
         #[arg(long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
+        /// Reassign to another plan
+        #[arg(long)]
+        plan: Option<i64>,
     },
 
     /// Plan (milestone) operations

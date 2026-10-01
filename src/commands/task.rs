@@ -27,6 +27,7 @@ pub struct ModifyArgs {
     pub stat: Option<TaskStatus>,
     pub tags: Option<String>,
     pub desc: Option<String>,
+    pub plan: Option<i64>,
 }
 
 pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
@@ -151,6 +152,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         stat,
         tags,
         desc,
+        plan,
     } = args;
     let provided = title.is_some()
         || task_type.is_some()
@@ -158,7 +160,8 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         || prio.is_some()
         || stat.is_some()
         || tags.is_some()
-        || desc.is_some();
+        || desc.is_some()
+        || plan.is_some();
     let update = TaskUpdate {
         title,
         due_date,
@@ -167,6 +170,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         status: stat,
         tags: tags.map(|t| split_tags(&t)),
         description: desc,
+        plan,
     };
     if provided && repo::task::update(conn, id, &update)? {
         println!("Updated todo #{id}");

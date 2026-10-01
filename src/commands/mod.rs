@@ -93,6 +93,7 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
             tags,
             description,
             task_type,
+            plan,
         } => task::modify(
             conn,
             ModifyArgs {
@@ -104,6 +105,7 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
                 stat: status,
                 tags,
                 desc: description,
+                plan,
             },
         ),
         Commands::Plan { cmd } => plan::run(conn, cmd, fmt),

@@ -46,6 +46,7 @@ pub struct TaskUpdate {
     pub status: Option<TaskStatus>,
     pub tags: Option<Vec<String>>,
     pub description: Option<String>,
+    pub plan: Option<i64>,
 }
 
 pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
@@ -164,6 +165,13 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     {
         sets.push("description = ?".into());
         owned.push(Box::new(desc.clone()));
+    }
+    if let Some(p) = u.plan {
+        crate::repo::plan::get(conn, p)?; // clean error instead of FK violation
+        if Some(p) != existing.plan_id {
+            sets.push("plan_id = ?".into());
+            owned.push(Box::new(p));
+        }
     }
     if sets.is_empty() {
         return Ok(false);
