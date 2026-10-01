@@ -51,12 +51,12 @@ pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
         "SELECT {COLS},
                 (SELECT COUNT(*) FROM tasks t WHERE t.plan_id = plans.id AND t.status != 'done')
          FROM plans
-         ORDER BY (status = 'active') ASC, priority DESC, id DESC"
+         ORDER BY (status = 'active') DESC, priority DESC, id DESC"
     ))?;
     let rows = stmt.query_map([], |row| {
         Ok(PlanSummary {
             plan: map_row(row)?,
-            open_tasks: row.get(8)?,
+            open_tasks: row.get(9)?,
         })
     })?;
     let mut out = Vec::new();
@@ -80,16 +80,16 @@ pub fn set_status(conn: &Connection, id: i64, status: PlanStatus) -> Result<()> 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Plan> {
     let status: String = row.get(3)?;
     let prio: i64 = row.get(4)?;
-    let due: Option<String> = row.get(5)?;
-    let start: Option<String> = row.get(6)?;
+    let start: Option<String> = row.get(5)?;
+    let due: Option<String> = row.get(6)?;
     Ok(Plan {
         id: row.get(0)?,
         title: row.get(1)?,
         description: row.get(2)?,
         status: PlanStatus::from_label(&status).unwrap_or(PlanStatus::Active),
         priority: Priority::from_int(prio).unwrap_or_default(),
-        due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         start_date: start.and_then(|s: String| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
+        due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         created_at: row.get(7)?,
         updated_at: row.get(8)?,
     })

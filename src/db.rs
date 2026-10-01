@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS plans (
                  CHECK (status IN ('active', 'done', 'archived')),
     priority     INTEGER NOT NULL DEFAULT 1
                  CHECK (priority BETWEEN 0 AND 3),
-    due_date     TEXT,
     start_date   TEXT,
+    due_date     TEXT,
     created_at   TEXT NOT NULL DEFAULT (datetime('now','localtime')),
     updated_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
