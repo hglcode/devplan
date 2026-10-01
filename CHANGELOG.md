@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.6.1] — 2026-10-02
+
+### Changed
+
+- SQL extracted from `db.rs` into `sql/v1.sql` (`include_str!` — single source of truth, syntax highlighting, `sqlite3 .read` workflow); design doc `db.sql` retired
+- `v_plan_progress` view now part of the schema itself (fresh databases get it automatically)
+
+### Decided
+
+- resolution semantics finalized: `duplicate` counts as output and progress (real effort from in-plan misjudgment); `abandoned` (unfinished) stays excluded — boundary is completion, not intent (ADR-003)
+
 ## [0.6.0] — 2026-10-02
 
 ### Changed — BREAKING
