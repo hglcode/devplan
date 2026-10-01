@@ -67,6 +67,9 @@ pub enum Commands {
         /// Show only completed tasks
         #[arg(long)]
         done: bool,
+        /// Filter by task type
+        #[arg(long = "type", value_parser = parse_task_type)]
+        task_type: Option<TaskType>,
     },
 
     /// Show one task in description
@@ -135,6 +138,9 @@ pub enum GenerateTarget {
 pub enum PlanCommands {
     Add {
         title: String,
+        /// Planned start date, YYYY-MM-DD (schedule window left edge)
+        #[arg(long = "start", value_parser = parse_date)]
+        start_date: Option<NaiveDate>,
         #[arg(long = "due", value_parser = parse_date)]
         due_date: Option<NaiveDate>,
         #[arg(short, long, value_parser = parse_priority)]

@@ -61,6 +61,7 @@ pub fn list(
     overdue: bool,
     active: bool,
     done: bool,
+    task_type: Option<TaskType>,
     fmt: Format,
 ) -> Result<()> {
     let view = if done {
@@ -76,6 +77,7 @@ pub fn list(
             plan,
             view,
             overdue,
+            task_type,
         },
     )?;
     print_tasks(&tasks, fmt)
@@ -87,7 +89,8 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
         println!("{}", serde_json::to_string_pretty(&t)?);
         return Ok(());
     }
-    println!("Todo #{}", t.id);
+    println!("Task #{}", t.id);
+    println!("  Type:     {}", t.r#type);
     println!("  Title:    {}", t.title);
     println!(
         "  Plan:     {}",

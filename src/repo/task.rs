@@ -23,6 +23,7 @@ pub struct TaskFilter {
     pub plan: Option<i64>,
     pub view: TaskView,
     pub overdue: bool,
+    pub task_type: Option<TaskType>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -91,6 +92,10 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
     }
     if f.overdue {
         sql.push_str(" AND due_date IS NOT NULL AND due_date < date('now','localtime')");
+    }
+    if let Some(tt) = f.task_type {
+        sql.push_str(" AND type = ?");
+        owned.push(Box::new(tt.as_str()));
     }
     sql.push_str(" ORDER BY priority DESC, due_date IS NULL, due_date ASC, id ASC");
 

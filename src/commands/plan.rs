@@ -13,10 +13,11 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
     match cmd {
         PlanCommands::Add {
             title,
+            start_date,
             due_date,
             priority,
             description,
-        } => add(conn, &title, due_date, priority, description),
+        } => add(conn, &title, start_date, due_date, priority, description),
         PlanCommands::List => list(conn, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
         PlanCommands::Done { id } => done(conn, id),
@@ -26,6 +27,7 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
 fn add(
     conn: &Connection,
     title: &str,
+    start_date: Option<NaiveDate>,
     due_date: Option<NaiveDate>,
     priority: Option<Priority>,
     description: Option<String>,
@@ -35,6 +37,7 @@ fn add(
         &NewPlan {
             title: title.to_string(),
             description: description.unwrap_or_default(),
+            start_date,
             due_date,
             priority: priority.unwrap_or_default(),
         },
@@ -93,6 +96,7 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
             plan: Some(id),
             view: TaskView::Active,
             overdue: false,
+            task_type: None,
         },
     )?;
     if fmt == Format::Json {
@@ -115,6 +119,10 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
 
     println!("Plan #{}", p.id);
     println!("  Title:       {}", p.title);
+    println!(
+        "  Start:    {}",
+        p.start_date.map_or_else(|| "-".into(), |d| d.to_string())
+    );
     println!("  Status:      {}", p.status);
     println!("  Priority:    {}", p.priority);
     println!(

@@ -12,6 +12,7 @@ const COLS: &str =
 pub struct NewPlan {
     pub title: String,
     pub description: String,
+    pub start_date: Option<NaiveDate>,
     pub due_date: Option<NaiveDate>,
     pub priority: Priority,
 }
@@ -24,12 +25,14 @@ pub struct PlanSummary {
 
 pub fn add(conn: &Connection, p: &NewPlan) -> Result<i64> {
     conn.execute(
-        "INSERT INTO plans (title, description, priority, due_date) VALUES (?1, ?2, ?3, ?4)",
+        "INSERT INTO plans (title, description, priority, start_date, due_date)
+         VALUES (?1, ?2, ?3, ?4, ?5)",
         params![
             p.title,
             p.description,
             p.priority.as_int(),
-            p.due_date.map(|d| d.to_string())
+            p.start_date.map(|d| d.to_string()),
+            p.due_date.map(|d| d.to_string()),
         ],
     )?;
     Ok(conn.last_insert_rowid())
