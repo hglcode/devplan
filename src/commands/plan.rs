@@ -51,7 +51,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
     match fmt {
         Format::Json => println!("{}", serde_json::to_string_pretty(&summaries)?),
         Format::Markdown => {
-            println!("| ID | Status | Prio | Due | Open# | Title |");
+            println!("| ID | Status | Prio | Due | Progress | Title |");
             println!("| -- | ------ | ---- | --- | ----- | ----- |");
             for s in &summaries {
                 let p = &s.plan;
@@ -61,7 +61,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
                     p.status,
                     p.priority,
                     p.due_date.map_or_else(|| "-".into(), |d| d.to_string()),
-                    s.open_tasks,
+                    s.progress_pct,
                     p.title.replace('|', "\\|"),
                 );
             }
@@ -69,7 +69,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
         Format::Table => {
             let mut table = Table::new();
             table.load_style(UTF8_FULL);
-            table.set_header(vec!["ID", "Status", "Prio", "Due", "Open#", "Title"]);
+            table.set_header(vec!["ID", "Status", "Prio", "Due", "Progress", "Title"]);
             for s in &summaries {
                 let p = &s.plan;
                 table.add_row(vec![
@@ -77,7 +77,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
                     p.status.to_string(),
                     p.priority.to_string(),
                     p.due_date.map(|d| d.to_string()).unwrap_or_default(),
-                    s.open_tasks.to_string(),
+                    s.progress_pct.to_string(),
                     p.title.clone(),
                 ]);
             }

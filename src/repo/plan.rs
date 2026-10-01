@@ -20,7 +20,9 @@ pub struct NewPlan {
 #[derive(Debug, Clone, Serialize)]
 pub struct PlanSummary {
     pub plan: Plan,
-    pub open_tasks: i64,
+    pub total_tasks: i64,
+    pub done_tasks: i64,
+    pub progress_pct: f64,
 }
 
 pub fn add(conn: &Connection, p: &NewPlan) -> Result<i64> {
@@ -50,16 +52,19 @@ pub fn get(conn: &Connection, id: i64) -> Result<Plan> {
 }
 
 pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
-    let mut stmt = conn.prepare(&format!(
-        "SELECT {COLS},
-                (SELECT COUNT(*) FROM tasks t WHERE t.plan_id = plans.id AND t.status != 'done')
-         FROM plans
-         ORDER BY (status = 'active') DESC, priority DESC, id DESC"
-    ))?;
+    let mut stmt = conn.prepare(
+        "SELECT p.id, p.title, p.description, p.status, p.priority, p.start_date, p.due_date,
+                p.created_at, p.updated_at,
+                v.total_tasks, v.done_tasks, v.progress_pct
+         FROM plans p JOIN v_plan_progress v ON v.id = p.id
+         ORDER BY (p.status = 'active') DESC, p.priority DESC, p.id DESC",
+    )?;
     let rows = stmt.query_map([], |row| {
         Ok(PlanSummary {
             plan: map_row(row)?,
-            open_tasks: row.get(9)?,
+            total_tasks: row.get(9)?,
+            done_tasks: row.get(10)?,
+            progress_pct: row.get(11)?,
         })
     })?;
     let mut out = Vec::new();
