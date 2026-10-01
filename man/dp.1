@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-01" "dp 0.5.1" "User Commands"
+.TH DP 1 "2026-10-02" "dp 0.6.1" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -72,6 +72,17 @@ Only tasks with status \fIactive\fR (currently being worked on).
 \fB\-\-done\fR
 Only completed tasks; takes precedence over \fB\-\-active\fR.
 .RE
+.TP
+.BI "abandon " ID
+Mark a task as done with resolution \fIabandoned\fR and record
+\fIdone_at\fR: the task was deliberately dropped unfinished. Excluded
+from the done counters in \fBdp stats\fR (output), but still listed by
+\fBdp list \-\-done\fR (history). Idempotent.
+.TP
+.BI "duplicate " ID
+Close a task as a duplicate of another: resolution \fIduplicate\fR.
+Counts as output and plan progress \(em the work was real, just
+misdirected.
 .TP
 .BI "show " ID
 Print one task in full description.
@@ -202,7 +213,9 @@ a side state; \fBdp done\fR and \fBdp mod \-\-status done\fR both record
 axis classifies finished work: \fIdone\fR (completed), \fIabandoned\fR
 (deliberately dropped) or \fIduplicate\fR; \fBdp done\fR sets it to
 \fIdone\fR by default. A task is overdue when its due date lies in the
-past and it is not done.
+past and it is not done. The boundary is completion: \fIabandoned\fR is excluded from
+output stats, \fIduplicate\fR counts \(em the work was real, just
+misdirected; both count toward plan progress.
 .PP
 Plans move \fIactive\fR -> \fIdone\fR (and may later be \fIarchived\fR),
 set only by \fBdp plan done\fR. A plan's actual start can be derived

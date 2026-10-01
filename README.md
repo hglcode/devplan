@@ -60,6 +60,7 @@ dp stats
 - One SQLite db per project at `.dp/dp.db`.
 - Add `.dp/` to `.gitignore` if you don't want to commit it, or commit it if you do.
 - Inspect directly: `sqlite3 .dp/dp.db`.
+- Schema lives in `sql/v1.sql` (compiled in via `include_str!`); inspect or hand-apply it with `sqlite3 .dp/dp.db < sql/v1.sql`.
 
 ## Output formats
 
