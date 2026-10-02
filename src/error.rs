@@ -15,4 +15,6 @@ pub enum DpError {
     AlreadySuperseded(i64, i64),
     #[error("ADR #{0} is not accepted yet — accept it before it supersedes #{1}")]
     NotAccepted(i64, i64),
+    #[error("ADR #{0}: rationale is required when changing a verdict (accept↔reject)")]
+    RationaleRequired(i64),
 }

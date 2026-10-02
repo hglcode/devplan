@@ -4,7 +4,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Adr, AdrStatus};
 
-const COLS: &str = "id, number, title, context, decision, consequence, rationale, status, superseded_by, decided_at";
+const COLS: &str = "id, number, title, context, decision, consequence, rationale, status, superseded_by, decided_at, created_at";
 
 pub struct NewAdr<'a> {
     pub title: &'a str,
@@ -54,14 +54,48 @@ pub fn list(conn: &Connection) -> Result<Vec<Adr>> {
     Ok(out)
 }
 
-pub fn accept(conn: &Connection, id: i64) -> Result<()> {
+/// Accepts a decision, optionally recording review rationale.
+/// Rejected decisions may be re-accepted (verdicts can be revisited).
+pub fn accept(conn: &Connection, id: i64, rationale: Option<&str>) -> Result<()> {
     let d = get(conn, id)?;
     if let Some(by) = d.superseded_by {
         return Err(DpError::AlreadySuperseded(id, by).into());
     }
+    // 翻案(rejected→accepted)必须带理由:verdict 变更需要留痕
+    if d.status == AdrStatus::Rejected && rationale.is_none() {
+        return Err(DpError::RationaleRequired(id).into());
+    }
+    if d.status == AdrStatus::Accepted && rationale.is_none() {
+        return Ok(()); // 幂等:已是 accepted 且无新理由
+    }
     conn.execute(
-        "UPDATE adrs SET status = 'accepted', decided_at = datetime('now','localtime') WHERE id = ?1",
-        params![id],
+        "UPDATE adrs SET status = 'accepted', rationale = COALESCE(?1, rationale),
+         decided_at = datetime('now','localtime') WHERE id = ?2",
+        params![rationale, id],
+    )?;
+    Ok(())
+}
+
+/// Rejects a proposed decision with optional rationale.
+/// Re-acceptance is allowed later; only superseded is terminal.
+pub fn reject(conn: &Connection, id: i64, rationale: Option<&str>) -> Result<()> {
+    let d = get(conn, id)?;
+    if let Some(by) = d.superseded_by {
+        return Err(DpError::AlreadySuperseded(id, by).into());
+    }
+    // 翻案(accepted→rejected)同理必带理由
+    if d.status == AdrStatus::Accepted && rationale.is_none() {
+        return Err(DpError::RationaleRequired(id).into());
+    }
+    if d.status == AdrStatus::Rejected && rationale.is_none() {
+        return Ok(()); // 幂等
+    }
+    conn.execute(
+        "UPDATE adrs SET status = 'rejected',
+                rationale = COALESCE(?1, rationale),
+                decided_at = datetime('now','localtime')
+         WHERE id = ?2",
+        params![rationale, id],
     )?;
     Ok(())
 }
@@ -98,6 +132,7 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Adr> {
         status: AdrStatus::from_label(&status).unwrap_or(AdrStatus::Proposed),
         superseded_by: row.get(8)?,
         decided_at: row.get(9)?,
+        created_at: row.get(10)?,
     })
 }
 
@@ -131,7 +166,7 @@ mod tests {
         let a = add_one(&c, "a");
         let b = add_one(&c, "b");
         assert!(supersede(&c, a, b).is_err()); // b is still proposed
-        accept(&c, b).unwrap();
+        accept(&c, b, None).unwrap();
         supersede(&c, a, b).unwrap();
         let old = get(&c, a).unwrap();
         assert_eq!(old.status, AdrStatus::Superseded);
@@ -144,10 +179,24 @@ mod tests {
         let a = add_one(&c, "a");
         let b = add_one(&c, "b");
         let c2 = add_one(&c, "c");
-        accept(&c, b).unwrap();
-        accept(&c, c2).unwrap();
+        accept(&c, b, None).unwrap();
+        accept(&c, c2, None).unwrap();
         supersede(&c, a, b).unwrap();
         assert!(supersede(&c, a, c2).is_err()); // already superseded
         assert!(supersede(&c, b, b).is_err()); // self
+    }
+
+    #[test]
+    fn reject_then_reaccept_roundtrip() {
+        let c = conn();
+        let a = add_one(&c, "a");
+        reject(&c, a, Some("not now")).unwrap();
+        // 翻案无理由 → 拒绝:
+        assert!(accept(&c, a, None).is_err());
+        // 翻案带理由 → 通过且覆盖:
+        accept(&c, a, Some("revisited — now it fits")).unwrap();
+        let d = get(&c, a).unwrap();
+        assert_eq!(d.status, AdrStatus::Accepted);
+        assert_eq!(d.rationale, "revisited — now it fits");
     }
 }

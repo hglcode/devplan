@@ -21,9 +21,14 @@ pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
             consequence.as_deref().unwrap_or(""),
         ),
         AdrCommands::List => list(conn, fmt),
-        AdrCommands::Accept { id } => {
-            repo::adr::accept(conn, id)?;
-            println!("Adr #{id} marked as accepted");
+        AdrCommands::Accept { id, rationale } => {
+            repo::adr::accept(conn, id, rationale.as_deref())?;
+            println!("ADR #{id} marked as accepted");
+            Ok(())
+        }
+        AdrCommands::Reject { id, rationale } => {
+            repo::adr::reject(conn, id, rationale.as_deref())?;
+            println!("ADR #{id} rejected");
             Ok(())
         }
         AdrCommands::Supersede { old, new } => {
@@ -31,6 +36,7 @@ pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
             println!("Adr #{old} superseded by #{new}");
             Ok(())
         }
+        AdrCommands::Show { id } => show(conn, id, fmt),
     }
 }
 
@@ -98,5 +104,32 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
             println!("{table}");
         }
     }
+    Ok(())
+}
+
+fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
+    let d = repo::adr::get(conn, id)?;
+    if fmt == Format::Json {
+        println!("{}", serde_json::to_string_pretty(&d)?);
+        return Ok(());
+    }
+    println!("ADR #{} ({})", d.id, d.number);
+    println!("  Title:       {}", d.title);
+    println!("  Status:      {}", d.status);
+    println!("  Context:     {}", d.context);
+    println!("  Decision:    {}", d.decision);
+    if !d.consequence.is_empty() {
+        println!("  Consequence: {}", d.consequence);
+    }
+    if !d.rationale.is_empty() {
+        println!("  Rationale:   {}", d.rationale); // ★ 它的舞台
+    }
+    if let Some(by) = d.superseded_by {
+        println!("  Superseded by: ADR-{:03}", by);
+    }
+    if let Some(t) = &d.decided_at {
+        println!("  Decided at:  {t}");
+    }
+    println!("  Created at:  {}", d.created_at);
     Ok(())
 }

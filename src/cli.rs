@@ -185,14 +185,31 @@ pub enum AdrCommands {
         consequence: Option<String>,
     },
     List,
-    /// Mark a decision as accepted
+    /// Mark a proposed (or rejected) decision as accepted
     Accept {
         id: i64,
+        /// Review rationale recorded with the acceptance
+        #[arg(long)]
+        rationale: Option<String>,
     },
+
+    /// Reject a proposed decision (may be re-accepted later — verdicts can be revisited)
+    Reject {
+        id: i64,
+        /// Review rationale recorded with the rejection
+        #[arg(long)]
+        rationale: Option<String>,
+    },
+
     /// Mark an old decision as superseded by an accepted newer one
     Supersede {
         old: i64,
         new: i64,
+    },
+
+    /// Show one ADR in full, including rationale
+    Show {
+        id: i64,
     },
 }
 

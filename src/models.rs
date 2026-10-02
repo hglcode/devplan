@@ -290,6 +290,7 @@ pub struct Adr {
     pub status: AdrStatus,
     pub superseded_by: Option<i64>,
     pub decided_at: Option<String>,
+    pub created_at: String,
 }
 
 pub fn split_tags(s: &str) -> Vec<String> {
