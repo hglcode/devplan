@@ -13,11 +13,20 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
     match cmd {
         PlanCommands::Add {
             title,
+            adr_id,
             start_date,
             due_date,
             priority,
             description,
-        } => add(conn, &title, start_date, due_date, priority, description),
+        } => add(
+            conn,
+            &title,
+            adr_id,
+            start_date,
+            due_date,
+            priority,
+            description,
+        ),
         PlanCommands::List => list(conn, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
         PlanCommands::Done { id } => done(conn, id),
@@ -27,6 +36,7 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
 fn add(
     conn: &Connection,
     title: &str,
+    adr_id: Option<i64>,
     start_date: Option<NaiveDate>,
     due_date: Option<NaiveDate>,
     priority: Option<Priority>,
@@ -35,6 +45,7 @@ fn add(
     let id = repo::plan::add(
         conn,
         &NewPlan {
+            adr_id,
             title: title.to_string(),
             description: description.unwrap_or_default(),
             start_date,

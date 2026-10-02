@@ -6,11 +6,12 @@ use serde::Serialize;
 use crate::error::DpError;
 use crate::models::{Plan, PlanStatus, Priority};
 
-const COLS: &str =
-    "id, title, description, status, priority, start_date, due_date, created_at, updated_at";
+const COLS: &str = "id, adr_id, title, description, status, priority, start_date, due_date, created_at, updated_at";
+const COLS_P: &str = "p.id, p.adr_id, p.title, p.description, p.status, p.priority, p.start_date, p.due_date, p.created_at, p.updated_at";
 
 pub struct NewPlan {
     pub title: String,
+    pub adr_id: Option<i64>,
     pub description: String,
     pub start_date: Option<NaiveDate>,
     pub due_date: Option<NaiveDate>,
@@ -27,9 +28,10 @@ pub struct PlanSummary {
 
 pub fn add(conn: &Connection, p: &NewPlan) -> Result<i64> {
     conn.execute(
-        "INSERT INTO plans (title, description, priority, start_date, due_date)
-         VALUES (?1, ?2, ?3, ?4, ?5)",
+        "INSERT INTO plans (adr_id, title, description, priority, start_date, due_date)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6)",
         params![
+            p.adr_id,
             p.title,
             p.description,
             p.priority.as_int(),
@@ -52,19 +54,17 @@ pub fn get(conn: &Connection, id: i64) -> Result<Plan> {
 }
 
 pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
-    let mut stmt = conn.prepare(
-        "SELECT p.id, p.title, p.description, p.status, p.priority, p.start_date, p.due_date,
-                p.created_at, p.updated_at,
-                v.total_tasks, v.done_tasks, v.progress_pct
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {COLS_P}, v.total_tasks, v.done_tasks, v.progress_pct
          FROM plans p JOIN v_plan_progress v ON v.id = p.id
          ORDER BY (p.status = 'active') DESC, p.priority DESC, p.id DESC",
-    )?;
+    ))?;
     let rows = stmt.query_map([], |row| {
         Ok(PlanSummary {
             plan: map_row(row)?,
-            total_tasks: row.get(9)?,
-            done_tasks: row.get(10)?,
-            progress_pct: row.get(11)?,
+            total_tasks: row.get(10)?,
+            done_tasks: row.get(11)?,
+            progress_pct: row.get(12)?,
         })
     })?;
     let mut out = Vec::new();
@@ -86,20 +86,21 @@ pub fn set_status(conn: &Connection, id: i64, status: PlanStatus) -> Result<()> 
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Plan> {
-    let status: String = row.get(3)?;
-    let prio: i64 = row.get(4)?;
-    let start: Option<String> = row.get(5)?;
-    let due: Option<String> = row.get(6)?;
+    let status: String = row.get(4)?;
+    let prio: i64 = row.get(5)?;
+    let start: Option<String> = row.get(6)?;
+    let due: Option<String> = row.get(7)?;
     Ok(Plan {
         id: row.get(0)?,
-        title: row.get(1)?,
-        description: row.get(2)?,
+        adr_id: row.get(1)?,
+        title: row.get(2)?,
+        description: row.get(3)?,
         status: PlanStatus::from_label(&status).unwrap_or(PlanStatus::Active),
         priority: Priority::from_int(prio).unwrap_or_default(),
         start_date: start.and_then(|s: String| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
-        created_at: row.get(7)?,
-        updated_at: row.get(8)?,
+        created_at: row.get(8)?,
+        updated_at: row.get(9)?,
     })
 }
 
@@ -122,6 +123,7 @@ mod tests {
             &c,
             &NewPlan {
                 title: "p".into(),
+                adr_id: None,
                 description: "".into(),
                 start_date: None,
                 due_date: None,

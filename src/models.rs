@@ -212,6 +212,7 @@ impl std::fmt::Display for PlanStatus {
 pub enum AdrStatus {
     Proposed,
     Accepted,
+    Rejected,
     Superseded,
 }
 
@@ -220,6 +221,7 @@ impl AdrStatus {
         match self {
             Self::Proposed => "proposed",
             Self::Accepted => "accepted",
+            Self::Rejected => "rejected",
             Self::Superseded => "superseded",
         }
     }
@@ -227,6 +229,7 @@ impl AdrStatus {
         match s {
             "proposed" => Some(Self::Proposed),
             "accepted" => Some(Self::Accepted),
+            "rejected" => Some(Self::Rejected),
             "superseded" => Some(Self::Superseded),
             _ => None,
         }
@@ -246,7 +249,6 @@ impl std::fmt::Display for AdrStatus {
 pub struct Task {
     pub id: i64,
     pub plan_id: Option<i64>,
-    pub adr_id: Option<i64>,
     pub r#type: TaskType,
     pub title: String,
     pub description: String,
@@ -265,6 +267,7 @@ pub struct Task {
 #[derive(Debug, Clone, Serialize)]
 pub struct Plan {
     pub id: i64,
+    pub adr_id: Option<i64>,
     pub title: String,
     pub description: String,
     pub status: PlanStatus,
@@ -283,6 +286,7 @@ pub struct Adr {
     pub context: String,
     pub decision: String,
     pub consequence: String,
+    pub rationale: String,
     pub status: AdrStatus,
     pub superseded_by: Option<i64>,
     pub decided_at: Option<String>,

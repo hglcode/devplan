@@ -6,7 +6,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str = "id, plan_id, adr_id, type, title, description, status, resolution, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
+const COLS: &str = "id, plan_id, type, title, description, status, resolution, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
@@ -236,30 +236,29 @@ fn now_ts() -> String {
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
-    let status: String = row.get(6)?;
-    let resolution: Option<String> = row.get(7)?;
-    let prio: i64 = row.get(8)?;
-    let tags: String = row.get(9)?;
-    let typ: String = row.get(3)?;
-    let due: Option<String> = row.get(11)?;
-    let start: Option<String> = row.get(12)?;
+    let status: String = row.get(5)?;
+    let resolution: Option<String> = row.get(6)?;
+    let prio: i64 = row.get(7)?;
+    let tags: String = row.get(8)?;
+    let typ: String = row.get(2)?;
+    let due: Option<String> = row.get(10)?;
+    let start: Option<String> = row.get(11)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
-        adr_id: row.get(2)?,
         r#type: TaskType::from_label(&typ).unwrap_or_default(),
-        title: row.get(4)?,
-        description: row.get(5)?,
+        title: row.get(3)?,
+        description: row.get(4)?,
         status: TaskStatus::from_label(&status).unwrap_or_default(),
         resolution: resolution.and_then(|r| Resolution::from_label(&r)),
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
-        time_spent: row.get(10)?,
+        time_spent: row.get(9)?,
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         started_at: start,
-        done_at: row.get(13)?,
-        created_at: row.get(14)?,
-        updated_at: row.get(15)?,
+        done_at: row.get(12)?,
+        created_at: row.get(13)?,
+        updated_at: row.get(14)?,
     })
 }
 

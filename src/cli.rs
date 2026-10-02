@@ -147,6 +147,8 @@ pub enum GenerateTarget {
 pub enum PlanCommands {
     Add {
         title: String,
+        #[arg(long = "adr")]
+        adr_id: Option<i64>,
         /// Planned start date, YYYY-MM-DD (schedule window left edge)
         #[arg(long = "start", value_parser = parse_date)]
         start_date: Option<NaiveDate>,

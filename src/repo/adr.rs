@@ -4,8 +4,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Adr, AdrStatus};
 
-const COLS: &str =
-    "id, number, title, context, decision, consequence, status, superseded_by, decided_at";
+const COLS: &str = "id, number, title, context, decision, consequence, rationale, status, superseded_by, decided_at";
 
 pub struct NewAdr<'a> {
     pub title: &'a str,
@@ -87,7 +86,7 @@ pub fn supersede(conn: &Connection, old_id: i64, new_id: i64) -> Result<()> {
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Adr> {
-    let status: String = row.get(6)?;
+    let status: String = row.get(7)?;
     Ok(Adr {
         id: row.get(0)?,
         number: row.get(1)?,
@@ -95,9 +94,10 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Adr> {
         context: row.get(3)?,
         decision: row.get(4)?,
         consequence: row.get(5)?,
+        rationale: row.get(6)?,
         status: AdrStatus::from_label(&status).unwrap_or(AdrStatus::Proposed),
-        superseded_by: row.get(7)?,
-        decided_at: row.get(8)?,
+        superseded_by: row.get(8)?,
+        decided_at: row.get(9)?,
     })
 }
 
