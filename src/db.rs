@@ -7,7 +7,8 @@ use rusqlite::Connection;
 /// and a `done_at` timestamp; there is no separate `done` table.
 const MIGRATION_V1: &str = include_str!("../sql/v1.sql");
 const MIGRATION_V2: &str = include_str!("../sql/v2.sql");
-const MIGRATIONS: &[&str] = &[MIGRATION_V1, MIGRATION_V2];
+const MIGRATION_V3: &str = include_str!("../sql/v3.sql");
+const MIGRATIONS: &[&str] = &[MIGRATION_V1, MIGRATION_V2, MIGRATION_V3];
 
 fn db_path() -> Result<PathBuf> {
     let cwd = std::env::current_dir()?;
@@ -68,10 +69,15 @@ pub fn migrate(conn: &Connection) -> Result<()> {
         if current >= target {
             continue;
         }
+        // 迁移前后各一次事务外的 PRAGMA 切换
+        conn.pragma_update(None, "foreign_keys", "OFF")?; // rusqlite 原生 API,确保生效
         conn.execute_batch(&format!(
             "BEGIN IMMEDIATE;\n{sql}\nPRAGMA user_version = {target};\nCOMMIT;"
         ))
         .with_context(|| format!("applying schema migration v{target}"))?;
+        conn.pragma_update(None, "foreign_keys", "ON")?;
+        // 重新校验 FK 完整性(把断裂暴露出来而非静默):
+        conn.execute_batch("PRAGMA foreign_key_check;")?; // 返回空=健康
     }
     Ok(())
 }

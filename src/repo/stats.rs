@@ -17,9 +17,9 @@ pub struct Stats {
 pub fn get(conn: &Connection) -> Result<Stats> {
     let s = conn.query_row(
         "SELECT
-            (SELECT COUNT(*) FROM plans WHERE status = 'active'),
+            (SELECT COUNT(*) FROM plans WHERE status = 'open'),
             COALESCE(SUM(status = 'todo'), 0),
-            COALESCE(SUM(status = 'active'), 0),
+            COALESCE(SUM(status = 'open'), 0),
             COALESCE(SUM(status = 'blocked'), 0),
             COALESCE(SUM(status != 'done' AND due_date IS NOT NULL
                         AND due_date < date('now','localtime')), 0),

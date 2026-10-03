@@ -362,4 +362,30 @@ mod tests {
         let s = crate::repo::stats::get(&c).unwrap();
         assert_eq!(s.done_total, 0);
     }
+
+    #[test]
+    fn migration_v3_preserves_plan_linkage() {
+        let c = Connection::open_in_memory().unwrap();
+        // 停在 v2:
+        c.execute_batch(include_str!("../../sql/v1.sql")).unwrap();
+        c.execute_batch(include_str!("../../sql/v2.sql")).unwrap();
+        // v2 形态塞数据(plan + 挂靠的 task):
+        c.execute("INSERT INTO plans (title) VALUES ('victim')", [])
+            .unwrap();
+        c.execute(
+            "INSERT INTO tasks (plan_id, title) VALUES ((SELECT MAX(id) FROM plans), 'linked')",
+            [],
+        )
+        .unwrap();
+        c.execute("PRAGMA user_version = 2", []).unwrap();
+        // 全程迁移(v3):
+        crate::db::migrate(&c).unwrap();
+        // 断言:归属存活
+        let pid: Option<i64> = c
+            .query_row("SELECT plan_id FROM tasks WHERE title='linked'", [], |r| {
+                r.get(0)
+            })
+            .unwrap();
+        assert_eq!(pid, Some(1));
+    }
 }

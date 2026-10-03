@@ -175,23 +175,20 @@ impl std::fmt::Display for TaskType {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum PlanStatus {
-    Active,
-    Done,
+    Open,
     Archived,
 }
 
 impl PlanStatus {
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::Active => "active",
-            Self::Done => "done",
+            Self::Open => "open",
             Self::Archived => "archived",
         }
     }
     pub fn from_label(s: &str) -> Option<Self> {
         match s {
-            "active" => Some(Self::Active),
-            "done" => Some(Self::Done),
+            "open" => Some(Self::Open),
             "archived" => Some(Self::Archived),
             _ => None,
         }

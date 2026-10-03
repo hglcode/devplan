@@ -29,7 +29,7 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
         ),
         PlanCommands::List => list(conn, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
-        PlanCommands::Done { id } => done(conn, id),
+        PlanCommands::Archive { id } => archive(conn, id),
     }
 }
 
@@ -167,8 +167,8 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     Ok(())
 }
 
-fn done(conn: &Connection, id: i64) -> Result<()> {
-    repo::plan::set_status(conn, id, PlanStatus::Done)?;
-    println!("Marked plan #{id} done");
+fn archive(conn: &Connection, id: i64) -> Result<()> {
+    repo::plan::set_status(conn, id, PlanStatus::Archived)?;
+    println!("Marked plan #{id} archived");
     Ok(())
 }

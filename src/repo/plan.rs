@@ -95,7 +95,7 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Plan> {
         adr_id: row.get(1)?,
         title: row.get(2)?,
         description: row.get(3)?,
-        status: PlanStatus::from_label(&status).unwrap_or(PlanStatus::Active),
+        status: PlanStatus::from_label(&status).unwrap_or(PlanStatus::Open),
         priority: Priority::from_int(prio).unwrap_or_default(),
         start_date: start.and_then(|s: String| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),

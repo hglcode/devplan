@@ -164,8 +164,8 @@ pub enum PlanCommands {
     Show {
         id: i64,
     },
-    /// Mark a plan as done
-    Done {
+    /// Mark a plan as Archived
+    Archive {
         id: i64,
     },
 }
