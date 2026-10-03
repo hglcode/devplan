@@ -156,12 +156,8 @@ pub fn duplicate(conn: &Connection, id: i64) -> Result<()> {
 
 pub fn rm(conn: &Connection, id: i64, force: bool) -> Result<()> {
     let t = repo::task::get(conn, id)?;
-    let has_history = t.done_at.is_some()          // 完成过(有 done_at)
-        || t.plan_id.is_some()                     // 挂在计划里
-        || t.created_at != t.updated_at; // 被修改过(时间戳分叉)
-    // 纯新增未动的任务:created==updated,三者全否 → 直接删
 
-    if has_history && !force {
+    if !force {
         println!("Task #{} \"{}\"", t.id, t.title);
         println!(
             "  status: {}, created {}, plan: {}",

@@ -226,3 +226,29 @@ fn rm_force_bypasses_prompt() {
         .success()
         .stdout(predicates::str::contains("victim").not());
 }
+
+#[test]
+fn rm_always_prompts_even_without_history() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd().arg("add").arg("fresh").assert().success();
+    // 无任何操作——直接 rm,喂 n
+    cmd()
+        .arg("rm")
+        .arg("1")
+        .write_stdin("n\n")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("Delete permanently?"));
+    // 底线:无历史的也活着
+    cmd()
+        .arg("list")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("fresh"));
+}
