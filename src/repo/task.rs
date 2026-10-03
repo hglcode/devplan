@@ -177,7 +177,6 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
         return Ok(false);
     }
 
-    sets.push("updated_at = datetime('now','localtime')".into());
     owned.push(Box::new(id));
     let sql = format!("UPDATE tasks SET {} WHERE id = ?", sets.join(", "));
     let args: Vec<&dyn ToSql> = owned.iter().map(std::convert::AsRef::as_ref).collect();
@@ -195,7 +194,7 @@ pub fn set_status(conn: &Connection, id: i64, status: TaskStatus) -> Result<()> 
         _ => None,
     };
     conn.execute(
-        "UPDATE tasks SET status = ?1, done_at = ?2, updated_at = datetime('now','localtime') WHERE id = ?3",
+        "UPDATE tasks SET status = ?1, done_at = ?2 WHERE id = ?3",
         params![status.as_str(), done_at, id],
     )?;
     Ok(())
@@ -208,8 +207,7 @@ pub fn set_resolution(conn: &Connection, id: i64, resolution: Resolution) -> Res
         return Ok(()); // idempotent
     }
     conn.execute(
-        "UPDATE tasks SET status = 'done', resolution = ?1, done_at = ?2,
-         updated_at = datetime('now','localtime') WHERE id = ?3",
+        "UPDATE tasks SET status = 'done', resolution = ?1, done_at = ?2 WHERE id = ?3",
         params![resolution.as_str(), now_ts(), id],
     )?;
     Ok(())
@@ -387,5 +385,33 @@ mod tests {
             })
             .unwrap();
         assert_eq!(pid, Some(1));
+    }
+
+    #[test]
+    fn updated_at_trigger_fires_on_raw_update() {
+        let c = conn();
+        let id = add(&c, &sample("t1")).unwrap();
+        let before: String = c
+            .query_row(
+                "SELECT updated_at FROM tasks WHERE id = ?1",
+                params![id],
+                |r| r.get(0),
+            )
+            .unwrap();
+        // 裸 SQL 改(绕过 repo 层——trigger 的主战场):
+        std::thread::sleep(std::time::Duration::from_millis(1100)); // 跨秒
+        c.execute(
+            "UPDATE tasks SET title = 'renamed' WHERE id = ?1",
+            params![id],
+        )
+        .unwrap();
+        let after: String = c
+            .query_row(
+                "SELECT updated_at FROM tasks WHERE id = ?1",
+                params![id],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_ne!(before, after); // ★ trigger 刷新了时间戳
     }
 }

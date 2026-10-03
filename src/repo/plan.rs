@@ -76,7 +76,7 @@ pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
 
 pub fn set_status(conn: &Connection, id: i64, status: PlanStatus) -> Result<()> {
     let n = conn.execute(
-        "UPDATE plans SET status = ?1, updated_at = datetime('now','localtime') WHERE id = ?2",
+        "UPDATE plans SET status = ?1 WHERE id = ?2",
         params![status.as_str(), id],
     )?;
     if n == 0 {

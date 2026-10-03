@@ -8,7 +8,8 @@ use rusqlite::Connection;
 const MIGRATION_V1: &str = include_str!("../sql/v1.sql");
 const MIGRATION_V2: &str = include_str!("../sql/v2.sql");
 const MIGRATION_V3: &str = include_str!("../sql/v3.sql");
-const MIGRATIONS: &[&str] = &[MIGRATION_V1, MIGRATION_V2, MIGRATION_V3];
+const MIGRATION_V4: &str = include_str!("../sql/v4.sql");
+const MIGRATIONS: &[&str] = &[MIGRATION_V1, MIGRATION_V2, MIGRATION_V3, MIGRATION_V4];
 
 fn db_path() -> Result<PathBuf> {
     let cwd = std::env::current_dir()?;

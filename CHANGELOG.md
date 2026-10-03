@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.0] — 2026-10-03
+
+### Added
+
+- `dp rm` always asks for confirmation before deleting (summary + [y/N],
+  default no) — uniform safety, no exemption tier; `--force` skips the
+  prompt for scripts and tests
+- tests guarding both paths: prompt-abort, force-bypass, and the
+  no-exemption baseline itself
+
+### Fixed
+
+- user-facing wording: "Added/Deleted/Updated todo" → "task"
+  (vocabulary residue from the 0.5.0 rename)
+
 ## [0.8.0] — 2026-10-03
 
 ### Fixed — CRITICAL
