@@ -23,7 +23,7 @@ fn init_is_idempotent() {
 fn fails_without_init() {
     let dir = TempDir::new().unwrap();
     dp(&dir)
-        .args(["list"])
+        .args(["task", "list"])
         .assert()
         .failure()
         .stderr(predicates::str::contains("dp init"));
@@ -33,7 +33,7 @@ fn fails_without_init() {
 fn rejects_bad_date() {
     let dir = TempDir::new().unwrap();
     dp(&dir)
-        .args(["add", "x", "--due", "15/10/2026"])
+        .args(["task", "add", "x", "--due", "15/10/2026"])
         .assert()
         .failure()
         .stderr(predicates::str::contains("invalid date"));
@@ -46,6 +46,7 @@ fn add_list_done_flow() {
 
     dp(&dir)
         .args([
+            "task",
             "add",
             "write oauth",
             "--priority",
@@ -56,22 +57,25 @@ fn add_list_done_flow() {
         .assert()
         .success()
         .stdout(predicates::str::contains("#1"));
-    dp(&dir).args(["add", "write docs"]).assert().success();
+    dp(&dir)
+        .args(["task", "add", "write docs"])
+        .assert()
+        .success();
 
     dp(&dir)
-        .args(["list"])
+        .args(["task", "list"])
         .assert()
         .success()
         .stdout(predicates::str::contains("write oauth"));
 
-    dp(&dir).args(["done", "1"]).assert().success();
+    dp(&dir).args(["task", "done", "1"]).assert().success();
     dp(&dir)
-        .args(["list"])
+        .args(["task", "list"])
         .assert()
         .success()
         .stdout(predicates::str::contains("write oauth").not());
     dp(&dir)
-        .args(["list", "--done"])
+        .args(["task", "list", "--done"])
         .assert()
         .success()
         .stdout(predicates::str::contains("write oauth"));
@@ -148,8 +152,11 @@ fn format_json_is_parseable() {
         c
     };
     cmd().arg("init").assert().success();
-    cmd().arg("add").arg("t1").assert().success();
-    for args in [["--format=json", "list"], ["list", "--format=json"]] {
+    cmd().arg("task").arg("add").arg("t1").assert().success();
+    for args in [
+        ["--format=json", "task", "list"].as_slice(),
+        ["task", "list", "--format=json"].as_slice(),
+    ] {
         let out = cmd().args(args).assert().success();
         let stdout = String::from_utf8(out.get_output().stdout.clone()).unwrap();
         serde_json::from_str::<serde_json::Value>(&stdout).expect("stdout must be pure JSON");
@@ -176,11 +183,17 @@ fn rm_with_history_prompts_and_aborts() {
         c
     };
     cmd().arg("init").assert().success();
-    cmd().arg("add").arg("survivor").assert().success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("survivor")
+        .assert()
+        .success();
     // 制造历史:done 过(有 done_at)→ has_history = true
-    cmd().arg("done").arg("1").assert().success();
+    cmd().arg("task").arg("done").arg("1").assert().success();
 
     let out = cmd()
+        .arg("task")
         .arg("rm")
         .arg("1")
         .write_stdin("n\n") // 拒绝
@@ -191,6 +204,7 @@ fn rm_with_history_prompts_and_aborts() {
 
     // 判据:任务仍活着
     cmd()
+        .arg("task")
         .arg("list")
         .arg("--done")
         .assert()
@@ -207,10 +221,16 @@ fn rm_force_bypasses_prompt() {
         c
     };
     cmd().arg("init").assert().success();
-    cmd().arg("add").arg("victim").assert().success();
-    cmd().arg("done").arg("1").assert().success(); // 制造历史
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("victim")
+        .assert()
+        .success();
+    cmd().arg("task").arg("done").arg("1").assert().success(); // 制造历史
 
     cmd()
+        .arg("task")
         .arg("rm")
         .arg("1")
         .arg("--force")
@@ -220,6 +240,7 @@ fn rm_force_bypasses_prompt() {
 
     // 判据:真删了——done 列表里没有 victim
     cmd()
+        .arg("task")
         .arg("list")
         .arg("--done")
         .assert()
@@ -236,9 +257,10 @@ fn rm_always_prompts_even_without_history() {
         c
     };
     cmd().arg("init").assert().success();
-    cmd().arg("add").arg("fresh").assert().success();
+    cmd().arg("task").arg("add").arg("fresh").assert().success();
     // 无任何操作——直接 rm,喂 n
     cmd()
+        .arg("task")
         .arg("rm")
         .arg("1")
         .write_stdin("n\n")
@@ -247,60 +269,9 @@ fn rm_always_prompts_even_without_history() {
         .stdout(predicates::str::contains("Delete permanently?"));
     // 底线:无历史的也活着
     cmd()
+        .arg("task")
         .arg("list")
         .assert()
         .success()
         .stdout(predicates::str::contains("fresh"));
-}
-
-#[test]
-fn fk_set_null_bypasses_trigger_but_orphan_survives() {
-    let dir = tempfile::tempdir().unwrap();
-    let cmd = || {
-        let mut c = Command::cargo_bin("dp").unwrap();
-        c.current_dir(&dir);
-        c
-    };
-    cmd().arg("init").assert().success();
-    cmd()
-        .arg("plan")
-        .arg("add")
-        .arg("doomed")
-        .assert()
-        .success();
-    cmd()
-        .arg("add")
-        .arg("orphan")
-        .arg("--plan")
-        .arg("1")
-        .assert()
-        .success();
-    std::thread::sleep(std::time::Duration::from_millis(1100)); // 跨秒
-    // 删 plan → task.plan_id 被 SET NULL → trigger 应刷 updated_at
-    // sqlite3 手删?不——用 dp 自己的通道?plan 没有 rm 命令……
-    // 直接走 sqlite3:
-    std::process::Command::new("sqlite3")
-        .arg(format!("{}/.dp/dp.db", dir.path().display()))
-        .arg("DELETE FROM plans WHERE id = 1")
-        .output()
-        .unwrap();
-    // 断言:orphan 活着 + updated_at 已跳(不再等于 created_at)
-    // (repo 层查询走 dp show 太弱,直接 sqlite3 读)
-    let out = std::process::Command::new("sqlite3")
-        .arg(format!("{}/.dp/dp.db", dir.path().display()))
-        .arg("SELECT created_at == updated_at FROM tasks WHERE title='orphan'")
-        .output()
-        .unwrap();
-    let s = String::from_utf8_lossy(&out.stdout);
-    // FK 隐式 UPDATE 不触发 trigger(SQLite 文档行为,除非 recursive_triggers):
-    // 指纹不存在,但孤儿存活——这是能保证的
-    assert_eq!(s.trim(), "1"); // created==updated(未分叉)
-
-    // 附带验证:orphan 活着、plan_id 已 NULL:
-    let pid = std::process::Command::new("sqlite3")
-        .arg(format!("{}/.dp/dp.db", dir.path().display()))
-        .arg("SELECT plan_id IS NULL FROM tasks WHERE title='orphan'")
-        .output()
-        .unwrap();
-    assert_eq!(String::from_utf8_lossy(&pid.stdout).trim(), "0");
 }

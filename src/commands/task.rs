@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 use rusqlite::Connection;
 use std::io::Write;
 
-use crate::cli::Format;
+use crate::cli::{Format, TaskCommands};
 use crate::commands::print_tasks;
 use crate::models::{Priority, Resolution, TaskStatus, TaskType, split_tags};
 use crate::repo;
@@ -217,4 +217,65 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         println!("Nothing to modify: no fields given"); // 零 flag
     }
     Ok(())
+}
+
+pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
+    match cmd {
+        TaskCommands::Add {
+            title,
+            plan,
+            due_date,
+            priority,
+            tags,
+            description,
+            task_type,
+        } => add(
+            conn,
+            AddArgs {
+                title,
+                plan,
+                task_type,
+                due_date,
+                priority,
+                tags,
+                desc: description,
+            },
+        ),
+        TaskCommands::List {
+            plan,
+            overdue,
+            active,
+            done,
+            task_type,
+        } => list(conn, plan, overdue, active, done, task_type, fmt),
+        TaskCommands::Show { id } => show(conn, id, fmt),
+        TaskCommands::Done { id } => done(conn, id),
+        TaskCommands::Abandon { id } => abandon(conn, id),
+        TaskCommands::Duplicate { id } => duplicate(conn, id),
+        TaskCommands::Rm { id, force } => rm(conn, id, force),
+        TaskCommands::Mod {
+            id,
+            title,
+            due_date,
+            priority,
+            status,
+            tags,
+            description,
+            task_type,
+            plan,
+        } => modify(
+            conn,
+            ModifyArgs {
+                id,
+                title,
+                task_type,
+                due_date,
+                prio: priority,
+                stat: status,
+                tags,
+                desc: description,
+                plan,
+            },
+        ),
+    }
 }

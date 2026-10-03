@@ -8,7 +8,6 @@ use comfy_table::presets::UTF8_FULL;
 use rusqlite::Connection;
 
 use crate::cli::{Commands, Format};
-use crate::commands::task::{AddArgs, ModifyArgs};
 use crate::models::Task;
 
 fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
@@ -54,62 +53,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
 
 pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
     match cmd {
-        Commands::Add {
-            title,
-            plan,
-            due_date,
-            priority,
-            tags,
-            description,
-            task_type,
-        } => task::add(
-            conn,
-            AddArgs {
-                title,
-                plan,
-                task_type,
-                due_date,
-                priority,
-                tags,
-                desc: description,
-            },
-        ),
-        Commands::List {
-            plan,
-            overdue,
-            active,
-            done,
-            task_type,
-        } => task::list(conn, plan, overdue, active, done, task_type, fmt),
-        Commands::Show { id } => task::show(conn, id, fmt),
-        Commands::Done { id } => task::done(conn, id),
-        Commands::Abandon { id } => task::abandon(conn, id),
-        Commands::Duplicate { id } => task::duplicate(conn, id),
-        Commands::Rm { id, force } => task::rm(conn, id, force),
-        Commands::Mod {
-            id,
-            title,
-            due_date,
-            priority,
-            status,
-            tags,
-            description,
-            task_type,
-            plan,
-        } => task::modify(
-            conn,
-            ModifyArgs {
-                id,
-                title,
-                task_type,
-                due_date,
-                prio: priority,
-                stat: status,
-                tags,
-                desc: description,
-                plan,
-            },
-        ),
+        Commands::Task { cmd } => task::run(conn, cmd, fmt),
         Commands::Plan { cmd } => plan::run(conn, cmd, fmt),
         Commands::Adr { cmd } => adr::run(conn, cmd, fmt),
         Commands::Stats => stats::run(conn, fmt),

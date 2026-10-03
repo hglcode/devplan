@@ -29,6 +29,37 @@ pub enum Commands {
     /// Initialize a dp database in this project (.dp/dp.db)
     Init,
 
+    /// ADR (architecture decision record) operations
+    Adr {
+        #[command(subcommand)]
+        cmd: AdrCommands,
+    },
+
+    /// Plan (milestone) operations
+    Plan {
+        #[command(subcommand)]
+        cmd: PlanCommands,
+    },
+
+    /// Task operations
+    Task {
+        #[command(subcommand)]
+        cmd: TaskCommands,
+    },
+
+    /// Show project stats
+    Stats,
+
+    // Generate shell completion or man doc
+    Generate {
+        /// Target: a shell for completions, or "man" for a manual page
+        #[arg(value_enum)]
+        target: GenerateTarget,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum TaskCommands {
     /// Add a new task
     Add {
         /// Task title
@@ -105,7 +136,7 @@ pub enum Commands {
         status: Option<TaskStatus>,
         #[arg(short, long)]
         tags: Option<String>,
-        #[arg(short, long)]
+        #[arg(long)]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor / docs
         #[arg(long = "type", value_parser = parse_task_type)]
@@ -113,27 +144,6 @@ pub enum Commands {
         /// Reassign to another plan
         #[arg(long)]
         plan: Option<i64>,
-    },
-
-    /// Plan (milestone) operations
-    Plan {
-        #[command(subcommand)]
-        cmd: PlanCommands,
-    },
-
-    /// ADR (architecture decision record) operations
-    Adr {
-        #[command(subcommand)]
-        cmd: AdrCommands,
-    },
-
-    /// Show project stats
-    Stats,
-
-    /// Generate shell completion or man document
-    Generate {
-        #[arg(value_enum)]
-        target: GenerateTarget,
     },
 }
 
@@ -160,7 +170,7 @@ pub enum PlanCommands {
         due_date: Option<NaiveDate>,
         #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
-        #[arg(short, long)]
+        #[arg(long)]
         description: Option<String>,
     },
     List,
