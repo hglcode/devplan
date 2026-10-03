@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.7.0] — 2026-10-02
+
+### Changed — BREAKING
+
+- schema migration v2 (the first real migration): databases from 0.6.x
+  upgrade automatically on first run — back up `.dp/` before upgrading
+- derivation chain corrected: `task.adr_id` removed, `plan.adr_id` added —
+  tasks derive from plans, plans derive from ADRs (ADR→plan→task)
+
+### Added
+
+- `dp adr reject` — verdicts are revisitable; changing a verdict
+  (accept↔reject) requires `--rationale`
+- `--rationale` on accept/reject: review reasoning recorded with the decision
+- `dp adr show` — full ADR view including rationale
+- `dp plan add --adr <ID>` — link a plan to its decision origin
+- ADR status `rejected`; `superseded` remains the only terminal state
+
 ## [0.6.1] — 2026-10-02
 
 ### Changed

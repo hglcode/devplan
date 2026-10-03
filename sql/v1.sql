@@ -1,3 +1,17 @@
+CREATE TABLE IF NOT EXISTS adrs (
+    id            INTEGER PRIMARY KEY,
+    number        TEXT NOT NULL UNIQUE,
+    title         TEXT NOT NULL,
+    context       TEXT NOT NULL,
+    decision      TEXT NOT NULL,
+    consequence   TEXT NOT NULL DEFAULT '',
+    status        TEXT NOT NULL DEFAULT 'proposed'
+                  CHECK (status IN ('proposed', 'accepted', 'rejected', 'superseded')),
+    superseded_by INTEGER REFERENCES adrs(id),
+    decided_at    TEXT,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
+);
+
 CREATE TABLE IF NOT EXISTS plans (
     id           INTEGER PRIMARY KEY,
     title        TEXT NOT NULL,
@@ -35,19 +49,6 @@ CREATE TABLE IF NOT EXISTS tasks (
     updated_at   TEXT NOT NULL DEFAULT (datetime('now','localtime'))
 );
 
-CREATE TABLE IF NOT EXISTS adrs (
-    id            INTEGER PRIMARY KEY,
-    number        TEXT NOT NULL UNIQUE,
-    title         TEXT NOT NULL,
-    context       TEXT NOT NULL,
-    decision      TEXT NOT NULL,
-    consequence   TEXT NOT NULL DEFAULT '',
-    status        TEXT NOT NULL DEFAULT 'proposed'
-                  CHECK (status IN ('proposed', 'accepted', 'superseded')),
-    superseded_by INTEGER REFERENCES adrs(id),
-    decided_at    TEXT,
-    created_at    TEXT NOT NULL DEFAULT (datetime('now','localtime'))
-);
 -- 索引同你的设计,外加:
 CREATE INDEX IF NOT EXISTS idx_tasks_resolution ON tasks(resolution);
 CREATE INDEX IF NOT EXISTS idx_tasks_plan ON tasks(plan_id);

@@ -144,8 +144,8 @@ Operate on plans (milestones / phases). A plan's
 .RS
 .TP
 .BI "add " TITLE
-Create a plan; accepts \fB\-\-due\fR \fIDATE\fR,
-\fB\-p\fR/\fB\-\-priority\fR and \fB\-\-description\fR \fITEXT\fR.
+Create a plan; accepts \fB\-\-adr\fR \fIID\fR (decision origin),
+\fB\-\-due\fR \fIDATE\fR, \fB\-p\fR/\fB\-\-priority\fR and \fB\-\-description\fR \fITEXT\fR.
 .TP
 .B list
 Summarize plans with per\-plan open\-task counts.
@@ -166,6 +166,17 @@ order. The number is stable and independent of the numeric id.
 .BI "add " TITLE
 Record a decision. \fB\-\-context\fR \fITEXT\fR and \fB\-\-decision\fR
 \fITEXT\fR are required; \fB\-\-consequence\fR \fITEXT\fR is optional.
+.TP
+.BI "accept " ID
+Accept a proposed (or rejected — verdicts can be revisited) decision.
+Changing a previous verdict requires \fB\-\-rationale\fR \fITEXT\fR.
+.TP
+.BI "reject " ID
+Reject a decision, optionally with \fB\-\-rationale\fR \fITEXT\fR.
+Rejected decisions may be accepted later; only superseded is final.
+.TP
+.BI "show " ID
+Print one ADR in full: context, decision, consequence, rationale.
 .TP
 .B list
 List all decisions, accepted ones first.
