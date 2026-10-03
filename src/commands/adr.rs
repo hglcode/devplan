@@ -65,12 +65,11 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
     match fmt {
         Format::Json => println!("{}", serde_json::to_string_pretty(&adrs)?),
         Format::Markdown => {
-            println!("| Number | ID | Status | Superseded by | Decided | Title |");
-            println!("| ------ | -- | ------ | ------------- | ------- | ----- |");
+            println!("| ID | Status | Superseded by | Decided | Title |");
+            println!("| -- | ------ | ------------- | ------- | ----- |");
             for d in &adrs {
                 println!(
-                    "| {} | {} | {} | {} | {} | {} |",
-                    d.number,
+                    "| {} | {} | {} | {} | {} |",
                     d.id,
                     d.status,
                     d.superseded_by
@@ -83,17 +82,9 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
         Format::Table => {
             let mut table = Table::new();
             table.load_style(UTF8_FULL);
-            table.set_header(vec![
-                "Number",
-                "ID",
-                "Status",
-                "Superseded by",
-                "Decided",
-                "Title",
-            ]);
+            table.set_header(vec!["ID", "Status", "Superseded by", "Decided", "Title"]);
             for d in &adrs {
                 table.add_row(vec![
-                    d.number.clone(),
                     d.id.to_string(),
                     d.status.to_string(),
                     d.superseded_by.map(|s| s.to_string()).unwrap_or_default(),
@@ -113,7 +104,7 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
         println!("{}", serde_json::to_string_pretty(&d)?);
         return Ok(());
     }
-    println!("ADR #{} ({})", d.id, d.number);
+    println!("  ID:          {}", d.id);
     println!("  Title:       {}", d.title);
     println!("  Status:      {}", d.status);
     println!("  Context:     {}", d.context);

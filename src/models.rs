@@ -202,7 +202,7 @@ impl std::fmt::Display for PlanStatus {
 }
 
 // ─────────────────────────────────────────────
-// ADR 状态(三态;number 的格式化责任在应用层)
+// ADR 状态
 // ─────────────────────────────────────────────
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -278,7 +278,6 @@ pub struct Plan {
 #[derive(Debug, Clone, Serialize)]
 pub struct Adr {
     pub id: i64,
-    pub number: String, // "ADR-001"
     pub title: String,
     pub context: String,
     pub decision: String,
@@ -300,9 +299,4 @@ pub fn split_tags(s: &str) -> Vec<String> {
 
 pub fn join_tags(tags: &[String]) -> String {
     tags.join(",")
-}
-
-/// 生成下一个 ADR 编号。next_id 是将要分配的自增 id。
-pub fn adr_number(next_id: i64) -> String {
-    format!("ADR-{next_id:03}")
 }

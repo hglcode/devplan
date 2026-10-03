@@ -4,7 +4,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Adr, AdrStatus};
 
-const COLS: &str = "id, number, title, context, decision, consequence, rationale, status, superseded_by, decided_at, created_at";
+const COLS: &str = "id, title, context, decision, consequence, rationale, status, superseded_by, decided_at, created_at";
 
 pub struct NewAdr<'a> {
     pub title: &'a str,
@@ -14,19 +14,10 @@ pub struct NewAdr<'a> {
 }
 
 pub fn add(conn: &Connection, d: &NewAdr) -> Result<i64> {
-    let next: i64 = conn.query_row("SELECT COALESCE(MAX(id), 0) + 1 FROM adrs", [], |r| {
-        r.get(0)
-    })?;
     conn.execute(
-        "INSERT INTO adrs (number, title, context, decision, consequence)
-         VALUES (?1, ?2, ?3, ?4, ?5)",
-        params![
-            crate::models::adr_number(next),
-            d.title,
-            d.context,
-            d.decision,
-            d.consequence
-        ],
+        "INSERT INTO adrs (title, context, decision, consequence)
+         VALUES (?1, ?2, ?3, ?4)",
+        params![d.title, d.context, d.decision, d.consequence],
     )?;
     Ok(conn.last_insert_rowid())
 }
@@ -120,19 +111,18 @@ pub fn supersede(conn: &Connection, old_id: i64, new_id: i64) -> Result<()> {
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Adr> {
-    let status: String = row.get(7)?;
+    let status: String = row.get(6)?;
     Ok(Adr {
         id: row.get(0)?,
-        number: row.get(1)?,
-        title: row.get(2)?,
-        context: row.get(3)?,
-        decision: row.get(4)?,
-        consequence: row.get(5)?,
-        rationale: row.get(6)?,
+        title: row.get(1)?,
+        context: row.get(2)?,
+        decision: row.get(3)?,
+        consequence: row.get(4)?,
+        rationale: row.get(5)?,
         status: AdrStatus::from_label(&status).unwrap_or(AdrStatus::Proposed),
-        superseded_by: row.get(8)?,
-        decided_at: row.get(9)?,
-        created_at: row.get(10)?,
+        superseded_by: row.get(7)?,
+        decided_at: row.get(8)?,
+        created_at: row.get(9)?,
     })
 }
 
