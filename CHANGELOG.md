@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.8.0] — 2026-10-03
+
+### Fixed — CRITICAL
+
+- migration v3 no longer clears `tasks.plan_id`: the plans table rebuild
+  triggered `ON DELETE SET NULL`. Migrations now run with foreign keys
+  disabled and a post-migration `foreign_key_check`. If you already ran
+  0.7.0's migration, plan linkage may need manual restoration — skip
+  from 0.6.x directly to 0.8.0.
+
+### Changed — BREAKING
+
+- plan status becomes container semantics: `open`/`archived` replaces
+  `active`/`done`; `dp plan archive` replaces `dp plan done`;
+  `archived` + partial progress is legitimate history (ADR-005)
+
+### Added
+
+- `migration_v3_preserves_plan_linkage` regression test (the exact
+  failure mode that shipped in 0.7.0)
+
 ## [0.7.0] — 2026-10-02
 
 ### Changed — BREAKING
