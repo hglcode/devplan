@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.12.0] — 2026-10-04
+
+### Changed — BREAKING
+
+- schema migration v6: resolution `duplicate` → `duplicated` (past-participle
+  consistency); new columns `resolution_note` and `duplicate_of`
+- `dp task duplicate` gains `--of <ID>` (linkage to the surviving task)
+  and `--note`; `done`/`abandon` gain `--note` — every resolution now
+  carries its reason (mirrors `dp adr accept --rationale`, ADR-007)
+
+### Migration notes
+
+- databases upgrade automatically; back up `.dp/` before upgrading —
+  the rebuild migration touches views, indexes and the updated_at trigger
+  (the three-part sandwich; all restored)
+
 ## [0.11.1] — 2026-10-04
 
 ### Fixed
