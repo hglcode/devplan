@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.1] — 2026-10-04
+
+### Fixed
+
+- `dp task list` default view now shows in-progress work: pending tasks
+  (todo/active/blocked) ordered by attention (active first, then blocked,
+  then todo) — previously active tasks were invisible in the default view
+
 ## [0.11.0] — 2026-10-04
 
 ### Changed — BREAKING
