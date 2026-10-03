@@ -71,7 +71,7 @@ pub fn list(
     } else if active {
         TaskView::Active
     } else {
-        TaskView::Todo
+        TaskView::Pending
     };
     let tasks = repo::task::list(
         conn,

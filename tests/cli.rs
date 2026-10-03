@@ -275,3 +275,63 @@ fn rm_always_prompts_even_without_history() {
         .success()
         .stdout(predicates::str::contains("fresh"));
 }
+
+#[test]
+fn list_default_is_pending_attention_ordered() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("queued")
+        .assert()
+        .success(); // #1 todo
+    cmd().arg("task").arg("add").arg("stuck").assert().success(); // #2 → blocked
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("working")
+        .assert()
+        .success(); // #3 → active
+    cmd()
+        .arg("task")
+        .arg("mod")
+        .arg("2")
+        .arg("--status")
+        .arg("blocked")
+        .assert()
+        .success();
+    cmd()
+        .arg("task")
+        .arg("mod")
+        .arg("3")
+        .arg("--status")
+        .arg("active")
+        .assert()
+        .success();
+
+    let out = cmd()
+        .arg("task")
+        .arg("list")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let stdout = String::from_utf8(out).unwrap();
+    // 三态都在(Pending 默认):
+    assert!(stdout.contains("queued"));
+    assert!(stdout.contains("stuck"));
+    assert!(stdout.contains("working"));
+    // 完整顺序链:active < blocked < todo
+    let pos_working = stdout.find("working").unwrap();
+    let pos_stuck = stdout.find("stuck").unwrap();
+    let pos_queued = stdout.find("queued").unwrap();
+    assert!(pos_working < pos_stuck, "active must sort before blocked");
+    assert!(pos_stuck < pos_queued, "blocked must sort before todo");
+}

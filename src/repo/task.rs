@@ -101,7 +101,10 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
         sql.push_str(" AND type = ?");
         owned.push(Box::new(tt.as_str()));
     }
-    sql.push_str(" ORDER BY priority DESC, due_date IS NULL, due_date ASC, id ASC");
+    sql.push_str(
+        " ORDER BY CASE status WHEN 'active' THEN 0 WHEN 'blocked' THEN 1 ELSE 2 END,
+             priority DESC, due_date IS NULL, due_date ASC, id ASC",
+    );
 
     let args: Vec<&dyn ToSql> = owned.iter().map(std::convert::AsRef::as_ref).collect();
     let mut stmt = conn.prepare(&sql)?;
