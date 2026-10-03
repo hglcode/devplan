@@ -130,8 +130,8 @@ pub enum Commands {
     /// Show project stats
     Stats,
 
+    /// Generate shell completion or man document
     Generate {
-        /// Target: a shell for completions, or "man" for a manual page
         #[arg(value_enum)]
         target: GenerateTarget,
     },
