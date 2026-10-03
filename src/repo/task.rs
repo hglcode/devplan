@@ -33,6 +33,8 @@ pub enum TaskView {
     Todo,
     /// status = 'active'
     Active,
+    /// everything not done yet (plan views)
+    Pending,
     /// status = 'done'
     Done,
 }
@@ -85,6 +87,7 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
     match f.view {
         TaskView::Todo => sql.push_str(" AND status = 'todo'"),
         TaskView::Active => sql.push_str(" AND status = 'active'"),
+        TaskView::Pending => sql.push_str(" AND status != 'done'"),
         TaskView::Done => sql.push_str(" AND status = 'done'"),
     }
     if let Some(p) = f.plan {

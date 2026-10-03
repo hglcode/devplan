@@ -105,7 +105,7 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
         conn,
         TaskFilter {
             plan: Some(id),
-            view: TaskView::Active,
+            view: TaskView::Pending,
             overdue: false,
             task_type: None,
         },
