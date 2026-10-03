@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.10.0] — 2026-10-03
+
+### Changed
+
+- `updated_at` is now maintained by database triggers on tasks/plans
+  (schema migration v4) — the invariant lives in storage, so any write
+  path (app code, hand-run SQL, even FK ON DELETE SET NULL) leaves a
+  timestamp fingerprint; repo-layer manual SETs retired
+- ADR-006; `adrs` stays created_at-only (immutable-document semantics)
+
 ## [0.9.0] — 2026-10-03
 
 ### Added
