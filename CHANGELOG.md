@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.11.0] — 2026-10-04
+
+### Changed — BREAKING
+
+- task commands nest under `dp task`: add/list/show/mod/rm/done/abandon/
+  duplicate now require the noun (`dp task list`) — three entities
+  (task/plan/adr) are now symmetric in the command tree
+- schema migration v5: `adrs.number` dropped (proven ≡ f(id)); ADR-NNN
+  becomes render-time format
+
+### Fixed
+
+- plan show listed no tasks: stale `TaskView::Active` (semantic change
+  from 0.6.x) — restored `TaskView::Pending`
+
 ## [0.10.0] — 2026-10-03
 
 ### Changed
