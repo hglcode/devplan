@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "dp 0.10.0" "User Commands"
+.TH DP 1 "2026-10-04" "dp 0.11.1" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -32,6 +32,10 @@ path and change nothing. Otherwise create
 .I .dp/dp.db
 in the current directory and apply migrations. Idempotent.
 .TP
+.B task
+Operate on tasks — the work items of a project.
+.RS
+.TP
 .BI "add " TITLE
 Create a new task.
 .RS
@@ -50,13 +54,19 @@ Priority; see
 Comma\-separated tags; surrounding whitespace is trimmed.
 .TP
 \fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
-Long description, shown by \fBdp show\fR.
+Long description, shown by \fBdp task show\fR.
+.TP
+\fB\-\-type\fR \fITYPE\fR
+Task type: \fIfeature\fR, \fIbug\fR, \fIchore\fR, \fIrefactor\fR or
+\fIdocs\fR (default \fIfeature\fR).
 .RE
 .TP
 .B list
-Print tasks (table by default; see \fB\-\-format\fR), ordered by priority
-(urgent first), then due date (tasks without one last), then id. Tasks
-with status \fItodo\fR by default.
+Print tasks (table by default; see \fB\-\-format\fR). The default view is
+pending tasks — \fItodo\fR, \fIactive\fR and \fIblocked\fR — ordered by
+attention: \fIactive\fR first (work in progress), then \fIblocked\fR
+(needs unblocking), then \fItodo\fR (queued), then by priority (urgent
+first), due date (tasks without one last), and id.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
@@ -77,36 +87,36 @@ Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
 \fIrefactor\fR or \fIdocs\fR.
 .RE
 .TP
+.BI "show " ID
+Print one task in full detail.
+.TP
+.BI "done " ID
+Mark a task as done: sets status to \fIdone\fR, resolution to \fIdone\fR
+and records \fIdone_at\fR. Idempotent \(em an already\-done task prints
+a notice and is left unchanged. Reopen with
+.BI "dp task mod " "ID \-\-status todo"
+which clears \fIdone_at\fR and \fIresolution\fR.
+.TP
 .BI "abandon " ID
 Mark a task as done with resolution \fIabandoned\fR and record
 \fIdone_at\fR: the task was deliberately dropped unfinished. Excluded
 from the done counters in \fBdp stats\fR (output), but still listed by
-\fBdp list \-\-done\fR (history). Idempotent.
+\fBdp task list \-\-done\fR (history). Idempotent.
 .TP
 .BI "duplicate " ID
 Close a task as a duplicate of another: resolution \fIduplicate\fR.
 Counts as output and plan progress \(em the work was real, just
 misdirected.
 .TP
-.BI "show " ID
-Print one task in full description.
-.TP
-.BI "done " ID
-Mark a task as done: sets status to \fIdone\fR, resolution to \fIdone\fR
-and records \fIdone_at\fR. Idempotent \(em an already\-done task prints
-a notice and is left unchanged. Reopen with
-.BI "dp mod " "ID \-\-status todo"
-which clears \fIdone_at\fR and \fIresolution\fR.
-.TP
 .BI "rm " ID
-Delete a task permanently. Always asks for confirmation (summary, then y/N); --force skips the prompt.
+Delete a task permanently. Always asks for confirmation (summary, then
+y/N); \fB\-\-force\fR skips the prompt.
 .TP
 .BI "mod " ID
 Change the given fields of a task; omitted flags leave the field
 unchanged. With no flags at all, prints \(dqNothing to modify: no fields
 given\(dq; with flags whose values equal the current ones, prints a notice
-instead of writing. \fB\-\-plan\fR reassigns the task to another plan
-(must exist).
+instead of writing.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
@@ -134,33 +144,38 @@ New description.
 \fB\-\-type\fR \fITYPE\fR
 New task type.
 .RE
+.RE
 .TP
 .B plan
 Operate on plans (milestones / phases). A plan's
 .I start_date
 (when work is meant to begin) and
 .I due_date
-(deadline) form its schedule window; both are optional.
+(deadline) form its schedule window; both are optional. Plans are
+containers, not lifecycle entities: completion is derived from the
+progress of their tasks; archiving is a deliberate act.
 .RS
 .TP
 .BI "add " TITLE
 Create a plan; accepts \fB\-\-adr\fR \fIID\fR (decision origin),
-\fB\-\-due\fR \fIDATE\fR, \fB\-p\fR/\fB\-\-priority\fR and \fB\-\-description\fR \fITEXT\fR.
+\fB\-\-due\fR \fIDATE\fR, \fB\-p\fR/\fB\-\-priority\fR and
+\fB\-d\fR/\fB\-\-description\fR \fITEXT\fR.
 .TP
 .B list
-Summarize plans with per\-plan open\-task counts.
+Summarize plans with per\-plan progress (done/total, percentage).
 .TP
 .BI "show " ID
-Print a plan in description, its pending (not\-done) tasks, and how many
+Print a plan in detail, its pending (not\-done) tasks, and how many
 tasks in it are done.
 .TP
-.BI "achive " ID
-Mark a plan as archived.
+.BI "archive " ID
+Archive a plan — the container is closed for deliberate reasons; an
+archived plan with partial progress is legitimate history.
 .RE
 .TP
 .B adr
-Operate on decision records (ADRs), numbered \fIADR\-NNN\fR in creation
-order. The number is stable and independent of the numeric id.
+Operate on decision records (ADRs), displayed as \fIADR\-NNN\fR
+(a render\-time format of the numeric id).
 .RS
 .TP
 .BI "add " TITLE
@@ -181,17 +196,13 @@ Print one ADR in full: context, decision, consequence, rationale.
 .B list
 List all decisions, accepted ones first.
 .TP
-.BI "accept " ID
-Move a proposed decision to accepted and stamp \fIdecided_at\fR.
-Refuses if the decision is already superseded.
-.TP
 .BI "supersede " "OLD NEW"
 Mark OLD as superseded by NEW. NEW must already be accepted; a decision
 cannot supersede itself, and only once.
 .RE
 .TP
 .B stats
-Print counters: active plans, todo / active / blocked / overdue tasks,
+Print counters: open plans, todo / active / blocked / overdue tasks,
 and tasks done today, in the last 7 days, and in total. Tasks finished
 with resolution \fIabandoned\fR are excluded from the done counters.
 .TP
@@ -209,11 +220,12 @@ Print help for dp or for one subcommand.
 .SH OPTIONS
 .TP
 .BI "\-\-format " FORMAT
-Output format for read commands (\fBdp list\fR, \fBdp show\fR, \fBdp stats\fR,
-\fBdp plan list/show\fR, \fBdp adr list\fR): \fBtable\fR (default),
-\fBjson\fR or \fBmarkdown\fR. May be given before or after the subcommand.
-In json mode stdout carries only JSON; empty results print \fB[]\fR.
-Write commands ignore this flag and keep human\-readable confirmations.
+Output format for read commands (\fBdp task list\fR, \fBdp task show\fR,
+\fBdp stats\fR, \fBdp plan list/show\fR, \fBdp adr list\fR): \fBtable\fR
+(default), \fBjson\fR or \fBmarkdown\fR. May be given before or after the
+subcommand. In json mode stdout carries only JSON; empty results print
+\fB[]\fR. Write commands ignore this flag and keep human\-readable
+confirmations.
 .TP
 .B \-h, \-\-help
 Print help; with a subcommand, print its help.
@@ -228,36 +240,36 @@ number means more urgent. The default is \fBnormal\fR.
 Tasks have two axes. The
 .I status
 axis moves \fItodo\fR -> \fIactive\fR -> \fIdone\fR, with \fIblocked\fR as
-a side state; \fBdp done\fR and \fBdp mod \-\-status done\fR both record
-\fIdone_at\fR, and moving to any other status clears it. The
+a side state; \fBdp task done\fR and \fBdp task mod \-\-status done\fR both
+record \fIdone_at\fR, and moving to any other status clears it. The
 .I resolution
 axis classifies finished work: \fIdone\fR (completed), \fIabandoned\fR
-(deliberately dropped) or \fIduplicate\fR; \fBdp done\fR sets it to
+(deliberately dropped) or \fIduplicate\fR; \fBdp task done\fR sets it to
 \fIdone\fR by default. A task is overdue when its due date lies in the
-past and it is not done. The boundary is completion: \fIabandoned\fR is excluded from
-output stats, \fIduplicate\fR counts \(em the work was real, just
-misdirected; both count toward plan progress.
+past and it is not done. The boundary is completion: \fIabandoned\fR is
+excluded from output stats, \fIduplicate\fR counts \(em the work was
+real, just misdirected; both count toward plan progress.
 .PP
-Plans move \fIactive\fR -> \fIdone\fR (and may later be \fIarchived\fR),
-set only by \fBdp plan done\fR. A plan's actual start can be derived
-from the earliest \fIstarted_at\fR of its tasks.
+Plans are containers with status \fIopen\fR or \fIarchived\fR
+(\fBdp plan archive\fR); an archived plan keeps its progress as history.
 .PP
-Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR.
+Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR
+(\fIrejected\fR is revisitable).
 .SH EXAMPLES
 .nf
 dp init
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
-dp add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend -d "OAuth2 auth code flow"
-dp list
-dp list --overdue
-dp mod 2 --status active
-dp done 2
-dp plan done 1
+dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend -d "OAuth2 auth code flow"
+dp task list
+dp task list --overdue
+dp task mod 2 --status active
+dp task done 2
+dp plan archive 1
 dp adr add "Use SQLite" --context "Need zero-config embedded storage" --decision "rusqlite with bundled SQLite" --consequence "Single-file db, easy to back up"
 dp adr accept 1
 dp adr supersede 1 4
 dp stats
-dp list --format=markdown
+dp task list --format=markdown
 dp stats --format=json | jq .
 dp generate fish > $HOME/.config/fish/completions/dp.fish
 .fi
@@ -281,7 +293,7 @@ fail and point at the current directory as the place to run
 .B dp
 exits 0 on success (including \-\-help and \-\-version), 1 on runtime
 failure with a diagnostic on stderr (database not initialized, unknown
-id, invalid date or status, plan referenced by \fBdp add \-\-plan\fR does
-not exist), and 2 on usage errors detected by the argument parser.
+id, invalid date or status, plan referenced by \fBdp task add \-\-plan\fR
+does not exist), and 2 on usage errors detected by the argument parser.
 .SH SEE ALSO
 .BR sqlite3 (1), git (1)
