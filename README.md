@@ -20,18 +20,22 @@ cargo install devplan
 cd your-project
 dp init                                # creates .dp/dp.db
 
-# plans (milestones / epics)
+# plans (milestones / epics) — containers of work
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
-dp plan list
+dp plan list                           # per-plan progress (done/total)
 dp plan show 1
+dp plan archive 1                      # close the container; partial progress is fine
 
-# tasks
-dp add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
-dp list
-dp list --overdue
-dp show 2
-dp mod 2 --status active
-dp rm 3
+# tasks — the work items
+dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
+dp task list                           # pending view: active first, then blocked, then todo
+dp task list --overdue
+dp task list --type bug                # filter by type
+dp task show 2
+dp task mod 2 --status active          # start working
+dp task done 2                         # finish (resolution: done)
+dp task abandon 3                      # drop unfinished (excluded from output stats)
+dp task rm 4                           # always asks; --force skips
 
 # ADRs (decision records)
 dp adr add "Use SQLite" \
@@ -40,7 +44,8 @@ dp adr add "Use SQLite" \
   --consequence "Single-file db, easy to back up"
 dp adr list
 dp adr accept 1
-dp adr supersede 1 4              # old decision 1 replaced by new 4
+dp adr reject 2 --rationale "not now"  # verdicts are revisitable; changing one requires --rationale
+dp adr supersede 1 4                   # old decision 1 replaced by new 4
 
 # stats
 dp stats
@@ -48,12 +53,14 @@ dp stats
 
 ## Tables
 
-- `plans` — milestone / phase goal; `start_date` + `due_date` form its schedule window
-- `tasks` — all work items; status: todo / active / blocked / done,
-  plus a resolution axis for finished work: done / abandoned / duplicate
-  (`dp done <id>` sets status='done' + done_at; undo with `dp mod <id> --status todo`)
-- `adrs` — decision records numbered ADR-001, ADR-002, …;
-  lifecycle: proposed → accepted → superseded
+- `plans` — milestone / phase **container**; status open / archived;
+  `start_date` + `due_date` form its schedule window;
+  progress is derived from its tasks (archived + 60% is legitimate history)
+- `tasks` — all work items; status axis: todo / active / blocked / done,
+  resolution axis (finished work): done / abandoned / duplicate —
+  abandoned is excluded from output stats, duplicate counts (the work was real)
+- `adrs` — decision records shown as ADR-001, ADR-002, … (rendered from id);
+  lifecycle: proposed → accepted ⇄ rejected → superseded (final)
 
 ## Priority
 
@@ -64,15 +71,16 @@ dp stats
 - One SQLite db per project at `.dp/dp.db`.
 - Add `.dp/` to `.gitignore` if you don't want to commit it, or commit it if you do.
 - Inspect directly: `sqlite3 .dp/dp.db`.
-- Schema lives in `sql/v1.sql` (compiled in via `include_str!`); inspect or hand-apply it with `sqlite3 .dp/dp.db < sql/v1.sql`.
+- Schema lives in `sql/` (v1–v5, compiled in via `include_str!`);
+  databases upgrade automatically on first run of a newer dp — back up `.dp/` before major upgrades.
 
 ## Output formats
 
-Read commands (`list`, `show`, `stats`, `plan list/show`, `decision list`) accept `--format`:
+Read commands (`task list/show`, `stats`, `plan list/show`, `adr list`) accept `--format`:
 
 ```bash
-dp list --format=markdown     # GitHub-renderable table for PRs/issues
-dp list --format=json | jq .  # machine-readable
+dp task list --format=markdown     # GitHub-renderable table for PRs/issues
+dp task list --format=json | jq .  # machine-readable
 dp stats --format=json
 ```
 
@@ -89,3 +97,5 @@ sqlite3 .dp/dp.db -json "SELECT id,title,status FROM tasks"
 ```bash
 dp generate bash | zsh | fish | elvish | powershell | man
 ```
+
+See `man dp` (or `man ./man/dp.1` from the repo) for the full manual.
