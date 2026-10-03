@@ -10,12 +10,14 @@ const MIGRATION_V2: &str = include_str!("../sql/v2.sql");
 const MIGRATION_V3: &str = include_str!("../sql/v3.sql");
 const MIGRATION_V4: &str = include_str!("../sql/v4.sql");
 const MIGRATION_V5: &str = include_str!("../sql/v5.sql");
+const MIGRATION_V6: &str = include_str!("../sql/v6.sql");
 const MIGRATIONS: &[&str] = &[
     MIGRATION_V1,
     MIGRATION_V2,
     MIGRATION_V3,
     MIGRATION_V4,
     MIGRATION_V5,
+    MIGRATION_V6,
 ];
 
 fn db_path() -> Result<PathBuf> {

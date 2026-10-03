@@ -118,7 +118,16 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
         println!("  Done at:  {done_at}");
     }
     if let Some(r) = &t.resolution {
-        println!("  Resolution: {}", r);
+        let mut line = format!("  Resolution: {}", r);
+        if let Some(of) = t.duplicate_of {
+            line.push_str(&format!(" (of #{of})")); // 指向
+        }
+        println!("{line}");
+        if let Some(note) = &t.resolution_note
+            && !note.is_empty()
+        {
+            println!("    Note:     {note}");
+        }
     }
     if !t.description.is_empty() {
         println!("  Description:");
@@ -129,27 +138,27 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     Ok(())
 }
 
-pub fn done(conn: &Connection, id: i64) -> Result<()> {
+pub fn done(conn: &Connection, id: i64, note: Option<String>) -> Result<()> {
     let t = repo::task::get(conn, id)?;
     if t.status == TaskStatus::Done {
         println!("Task #{id} is already done");
         return Ok(());
     }
-    repo::task::set_status(conn, id, TaskStatus::Done)?;
+    repo::task::set_resolution(conn, id, Resolution::Done, note.as_deref(), None)?;
     println!("Done: task #{id} — {}", t.title);
     Ok(())
 }
 
-pub fn abandon(conn: &Connection, id: i64) -> Result<()> {
+pub fn abandon(conn: &Connection, id: i64, note: Option<String>) -> Result<()> {
     let t = repo::task::get(conn, id)?;
-    repo::task::set_resolution(conn, id, Resolution::Abandoned)?;
+    repo::task::set_resolution(conn, id, Resolution::Abandoned, note.as_deref(), None)?;
     println!("Abandoned: task #{id} — {}", t.title);
     Ok(())
 }
 
-pub fn duplicate(conn: &Connection, id: i64) -> Result<()> {
+pub fn duplicate(conn: &Connection, id: i64, note: Option<String>, of: Option<i64>) -> Result<()> {
     let t = repo::task::get(conn, id)?;
-    repo::task::set_resolution(conn, id, Resolution::Duplicate)?;
+    repo::task::set_resolution(conn, id, Resolution::Duplicated, note.as_deref(), of)?;
     println!("Closed as duplicate: task #{id} — {}", t.title);
     Ok(())
 }
@@ -249,9 +258,9 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             task_type,
         } => list(conn, plan, overdue, active, done, task_type, fmt),
         TaskCommands::Show { id } => show(conn, id, fmt),
-        TaskCommands::Done { id } => done(conn, id),
-        TaskCommands::Abandon { id } => abandon(conn, id),
-        TaskCommands::Duplicate { id } => duplicate(conn, id),
+        TaskCommands::Done { id, note } => done(conn, id, note),
+        TaskCommands::Abandon { id, note } => abandon(conn, id, note),
+        TaskCommands::Duplicate { id, note, of } => duplicate(conn, id, note, of),
         TaskCommands::Rm { id, force } => rm(conn, id, force),
         TaskCommands::Mod {
             id,

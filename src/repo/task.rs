@@ -6,7 +6,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str = "id, plan_id, type, title, description, status, resolution, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
+const COLS: &str = "id, plan_id, type, title, description, status, resolution, resolution_note, duplicate_of, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
@@ -207,14 +207,24 @@ pub fn set_status(conn: &Connection, id: i64, status: TaskStatus) -> Result<()> 
 }
 
 /// Marks a task finished with a non-default resolution.
-pub fn set_resolution(conn: &Connection, id: i64, resolution: Resolution) -> Result<()> {
+pub fn set_resolution(
+    conn: &Connection,
+    id: i64,
+    resolution: Resolution,
+    note: Option<&str>,
+    of: Option<i64>,
+) -> Result<()> {
+    // duplicate 时 of 必填且目标存在:
+    if let Some(target) = of {
+        get(conn, target)?; // FK 预检,同 plan 预检模式
+    }
     let t = get(conn, id)?;
     if t.status == TaskStatus::Done && t.resolution == Some(resolution) {
         return Ok(()); // idempotent
     }
     conn.execute(
-        "UPDATE tasks SET status = 'done', resolution = ?1, done_at = ?2 WHERE id = ?3",
-        params![resolution.as_str(), now_ts(), id],
+        "UPDATE tasks SET status = 'done', resolution = ?1, resolution_note=COALESCE(?2, resolution_note), duplicate_of=?3, done_at = ?4 WHERE id = ?5",
+        params![resolution.as_str(), note, of, now_ts(), id],
     )?;
     Ok(())
 }
@@ -242,11 +252,11 @@ fn now_ts() -> String {
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
     let status: String = row.get(5)?;
     let resolution: Option<String> = row.get(6)?;
-    let prio: i64 = row.get(7)?;
-    let tags: String = row.get(8)?;
+    let prio: i64 = row.get(9)?;
+    let tags: String = row.get(10)?;
     let typ: String = row.get(2)?;
-    let due: Option<String> = row.get(10)?;
-    let start: Option<String> = row.get(11)?;
+    let due: Option<String> = row.get(12)?;
+    let start: Option<String> = row.get(13)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
@@ -255,14 +265,16 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         description: row.get(4)?,
         status: TaskStatus::from_label(&status).unwrap_or_default(),
         resolution: resolution.and_then(|r| Resolution::from_label(&r)),
+        resolution_note: row.get(7)?,
+        duplicate_of: row.get(8)?,
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
-        time_spent: row.get(9)?,
+        time_spent: row.get(11)?,
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         started_at: start,
-        done_at: row.get(12)?,
-        created_at: row.get(13)?,
-        updated_at: row.get(14)?,
+        done_at: row.get(14)?,
+        created_at: row.get(15)?,
+        updated_at: row.get(16)?,
     })
 }
 
@@ -359,7 +371,7 @@ mod tests {
     fn abandon_sets_resolution_and_stats_exclude_it() {
         let c = conn();
         let id = add(&c, &sample("t1")).unwrap();
-        set_resolution(&c, id, Resolution::Abandoned).unwrap();
+        set_resolution(&c, id, Resolution::Abandoned, None, None).unwrap();
         let t = get(&c, id).unwrap();
         assert_eq!(t.resolution, Some(Resolution::Abandoned));
         // stats 的 done_total 不含它:

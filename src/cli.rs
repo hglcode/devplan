@@ -107,13 +107,27 @@ pub enum TaskCommands {
     Show { id: i64 },
 
     /// Mark a task as done
-    Done { id: i64 },
+    Done {
+        id: i64,
+        #[arg(long)]
+        note: Option<String>,
+    },
 
     /// Abandon a task: done with resolution 'abandoned' (excluded from output stats)
-    Abandon { id: i64 },
+    Abandon {
+        id: i64,
+        #[arg(long)]
+        note: Option<String>,
+    },
 
     /// Close a task as duplicate of another
-    Duplicate { id: i64 },
+    Duplicate {
+        id: i64,
+        #[arg(long)]
+        note: Option<String>,
+        #[arg(long)]
+        of: Option<i64>,
+    },
 
     /// Delete a task
     Rm {

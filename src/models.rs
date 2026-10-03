@@ -94,9 +94,9 @@ impl std::fmt::Display for TaskStatus {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Resolution {
-    Done,      // 正常完成
-    Abandoned, // 主动放弃(不算产出)
-    Duplicate, // 与他任务重复
+    Done,       // 正常完成
+    Abandoned,  // 主动放弃(不算产出)
+    Duplicated, // 与他任务重复
 }
 
 impl Resolution {
@@ -104,14 +104,14 @@ impl Resolution {
         match self {
             Self::Done => "done",
             Self::Abandoned => "abandoned",
-            Self::Duplicate => "duplicate",
+            Self::Duplicated => "duplicated",
         }
     }
     pub fn from_label(s: &str) -> Option<Self> {
         match s {
             "done" => Some(Self::Done),
             "abandoned" => Some(Self::Abandoned),
-            "duplicate" => Some(Self::Duplicate),
+            "duplicated" => Some(Self::Duplicated),
             _ => None,
         }
     }
@@ -251,6 +251,8 @@ pub struct Task {
     pub description: String,
     pub status: TaskStatus,
     pub resolution: Option<Resolution>,
+    pub resolution_note: Option<String>,
+    pub duplicate_of: Option<i64>,
     pub priority: Priority,
     pub tags: Vec<String>,
     pub time_spent: f64,
