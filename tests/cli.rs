@@ -166,3 +166,63 @@ fn generate_man() {
         .success()
         .stdout(predicates::str::contains(".TH dp"));
 }
+
+#[test]
+fn rm_with_history_prompts_and_aborts() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd().arg("add").arg("survivor").assert().success();
+    // 制造历史:done 过(有 done_at)→ has_history = true
+    cmd().arg("done").arg("1").assert().success();
+
+    let out = cmd()
+        .arg("rm")
+        .arg("1")
+        .write_stdin("n\n") // 拒绝
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("Delete permanently?"));
+    let _ = out;
+
+    // 判据:任务仍活着
+    cmd()
+        .arg("list")
+        .arg("--done")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("survivor"));
+}
+
+#[test]
+fn rm_force_bypasses_prompt() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd().arg("add").arg("victim").assert().success();
+    cmd().arg("done").arg("1").assert().success(); // 制造历史
+
+    cmd()
+        .arg("rm")
+        .arg("1")
+        .arg("--force")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("Deleted task #1"));
+
+    // 判据:真删了——done 列表里没有 victim
+    cmd()
+        .arg("list")
+        .arg("--done")
+        .assert()
+        .success()
+        .stdout(predicates::str::contains("victim").not());
+}

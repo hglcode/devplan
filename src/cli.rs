@@ -29,7 +29,7 @@ pub enum Commands {
     /// Initialize a dp database in this project (.dp/dp.db)
     Init,
 
-    /// Add a new todo task
+    /// Add a new task
     Add {
         /// Task title
         title: String,
@@ -85,7 +85,11 @@ pub enum Commands {
     Duplicate { id: i64 },
 
     /// Delete a task
-    Rm { id: i64 },
+    Rm {
+        id: i64,
+        #[arg(short, long)]
+        force: bool,
+    },
 
     /// Modify a task's fields
     Mod {

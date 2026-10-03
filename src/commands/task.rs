@@ -1,6 +1,7 @@
 use anyhow::Result;
 use chrono::NaiveDate;
 use rusqlite::Connection;
+use std::io::Write;
 
 use crate::cli::Format;
 use crate::commands::print_tasks;
@@ -52,7 +53,7 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
             description: desc.as_deref().unwrap_or(""),
         },
     )?;
-    println!("Added todo #{id}: {title}");
+    println!("Added task #{id}: {title}");
     Ok(())
 }
 
@@ -131,11 +132,11 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
 pub fn done(conn: &Connection, id: i64) -> Result<()> {
     let t = repo::task::get(conn, id)?;
     if t.status == TaskStatus::Done {
-        println!("Todo #{id} is already done");
+        println!("Task #{id} is already done");
         return Ok(());
     }
     repo::task::set_status(conn, id, TaskStatus::Done)?;
-    println!("Done: todo #{id} — {}", t.title);
+    println!("Done: task #{id} — {}", t.title);
     Ok(())
 }
 
@@ -153,9 +154,32 @@ pub fn duplicate(conn: &Connection, id: i64) -> Result<()> {
     Ok(())
 }
 
-pub fn rm(conn: &Connection, id: i64) -> Result<()> {
+pub fn rm(conn: &Connection, id: i64, force: bool) -> Result<()> {
+    let t = repo::task::get(conn, id)?;
+    let has_history = t.done_at.is_some()          // 完成过(有 done_at)
+        || t.plan_id.is_some()                     // 挂在计划里
+        || t.created_at != t.updated_at; // 被修改过(时间戳分叉)
+    // 纯新增未动的任务:created==updated,三者全否 → 直接删
+
+    if has_history && !force {
+        println!("Task #{} \"{}\"", t.id, t.title);
+        println!(
+            "  status: {}, created {}, plan: {}",
+            t.status,
+            t.created_at,
+            t.plan_id.map_or("none".to_string(), |p| p.to_string())
+        );
+        print!("Delete permanently? [y/N] ");
+        std::io::stdout().flush()?;
+        let mut answer = String::new();
+        std::io::stdin().read_line(&mut answer)?;
+        if !answer.trim().eq_ignore_ascii_case("y") {
+            println!("Aborted");
+            return Ok(());
+        }
+    }
     repo::task::delete(conn, id)?;
-    println!("Deleted todo #{id}");
+    println!("Deleted task #{id}");
     Ok(())
 }
 
@@ -190,7 +214,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         plan,
     };
     if provided && repo::task::update(conn, id, &update)? {
-        println!("Updated todo #{id}");
+        println!("Updated task #{id}");
     } else if provided {
         println!("Nothing to modify: values already as requested"); // 有 flag 但值未变
     } else {

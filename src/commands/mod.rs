@@ -85,7 +85,7 @@ pub fn dispatch(cmd: Commands, conn: &Connection, fmt: Format) -> Result<()> {
         Commands::Done { id } => task::done(conn, id),
         Commands::Abandon { id } => task::abandon(conn, id),
         Commands::Duplicate { id } => task::duplicate(conn, id),
-        Commands::Rm { id } => task::rm(conn, id),
+        Commands::Rm { id, force } => task::rm(conn, id, force),
         Commands::Mod {
             id,
             title,
