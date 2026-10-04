@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-04" "dp 0.12.0" "User Commands"
+.TH DP 1 "2026-10-04" "dp 0.13.0" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -88,25 +88,36 @@ Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
 .RE
 .TP
 .BI "show " ID
-Print one task in full detail.
+Print one task in full detail: status and its note, started/done
+timestamps, resolution with note and duplicate linkage.
+.TP
+.BI "start " ID
+Start working on a task: sets status to \fIactive\fR and records
+\fIstarted_at\fR (first start only \(em restarting after an interruption
+keeps the original timestamp). Idempotent for an already\-active task;
+refuses from \fIdone\fR (reopen first). Active tasks sort to the top of
+\fBdp task list\fR.
 .TP
 .BI "done " ID
 Mark a task as done: sets status to \fIdone\fR, resolution to \fIdone\fR
-and records \fIdone_at\fR. Idempotent \(em an already\-done task prints
+and records \fIdone_at\fR. \fB\-\-note\fR \fITEXT\fR records scope
+(e.g.\& \(dqbackend only\(dq). Idempotent \(em an already\-done task prints
 a notice and is left unchanged. Reopen with
 .BI "dp task mod " "ID \-\-status todo"
 which clears \fIdone_at\fR and \fIresolution\fR.
 .TP
 .BI "abandon " ID
 Mark a task as done with resolution \fIabandoned\fR and record
-\fIdone_at\fR: the task was deliberately dropped unfinished. Excluded
+\fIdone_at\fR: the task was deliberately dropped unfinished.
+\fB\-\-note\fR \fITEXT\fR records why \(em the top forgettable. Excluded
 from the done counters in \fBdp stats\fR (output), but still listed by
 \fBdp task list \-\-done\fR (history). Idempotent.
 .TP
 .BI "duplicate " ID
-Close a task as a duplicate of another: resolution \fIduplicate\fR.
-Counts as output and plan progress \(em the work was real, just
-misdirected.
+Close a task as a duplicate of another: resolution \fIduplicated\fR.
+\fB\-\-of\fR \fIID\fR links the surviving task; \fB\-\-note\fR \fITEXT\fR
+records why they were judged duplicates. Counts as output and plan
+progress \(em the work was real, just misdirected.
 .TP
 .BI "rm " ID
 Delete a task permanently. Always asks for confirmation (summary, then
@@ -116,7 +127,7 @@ y/N); \fB\-\-force\fR skips the prompt.
 Change the given fields of a task; omitted flags leave the field
 unchanged. With no flags at all, prints \(dqNothing to modify: no fields
 given\(dq; with flags whose values equal the current ones, prints a notice
-instead of writing.
+instead of writing. \fB\-\-note\fR requires \fB\-\-status\fR.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
@@ -128,6 +139,12 @@ New title.
 \fB\-\-status\fR \fISTATUS\fR
 New status; see
 .BR STATES .
+.TP
+\fB\-\-note\fR \fITEXT\fR
+The reason for a status transition (blocked\-why, active\-context,
+back\-to\-todo\-reason). Requires \fB\-\-status\fR; cleared on the next
+transition — process\-scoped, unlike the permanent
+\fIresolution_note\fR.
 .TP
 \fB\-p\fR, \fB\-\-priority\fR \fIP\fR
 New priority.
@@ -240,15 +257,20 @@ number means more urgent. The default is \fBnormal\fR.
 Tasks have two axes. The
 .I status
 axis moves \fItodo\fR -> \fIactive\fR -> \fIdone\fR, with \fIblocked\fR as
-a side state; \fBdp task done\fR and \fBdp task mod \-\-status done\fR both
-record \fIdone_at\fR, and moving to any other status clears it. The
+a side state; \fBdp task start\fR records \fIstarted_at\fR (first start
+only), \fBdp task done\fR and \fBdp task mod \-\-status done\fR record
+\fIdone_at\fR, and moving to any other status clears it. The
 .I resolution
 axis classifies finished work: \fIdone\fR (completed), \fIabandoned\fR
-(deliberately dropped) or \fIduplicate\fR; \fBdp task done\fR sets it to
-\fIdone\fR by default. A task is overdue when its due date lies in the
-past and it is not done. The boundary is completion: \fIabandoned\fR is
-excluded from output stats, \fIduplicate\fR counts \(em the work was
-real, just misdirected; both count toward plan progress.
+(deliberately dropped) or \fIduplicated\fR; \fBdp task done\fR sets it
+to \fIdone\fR by default. Verdicts carry their reasons:
+\fIresolution_note\fR is permanent (recorded by \fB\-\-note\fR on
+done/abandon/duplicate), \fIstatus_note\fR is process\-scoped (recorded
+by \fBmod \-\-status \-\-note\fR, cleared on the next transition). A task
+is overdue when its due date lies in the past and it is not done. The
+boundary is completion: \fIabandoned\fR is excluded from output stats,
+\fIduplicated\fR counts \(em the work was real, just misdirected; both
+count toward plan progress.
 .PP
 Plans are containers with status \fIopen\fR or \fIarchived\fR
 (\fBdp plan archive\fR); an archived plan keeps its progress as history.
@@ -261,9 +283,11 @@ dp init
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
 dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend -d "OAuth2 auth code flow"
 dp task list
+dp task start 2
+dp task mod 2 --status blocked --note "waiting on external API"
 dp task list --overdue
-dp task mod 2 --status active
 dp task done 2
+dp task duplicate 5 --of 3 --note "same flow, #3 has tests"
 dp plan archive 1
 dp adr add "Use SQLite" --context "Need zero-config embedded storage" --decision "rusqlite with bundled SQLite" --consequence "Single-file db, easy to back up"
 dp adr accept 1

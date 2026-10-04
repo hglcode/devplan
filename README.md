@@ -29,12 +29,15 @@ dp plan archive 1                      # close the container; partial progress i
 # tasks — the work items
 dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
 dp task list                           # pending view: active first, then blocked, then todo
+dp task start 2                        # begin working — records started_at, sorts to top
 dp task list --overdue
 dp task list --type bug                # filter by type
 dp task show 2
-dp task mod 2 --status active          # start working
+dp task mod 2 --status blocked --note "waiting on external API"
 dp task done 2                         # finish (resolution: done)
-dp task abandon 3                      # drop unfinished (excluded from output stats)
+dp task done 2 --note "backend only"   # verdicts carry reasons
+dp task abandon 3 --note "superseded by external service"   # excluded from output stats
+dp task duplicate 5 --of 3 --note "same flow, #3 has tests"
 dp task rm 4                           # always asks; --force skips
 
 # ADRs (decision records)
@@ -56,9 +59,11 @@ dp stats
 - `plans` — milestone / phase **container**; status open / archived;
   `start_date` + `due_date` form its schedule window;
   progress is derived from its tasks (archived + 60% is legitimate history)
-- `tasks` — all work items; status axis: todo / active / blocked / done,
-  resolution axis (finished work): done / abandoned / duplicate —
-  abandoned is excluded from output stats, duplicate counts (the work was real)
+- `tasks` — all work items; two axes:
+  status: todo / active / blocked / done (+ `status_note`, cleared on transition);
+  resolution (finished work): done / abandoned / duplicated —
+  every verdict carries a `--note`, duplicates link via `--of`;
+  abandoned is excluded from output stats, duplicated counts (the work was real)
 - `adrs` — decision records shown as ADR-001, ADR-002, … (rendered from id);
   lifecycle: proposed → accepted ⇄ rejected → superseded (final)
 
@@ -71,7 +76,7 @@ dp stats
 - One SQLite db per project at `.dp/dp.db`.
 - Add `.dp/` to `.gitignore` if you don't want to commit it, or commit it if you do.
 - Inspect directly: `sqlite3 .dp/dp.db`.
-- Schema lives in `sql/` (v1–v5, compiled in via `include_str!`);
+- Schema lives in `sql/` (v1–v8, compiled in via `include_str!`);
   databases upgrade automatically on first run of a newer dp — back up `.dp/` before major upgrades.
 
 ## Output formats
