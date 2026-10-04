@@ -114,6 +114,9 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     );
     println!("  Created:  {}", t.created_at);
     println!("  Updated:  {}", t.updated_at);
+    if let Some(sa) = &t.started_at {
+        println!("  Started:  {sa}");
+    }
     if let Some(done_at) = &t.done_at {
         println!("  Done at:  {done_at}");
     }
@@ -135,6 +138,13 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
             println!("    {line}");
         }
     }
+    Ok(())
+}
+
+pub fn start(conn: &Connection, id: i64) -> Result<()> {
+    let t = repo::task::get(conn, id)?;
+    repo::task::start(conn, id)?;
+    println!("Started: task #{id} — {}", t.title);
     Ok(())
 }
 
@@ -258,6 +268,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             task_type,
         } => list(conn, plan, overdue, active, done, task_type, fmt),
         TaskCommands::Show { id } => show(conn, id, fmt),
+        TaskCommands::Start { id } => start(conn, id),
         TaskCommands::Done { id, note } => done(conn, id, note),
         TaskCommands::Abandon { id, note } => abandon(conn, id, note),
         TaskCommands::Duplicate { id, note, of } => duplicate(conn, id, note, of),

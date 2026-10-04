@@ -116,6 +116,27 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
     Ok(out)
 }
 
+pub fn start(conn: &Connection, id: i64) -> Result<()> {
+    let t = get(conn, id)?;
+    match t.status {
+        TaskStatus::Active => {
+            return Ok(()); // idempotent: already in progress
+        }
+        TaskStatus::Done => {
+            anyhow::bail!(
+                "task #{id} is done — reopen with `dp task mod {id} --status todo` first"
+            );
+        }
+        _ => {}
+    }
+    let started_at = t.started_at.clone(); // 首次开始的时间戳,已有则保留
+    conn.execute(
+        "UPDATE tasks SET status = 'active', started_at = COALESCE(?1, ?2), updated_at = datetime('now','localtime') WHERE id = ?3",
+        params![started_at, now_ts(), id],
+    )?;
+    Ok(())
+}
+
 /// Applies the non-None fields. Returns false when there was nothing to change.
 pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     let existing = get(conn, id)?;

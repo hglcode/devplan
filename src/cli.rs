@@ -106,6 +106,9 @@ pub enum TaskCommands {
     /// Show one task in description
     Show { id: i64 },
 
+    /// Start working on a task: sets status active, records started_at
+    Start { id: i64 },
+
     /// Mark a task as done
     Done {
         id: i64,
