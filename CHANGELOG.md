@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.13.1] — 2026-10-04
+
+### Fixed
+
+- `dp stats` Active counter counted a nonexistent status value and always
+  reported 0 — latent since 0.8.0, exposed by `dp task start`; now counts
+  active tasks correctly, guarded by a status-axes test
+
 ## [0.13.0] — 2026-10-04
 
 ### Added
