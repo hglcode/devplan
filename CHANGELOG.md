@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.13.0] — 2026-10-04
+
+### Added
+
+- `dp task start` — dedicated verb for entering active (attention-head);
+  first writer of `started_at` (idempotent; refuses from done)
+- `status_note` (schema migration v7): `mod --status X --note "..."` — the
+  reason for a transition; cleared on next transition (process-scoped),
+  symmetric to `resolution_note` (permanent, verdict-scoped)
+
+### Changed — BREAKING
+
+- schema migration v8: `time_spent` dropped — the last dead column.
+  Time tracking is another product's philosophy; schema now has zero
+  dead columns (every column has a writer, a reader, semantics)
+
 ## [0.12.0] — 2026-10-04
 
 ### Changed — BREAKING

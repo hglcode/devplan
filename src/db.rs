@@ -13,6 +13,7 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../sql/v5.sql"),
     include_str!("../sql/v6.sql"),
     include_str!("../sql/v7.sql"),
+    include_str!("../sql/v8.sql"),
 ];
 
 fn db_path() -> Result<PathBuf> {

@@ -6,7 +6,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
+const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, priority, tags, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
@@ -280,8 +280,8 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
     let prio: i64 = row.get(10)?;
     let tags: String = row.get(11)?;
     let typ: String = row.get(2)?;
-    let due: Option<String> = row.get(13)?;
-    let start: Option<String> = row.get(14)?;
+    let due: Option<String> = row.get(12)?;
+    let start: Option<String> = row.get(13)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
@@ -295,12 +295,11 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         duplicate_of: row.get(9)?,
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
-        time_spent: row.get(12)?,
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         started_at: start,
-        done_at: row.get(15)?,
-        created_at: row.get(16)?,
-        updated_at: row.get(17)?,
+        done_at: row.get(14)?,
+        created_at: row.get(15)?,
+        updated_at: row.get(16)?,
     })
 }
 

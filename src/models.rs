@@ -256,7 +256,6 @@ pub struct Task {
     pub duplicate_of: Option<i64>,
     pub priority: Priority,
     pub tags: Vec<String>,
-    pub time_spent: f64,
     pub due_date: Option<NaiveDate>,
     pub started_at: Option<String>,
     pub done_at: Option<String>,
