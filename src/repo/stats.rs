@@ -19,7 +19,7 @@ pub fn get(conn: &Connection) -> Result<Stats> {
         "SELECT
             (SELECT COUNT(*) FROM plans WHERE status = 'open'),
             COALESCE(SUM(status = 'todo'), 0),
-            COALESCE(SUM(status = 'open'), 0),
+            COALESCE(SUM(status = 'active'), 0),
             COALESCE(SUM(status = 'blocked'), 0),
             COALESCE(SUM(status != 'done' AND due_date IS NOT NULL
                         AND due_date < date('now','localtime')), 0),
@@ -44,4 +44,47 @@ pub fn get(conn: &Connection) -> Result<Stats> {
         },
     )?;
     Ok(s)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*; // get/Stats 进来
+    use crate::db::migrate;
+    use crate::models::{Priority, TaskStatus, TaskType};
+    use crate::repo::task::{self, NewTask};
+    use rusqlite::Connection;
+
+    fn conn() -> Connection {
+        let c = Connection::open_in_memory().unwrap();
+        migrate(&c).unwrap();
+        c
+    }
+
+    fn sample(title: &str) -> NewTask<'_> {
+        NewTask {
+            title,
+            plan: None,
+            task_type: TaskType::Feature,
+            due_date: None,
+            priority: Priority::Normal,
+            tags: vec![],
+            description: "",
+        }
+    }
+
+    #[test]
+    fn stats_counts_all_status_axes() {
+        let c = conn();
+        task::add(&c, &sample("t-todo")).unwrap(); // #1 todo
+        let id2 = task::add(&c, &sample("t-active")).unwrap();
+        task::start(&c, id2).unwrap(); // active
+        let id3 = task::add(&c, &sample("t-blocked")).unwrap();
+        task::set_status(&c, id3, TaskStatus::Blocked).unwrap();
+
+        let s = get(&c).unwrap(); // super::get,裸调
+        assert_eq!(s.open, 1);
+        assert_eq!(s.active, 1); // ★ bug 守护
+        assert_eq!(s.blocked, 1);
+        assert_eq!(s.done_total, 0);
+    }
 }
