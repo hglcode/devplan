@@ -5,19 +5,14 @@ use rusqlite::Connection;
 
 /// v1 — current schema. Completed tasks stay in `tasks` with status='done'
 /// and a `done_at` timestamp; there is no separate `done` table.
-const MIGRATION_V1: &str = include_str!("../sql/v1.sql");
-const MIGRATION_V2: &str = include_str!("../sql/v2.sql");
-const MIGRATION_V3: &str = include_str!("../sql/v3.sql");
-const MIGRATION_V4: &str = include_str!("../sql/v4.sql");
-const MIGRATION_V5: &str = include_str!("../sql/v5.sql");
-const MIGRATION_V6: &str = include_str!("../sql/v6.sql");
 const MIGRATIONS: &[&str] = &[
-    MIGRATION_V1,
-    MIGRATION_V2,
-    MIGRATION_V3,
-    MIGRATION_V4,
-    MIGRATION_V5,
-    MIGRATION_V6,
+    include_str!("../sql/v1.sql"),
+    include_str!("../sql/v2.sql"),
+    include_str!("../sql/v3.sql"),
+    include_str!("../sql/v4.sql"),
+    include_str!("../sql/v5.sql"),
+    include_str!("../sql/v6.sql"),
+    include_str!("../sql/v7.sql"),
 ];
 
 fn db_path() -> Result<PathBuf> {

@@ -6,7 +6,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str = "id, plan_id, type, title, description, status, resolution, resolution_note, duplicate_of, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
+const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, priority, tags, time_spent, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
@@ -46,6 +46,7 @@ pub struct TaskUpdate {
     pub due_date: Option<NaiveDate>,
     pub priority: Option<Priority>,
     pub status: Option<TaskStatus>,
+    pub status_note: Option<String>,
     pub tags: Option<Vec<String>>,
     pub description: Option<String>,
     pub plan: Option<i64>,
@@ -173,6 +174,9 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     {
         sets.push("status = ?".into());
         owned.push(Box::new(s.as_str().to_string()));
+        // 转移必刷:给了写新,没给清空(旧理由随状态作废——终态 note 永存,过程态 note 随过程)
+        sets.push("status_note = ?".into());
+        owned.push(Box::new(u.status_note.clone().unwrap_or_default()));
         match s {
             TaskStatus::Done => {
                 sets.push("done_at = ?".into());
@@ -272,12 +276,12 @@ fn now_ts() -> String {
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
     let status: String = row.get(5)?;
-    let resolution: Option<String> = row.get(6)?;
-    let prio: i64 = row.get(9)?;
-    let tags: String = row.get(10)?;
+    let resolution: Option<String> = row.get(7)?;
+    let prio: i64 = row.get(10)?;
+    let tags: String = row.get(11)?;
     let typ: String = row.get(2)?;
-    let due: Option<String> = row.get(12)?;
-    let start: Option<String> = row.get(13)?;
+    let due: Option<String> = row.get(13)?;
+    let start: Option<String> = row.get(14)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
@@ -285,17 +289,18 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         title: row.get(3)?,
         description: row.get(4)?,
         status: TaskStatus::from_label(&status).unwrap_or_default(),
+        status_note: row.get(6)?,
         resolution: resolution.and_then(|r| Resolution::from_label(&r)),
-        resolution_note: row.get(7)?,
-        duplicate_of: row.get(8)?,
+        resolution_note: row.get(8)?,
+        duplicate_of: row.get(9)?,
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
-        time_spent: row.get(11)?,
+        time_spent: row.get(12)?,
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         started_at: start,
-        done_at: row.get(14)?,
-        created_at: row.get(15)?,
-        updated_at: row.get(16)?,
+        done_at: row.get(15)?,
+        created_at: row.get(16)?,
+        updated_at: row.get(17)?,
     })
 }
 

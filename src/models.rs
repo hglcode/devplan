@@ -250,6 +250,7 @@ pub struct Task {
     pub title: String,
     pub description: String,
     pub status: TaskStatus,
+    pub status_note: Option<String>,
     pub resolution: Option<Resolution>,
     pub resolution_note: Option<String>,
     pub duplicate_of: Option<i64>,

@@ -151,6 +151,8 @@ pub enum TaskCommands {
         /// todo / active / blocked / done
         #[arg(long, value_parser = parse_status)]
         status: Option<TaskStatus>,
+        #[arg(long = "note")]
+        status_note: Option<String>,
         #[arg(short, long)]
         tags: Option<String>,
         #[arg(long)]

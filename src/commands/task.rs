@@ -26,6 +26,7 @@ pub struct ModifyArgs {
     pub due_date: Option<NaiveDate>,
     pub prio: Option<Priority>,
     pub stat: Option<TaskStatus>,
+    pub note: Option<String>,
     pub tags: Option<String>,
     pub desc: Option<String>,
     pub plan: Option<i64>,
@@ -99,6 +100,11 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
         t.plan_id.map_or_else(|| "-".into(), |p| p.to_string())
     );
     println!("  Status:   {}", t.status);
+    if let Some(sn) = &t.status_note
+        && !sn.is_empty()
+    {
+        println!("    Note:     {sn}"); // 和 Resolution 的 Note 同款格式
+    }
     println!("  Priority: {}", t.priority);
     println!(
         "  Due:      {}",
@@ -206,10 +212,16 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         due_date,
         prio,
         stat,
+        note,
         tags,
         desc,
         plan,
     } = args;
+    if note.is_some() && stat.is_none() {
+        anyhow::bail!(
+            "--note accompanies a status change: dp task mod {id} --status <s> --note \"...\""
+        );
+    }
     let provided = title.is_some()
         || task_type.is_some()
         || due_date.is_some()
@@ -224,6 +236,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         task_type,
         priority: prio,
         status: stat,
+        status_note: note,
         tags: tags.map(|t| split_tags(&t)),
         description: desc,
         plan,
@@ -279,6 +292,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             due_date,
             priority,
             status,
+            status_note,
             tags,
             description,
             task_type,
@@ -292,6 +306,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
                 due_date,
                 prio: priority,
                 stat: status,
+                note: status_note,
                 tags,
                 desc: description,
                 plan,
