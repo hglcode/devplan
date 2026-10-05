@@ -15,7 +15,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
         Format::Json => println!("{}", serde_json::to_string_pretty(tasks)?),
         Format::Markdown => {
             println!("| ID | Plan | Prio | Due | Status | Title | Tags |");
-            println!("| -- | ---- | ---- | --- | -----  | ----- | ---- |");
+            println!("| -- | ---- | ---- | --- | ------ | ----- | ---- |");
             for t in tasks {
                 println!(
                     "| {} | {} | {} | {} | {} | {} | {} |",
