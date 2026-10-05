@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.14.0] — 2026-10-05
+
+### Added
+
+- `dp task search <text>` — free-text search across title, description
+  and notes; title hits rank first, then the attention order
+
+### Changed — BREAKING
+
+- `dp task list --status <STATUS>` replaces `--active`/`--done`
+  (symmetry with `--type`); also enables `--status todo` which the old
+  flags couldn't express. Default view unchanged (pending)
+
 ## [0.13.1] — 2026-10-04
 
 ### Fixed
