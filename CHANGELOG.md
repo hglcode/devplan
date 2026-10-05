@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.15.0] — 2026-10-05
+
+### Changed — BREAKING
+
+- short flags: `-s` status, `-t` type, `-d` description on add/list/mod;
+  `--tags` renamed to `--tag` (releases `-t` for the type filter)
+- `dp task list --status <STATUS>` replaces `--active`/`--done`; also
+  enables `--status todo` which the old flags couldn't express
+
+### Added
+
+- `dp task search <text>` — free-text search across title, description
+  and notes; title hits rank first, then the attention order
+
+### Fixed
+
+- `dp task start` no longer manually sets `updated_at` (the storage-layer
+  trigger owns it; one call site missed in the 0.10.0 retirement)
+
 ## [0.14.0] — 2026-10-05
 
 ### Added

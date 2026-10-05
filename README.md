@@ -27,7 +27,7 @@ dp plan show 1
 dp plan archive 1                      # close the container; partial progress is fine
 
 # tasks — the work items
-dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend
+dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high --tag auth,backend
 dp task list                           # pending view: active first, then blocked, then todo
 dp task start 2                        # begin working — records started_at, sorts to top
 dp task list --overdue

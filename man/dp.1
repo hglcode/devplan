@@ -50,13 +50,13 @@ Due date, \fIYYYY\-MM\-DD\fR.
 Priority; see
 .BR PRIORITIES .
 .TP
-\fB\-t\fR, \fB\-\-tags\fR \fILIST\fR
+\fB\-\-tag\fR \fILIST\fR
 Comma\-separated tags; surrounding whitespace is trimmed.
 .TP
 \fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
 Long description, shown by \fBdp task show\fR.
 .TP
-\fB\-\-type\fR \fITYPE\fR
+\fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 Task type: \fIfeature\fR, \fIbug\fR, \fIchore\fR, \fIrefactor\fR or
 \fIdocs\fR (default \fIfeature\fR).
 .RE
@@ -76,12 +76,12 @@ Only tasks attached to plan \fIID\fR.
 Only tasks whose due date lies in the past; combines with the view flags
 below.
 .TP
-\fB\-\-status\fR \fISTATUS\fR
+\fB\-s\fR, \fB\-\-status\fR \fISTATUS\fR
 Only tasks with the given status: \fItodo\fR, \fIactive\fR, \fIblocked\fR
 or \fIdone\fR (default view remains pending, attention\-ordered). This
 replaces the former \fB\-\-active\fR and \fB\-\-done\fR flags.
 .TP
-\fB\-\-type\fR \fITYPE\fR
+\fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
 \fIrefactor\fR or \fIdocs\fR.
 .RE
@@ -114,7 +114,7 @@ Mark a task as done with resolution \fIabandoned\fR and record
 \fIdone_at\fR: the task was deliberately dropped unfinished.
 \fB\-\-note\fR \fITEXT\fR records why \(em the top forgettable. Excluded
 from the done counters in \fBdp stats\fR (output), but still listed by
-\fBdp task list \-\-done\fR (history). Idempotent.
+\fBdp task list \-\-status done\fR (history)
 .TP
 .BI "duplicate " ID
 Close a task as a duplicate of another: resolution \fIduplicated\fR.
@@ -139,7 +139,7 @@ Reassign the task to plan \fIID\fR (must exist).
 \fB\-\-title\fR \fITEXT\fR
 New title.
 .TP
-\fB\-\-status\fR \fISTATUS\fR
+\fB\-s\fR, \fB\-\-status\fR \fISTATUS\fR
 New status; see
 .BR STATES .
 .TP
@@ -155,13 +155,13 @@ New priority.
 \fB\-\-due\fR \fIDATE\fR
 New due date.
 .TP
-\fB\-t\fR, \fB\-\-tags\fR \fILIST\fR
+\fB\-\-tag\fR \fILIST\fR
 Replace the tag list.
 .TP
 \fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
 New description.
 .TP
-\fB\-\-type\fR \fITYPE\fR
+\fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 New task type.
 .RE
 .RE
@@ -284,7 +284,7 @@ Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR
 .nf
 dp init
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
-dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high -t auth,backend -d "OAuth2 auth code flow"
+dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high --tag auth,backend -d "OAuth2 auth code flow"
 dp task list
 dp task start 2
 dp task mod 2 --status blocked --note "waiting on external API"

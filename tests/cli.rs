@@ -52,7 +52,7 @@ fn add_list_done_flow() {
             "write oauth",
             "--priority",
             "high",
-            "--tags",
+            "--tag",
             "auth,backend",
         ])
         .assert()

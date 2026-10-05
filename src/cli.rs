@@ -74,13 +74,13 @@ pub enum TaskCommands {
         #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
         /// Comma-separated tags
-        #[arg(short, long)]
+        #[arg(long = "tag")]
         tags: Option<String>,
         /// Long description
-        #[arg(long)]
+        #[arg(short, long)]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor/docs
-        #[arg(long = "type", value_parser = parse_task_type)]
+        #[arg(short, long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
     },
 
@@ -93,10 +93,10 @@ pub enum TaskCommands {
         #[arg(long)]
         overdue: bool,
         /// Filter by status: todo / active / blocked / done (default: pending)
-        #[arg(long, value_parser = parse_status)]
+        #[arg(short, long, value_parser = parse_status)]
         status: Option<TaskStatus>,
         /// Filter by task type: feature / bug / chore / refactor / docs
-        #[arg(long = "type", value_parser = parse_task_type)]
+        #[arg(short, long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
     },
 
@@ -149,16 +149,16 @@ pub enum TaskCommands {
         #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
         /// todo / active / blocked / done
-        #[arg(long, value_parser = parse_status)]
+        #[arg(short, long, value_parser = parse_status)]
         status: Option<TaskStatus>,
         #[arg(long = "note")]
         status_note: Option<String>,
-        #[arg(short, long)]
+        #[arg(long = "tag")]
         tags: Option<String>,
-        #[arg(long)]
+        #[arg(short, long)]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor / docs
-        #[arg(long = "type", value_parser = parse_task_type)]
+        #[arg(short, long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
         /// Reassign to another plan
         #[arg(long)]
@@ -189,7 +189,7 @@ pub enum PlanCommands {
         due_date: Option<NaiveDate>,
         #[arg(short, long, value_parser = parse_priority)]
         priority: Option<Priority>,
-        #[arg(long)]
+        #[arg(short, long)]
         description: Option<String>,
     },
     List,
