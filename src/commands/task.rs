@@ -64,6 +64,7 @@ pub fn list(
     overdue: bool,
     status: Option<TaskStatus>,
     task_type: Option<TaskType>,
+    limit: Option<i64>,
     fmt: Format,
 ) -> Result<()> {
     let view = match status {
@@ -79,6 +80,13 @@ pub fn list(
             task_type,
         },
     )?;
+    let tasks = if let Some(n) = limit {
+        let mut t = tasks;
+        t.truncate(n as usize);
+        t
+    } else {
+        tasks
+    };
     print_tasks(&tasks, fmt)
 }
 
@@ -279,7 +287,8 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             overdue,
             status,
             task_type,
-        } => list(conn, plan, overdue, status, task_type, fmt),
+            limit,
+        } => list(conn, plan, overdue, status, task_type, limit, fmt),
         TaskCommands::Show { id } => show(conn, id, fmt),
         TaskCommands::Search { text } => search(conn, &text, fmt),
         TaskCommands::Start { id } => start(conn, id),

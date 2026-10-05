@@ -27,7 +27,7 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
             priority,
             description,
         ),
-        PlanCommands::List => list(conn, fmt),
+        PlanCommands::List { limit } => list(conn, limit, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
         PlanCommands::Archive { id } => archive(conn, id),
     }
@@ -57,14 +57,21 @@ fn add(
     Ok(())
 }
 
-fn list(conn: &Connection, fmt: Format) -> Result<()> {
-    let summaries = repo::plan::list(conn)?;
+fn list(conn: &Connection, limit: Option<i64>, fmt: Format) -> Result<()> {
+    let plans = repo::plan::list(conn)?;
+    let plans = if let Some(n) = limit {
+        let mut t = plans;
+        t.truncate(n as usize);
+        t
+    } else {
+        plans
+    };
     match fmt {
-        Format::Json => println!("{}", serde_json::to_string_pretty(&summaries)?),
+        Format::Json => println!("{}", serde_json::to_string_pretty(&plans)?),
         Format::Markdown => {
             println!("| ID | Status | Prio | Due | Progress | Title |");
             println!("| -- | ------ | ---- | --- | ----- | ----- |");
-            for s in &summaries {
+            for s in &plans {
                 let p = &s.plan;
                 println!(
                     "| {} | {} | {} | {} | {} | {} |",
@@ -81,7 +88,7 @@ fn list(conn: &Connection, fmt: Format) -> Result<()> {
             let mut table = Table::new();
             table.load_style(UTF8_FULL);
             table.set_header(vec!["ID", "Status", "Prio", "Due", "Progress", "Title"]);
-            for s in &summaries {
+            for s in &plans {
                 let p = &s.plan;
                 table.add_row(vec![
                     p.id.to_string(),

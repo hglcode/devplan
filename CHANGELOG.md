@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.15.1] — 2026-10-05
+
+### Added
+
+- `-n`/`--limit <N>` caps output rows on `task list`, `plan list` and
+  `adr list` (head semantics: first N after ordering)
+
 ## [0.15.0] — 2026-10-05
 
 ### Changed — BREAKING

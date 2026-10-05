@@ -391,3 +391,36 @@ fn task_search_hits_title_and_note() {
     assert!(s.contains("unrelated")); // note 命中
     assert!(s.contains("completely different topic").not()); // ★ 真正的排除判据
 }
+
+#[test]
+fn list_limit_truncates_with_notice() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    for i in 1..=3 {
+        cmd()
+            .arg("task")
+            .arg("add")
+            .arg(format!("task{i}"))
+            .assert()
+            .success();
+    }
+    let out = cmd()
+        .arg("task")
+        .arg("list")
+        .arg("-n")
+        .arg("2")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let s = String::from_utf8(out).unwrap();
+    assert!(s.contains("task1"));
+    assert!(s.contains("task2"));
+    assert!(s.contains("task3").not()); // 第三条被截
+}

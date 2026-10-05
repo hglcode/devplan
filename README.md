@@ -22,16 +22,16 @@ dp init                                # creates .dp/dp.db
 
 # plans (milestones / epics) — containers of work
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
-dp plan list                           # per-plan progress (done/total)
+dp plan list -n 3                      # per-plan progress (done/total)
 dp plan show 1
 dp plan archive 1                      # close the container; partial progress is fine
 
 # tasks — the work items
 dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high --tag auth,backend
-dp task list                           # pending view: active first, then blocked, then todo
-dp task start 2                        # begin working — records started_at, sorts to top
+dp task list --limit 3                 # pending view: active first, then blocked, then todo
 dp task list --overdue
 dp task list --type bug                # filter by type
+dp task start 2                        # begin working — records started_at, sorts to top
 dp task show 2
 dp task search schema                  # full-text across title/description/notes
 dp task mod 2 --status blocked --note "waiting on external API"
@@ -46,7 +46,7 @@ dp adr add "Use SQLite" \
   --context "Need zero-config embedded storage" \
   --decision "rusqlite with bundled SQLite" \
   --consequence "Single-file db, easy to back up"
-dp adr list
+dp adr list -n 3
 dp adr accept 1
 dp adr reject 2 --rationale "not now"  # verdicts are revisitable; changing one requires --rationale
 dp adr supersede 1 4                   # old decision 1 replaced by new 4

@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-05" "dp 0.14.0" "User Commands"
+.TH DP 1 "2026-10-06" "dp 0.15.1" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -84,6 +84,9 @@ replaces the former \fB\-\-active\fR and \fB\-\-done\fR flags.
 \fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
 \fIrefactor\fR or \fIdocs\fR.
+.TP
+\fB\-n\fR, \fB\-\-limit\fR \fIN\fR
+Cap output at the first N rows (after ordering).
 .RE
 .TP
 .BI "show " ID
@@ -183,6 +186,11 @@ Create a plan; accepts \fB\-\-adr\fR \fIID\fR (decision origin),
 .TP
 .B list
 Summarize plans with per\-plan progress (done/total, percentage).
+.RS
+.TP
+\fB\-n\fR, \fB\-\-limit\fR \fIN\fR
+Cap output at the first N rows (after ordering).
+.RE
 .TP
 .BI "show " ID
 Print a plan in detail, its pending (not\-done) tasks, and how many
@@ -215,6 +223,11 @@ Print one ADR in full: context, decision, consequence, rationale.
 .TP
 .B list
 List all decisions, accepted ones first.
+.RS
+.TP
+\fB\-n\fR, \fB\-\-limit\fR \fIN\fR
+Cap output at the first N rows (after ordering).
+.RE
 .TP
 .BI "supersede " "OLD NEW"
 Mark OLD as superseded by NEW. NEW must already be accepted; a decision

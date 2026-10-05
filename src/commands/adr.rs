@@ -20,7 +20,7 @@ pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
             &decision,
             consequence.as_deref().unwrap_or(""),
         ),
-        AdrCommands::List => list(conn, fmt),
+        AdrCommands::List { limit } => list(conn, limit, fmt),
         AdrCommands::Accept { id, rationale } => {
             repo::adr::accept(conn, id, rationale.as_deref())?;
             println!("ADR #{id} marked as accepted");
@@ -60,8 +60,15 @@ fn add(
     Ok(())
 }
 
-fn list(conn: &Connection, fmt: Format) -> Result<()> {
+fn list(conn: &Connection, limit: Option<i64>, fmt: Format) -> Result<()> {
     let adrs = repo::adr::list(conn)?;
+    let adrs = if let Some(n) = limit {
+        let mut t = adrs;
+        t.truncate(n as usize);
+        t
+    } else {
+        adrs
+    };
     match fmt {
         Format::Json => println!("{}", serde_json::to_string_pretty(&adrs)?),
         Format::Markdown => {

@@ -98,6 +98,9 @@ pub enum TaskCommands {
         /// Filter by task type: feature / bug / chore / refactor / docs
         #[arg(short, long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
+        /// Limit output to the first N tasks (after ordering)
+        #[arg(short = 'n', long, value_parser = clap::value_parser!(i64).range(1..))]
+        limit: Option<i64>,
     },
 
     /// Show one task in description
@@ -192,15 +195,15 @@ pub enum PlanCommands {
         #[arg(short, long)]
         description: Option<String>,
     },
-    List,
+    List {
+        /// Limit output to the first N plans (after ordering)
+        #[arg(short = 'n', long, value_parser = clap::value_parser!(i64).range(1..))]
+        limit: Option<i64>,
+    },
     /// Show a plan with its pending tasks and done count
-    Show {
-        id: i64,
-    },
+    Show { id: i64 },
     /// Mark a plan as Archived
-    Archive {
-        id: i64,
-    },
+    Archive { id: i64 },
 }
 
 #[derive(Debug, Subcommand)]
@@ -217,7 +220,11 @@ pub enum AdrCommands {
         #[arg(long)]
         consequence: Option<String>,
     },
-    List,
+    List {
+        /// Limit output to the first N decisions(ADRs) (after ordering)
+        #[arg(short = 'n', long, value_parser = clap::value_parser!(i64).range(1..))]
+        limit: Option<i64>,
+    },
     /// Mark a proposed (or rejected) decision as accepted
     Accept {
         id: i64,
@@ -235,15 +242,10 @@ pub enum AdrCommands {
     },
 
     /// Mark an old decision as superseded by an accepted newer one
-    Supersede {
-        old: i64,
-        new: i64,
-    },
+    Supersede { old: i64, new: i64 },
 
     /// Show one ADR in full, including rationale
-    Show {
-        id: i64,
-    },
+    Show { id: i64 },
 }
 
 pub fn build() -> clap::Command {
