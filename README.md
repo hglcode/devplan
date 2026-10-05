@@ -33,6 +33,7 @@ dp task start 2                        # begin working — records started_at, s
 dp task list --overdue
 dp task list --type bug                # filter by type
 dp task show 2
+dp task search schema                  # full-text across title/description/notes
 dp task mod 2 --status blocked --note "waiting on external API"
 dp task done 2                         # finish (resolution: done)
 dp task done 2 --note "backend only"   # verdicts carry reasons

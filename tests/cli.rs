@@ -1,5 +1,6 @@
 use assert_cmd::Command;
 use predicates::prelude::*;
+use std::ops::Not;
 use tempfile::TempDir;
 
 fn dp(dir: &TempDir) -> Command {
@@ -336,4 +337,57 @@ fn list_default_is_pending_attention_ordered() {
     let pos_queued = stdout.find("queued").unwrap();
     assert!(pos_working < pos_stuck, "active must sort before blocked");
     assert!(pos_stuck < pos_queued, "blocked must sort before todo");
+}
+
+#[test]
+fn task_search_hits_title_and_note() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("implement oauth")
+        .assert()
+        .success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("unrelated")
+        .assert()
+        .success();
+    cmd()
+        .arg("task")
+        .arg("mod")
+        .arg("2")
+        .arg("--status")
+        .arg("blocked")
+        .arg("--note")
+        .arg("waiting on oauth provider")
+        .assert()
+        .success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("completely different topic")
+        .assert()
+        .success();
+    // title 命中 + note 命中,unrelated 不在:
+    let out = cmd()
+        .arg("task")
+        .arg("search")
+        .arg("oauth")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let s = String::from_utf8(out).unwrap();
+    assert!(s.contains("implement oauth"));
+    assert!(s.contains("unrelated")); // note 命中
+    assert!(s.contains("completely different topic").not()); // ★ 真正的排除判据
 }

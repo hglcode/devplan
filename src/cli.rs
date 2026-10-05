@@ -103,6 +103,9 @@ pub enum TaskCommands {
     /// Show one task in description
     Show { id: i64 },
 
+    /// Search tasks by text: title, description, status/resolution notes
+    Search { text: String },
+
     /// Start working on a task: sets status active, records started_at
     Start { id: i64 },
 

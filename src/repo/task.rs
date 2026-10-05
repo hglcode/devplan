@@ -114,6 +114,25 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
     Ok(out)
 }
 
+/// Full-text search across title/description/notes, title-hit ranked first.
+pub fn search(conn: &Connection, text: &str) -> Result<Vec<Task>> {
+    let pattern = format!("%{text}%");
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {COLS} FROM tasks
+         WHERE title LIKE ?1 OR description LIKE ?1
+            OR status_note LIKE ?1 OR resolution_note LIKE ?1
+         ORDER BY (title LIKE ?1) DESC,
+                  CASE status WHEN 'active' THEN 0 WHEN 'blocked' THEN 1 ELSE 2 END,
+                  priority DESC, due_date IS NULL, due_date ASC, id ASC",
+    ))?;
+    let rows = stmt.query_map(params![pattern], map_row)?;
+    let mut out = Vec::new();
+    for r in rows {
+        out.push(r?);
+    }
+    Ok(out)
+}
+
 pub fn start(conn: &Connection, id: i64) -> Result<()> {
     let t = get(conn, id)?;
     match t.status {

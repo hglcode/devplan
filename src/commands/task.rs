@@ -143,6 +143,11 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
     Ok(())
 }
 
+pub fn search(conn: &Connection, text: &str, fmt: Format) -> Result<()> {
+    let tasks = repo::task::search(conn, text)?;
+    print_tasks(&tasks, fmt)
+}
+
 pub fn start(conn: &Connection, id: i64) -> Result<()> {
     let t = repo::task::get(conn, id)?;
     repo::task::start(conn, id)?;
@@ -276,6 +281,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             task_type,
         } => list(conn, plan, overdue, status, task_type, fmt),
         TaskCommands::Show { id } => show(conn, id, fmt),
+        TaskCommands::Search { text } => search(conn, &text, fmt),
         TaskCommands::Start { id } => start(conn, id),
         TaskCommands::Done { id, note } => done(conn, id, note),
         TaskCommands::Abandon { id, note } => abandon(conn, id, note),

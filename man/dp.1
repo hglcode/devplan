@@ -90,6 +90,10 @@ Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
 Print one task in full detail: status and its note, started/done
 timestamps, resolution with note and duplicate linkage.
 .TP
+.BI "search " TEXT
+Find tasks by free text: matches title, description, status and
+resolution notes; title hits rank first, then the attention order.
+.TP
 .BI "start " ID
 Start working on a task: sets status to \fIactive\fR and records
 \fIstarted_at\fR (first start only \(em restarting after an interruption
