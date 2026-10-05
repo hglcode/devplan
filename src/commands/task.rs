@@ -62,17 +62,13 @@ pub fn list(
     conn: &Connection,
     plan: Option<i64>,
     overdue: bool,
-    active: bool,
-    done: bool,
+    status: Option<TaskStatus>,
     task_type: Option<TaskType>,
     fmt: Format,
 ) -> Result<()> {
-    let view = if done {
-        TaskView::Done
-    } else if active {
-        TaskView::Active
-    } else {
-        TaskView::Pending
+    let view = match status {
+        Some(s) => TaskView::Exact(s),
+        None => TaskView::Pending,
     };
     let tasks = repo::task::list(
         conn,
@@ -276,10 +272,9 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
         TaskCommands::List {
             plan,
             overdue,
-            active,
-            done,
+            status,
             task_type,
-        } => list(conn, plan, overdue, active, done, task_type, fmt),
+        } => list(conn, plan, overdue, status, task_type, fmt),
         TaskCommands::Show { id } => show(conn, id, fmt),
         TaskCommands::Start { id } => start(conn, id),
         TaskCommands::Done { id, note } => done(conn, id, note),

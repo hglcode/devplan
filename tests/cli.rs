@@ -75,7 +75,7 @@ fn add_list_done_flow() {
         .success()
         .stdout(predicates::str::contains("write oauth").not());
     dp(&dir)
-        .args(["task", "list", "--done"])
+        .args(["task", "list", "--status", "done"])
         .assert()
         .success()
         .stdout(predicates::str::contains("write oauth"));
@@ -206,7 +206,8 @@ fn rm_with_history_prompts_and_aborts() {
     cmd()
         .arg("task")
         .arg("list")
-        .arg("--done")
+        .arg("--status")
+        .arg("done")
         .assert()
         .success()
         .stdout(predicates::str::contains("survivor"));
@@ -242,7 +243,8 @@ fn rm_force_bypasses_prompt() {
     cmd()
         .arg("task")
         .arg("list")
-        .arg("--done")
+        .arg("--status")
+        .arg("done")
         .assert()
         .success()
         .stdout(predicates::str::contains("victim").not());

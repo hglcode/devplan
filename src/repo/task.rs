@@ -28,15 +28,11 @@ pub struct TaskFilter {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum TaskView {
-    /// status = 'todo' (historical `dp list` default)
+    /// everything not done yet (default view)
     #[default]
-    Todo,
-    /// status = 'active'
-    Active,
-    /// everything not done yet (plan views)
     Pending,
-    /// status = 'done'
-    Done,
+    /// exact status match (--status)
+    Exact(TaskStatus),
 }
 
 #[derive(Debug, Default, Clone)]
@@ -86,10 +82,11 @@ pub fn list(conn: &Connection, f: TaskFilter) -> Result<Vec<Task>> {
     let mut sql = format!("SELECT {COLS} FROM tasks WHERE 1=1");
     let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
     match f.view {
-        TaskView::Todo => sql.push_str(" AND status = 'todo'"),
-        TaskView::Active => sql.push_str(" AND status = 'active'"),
         TaskView::Pending => sql.push_str(" AND status != 'done'"),
-        TaskView::Done => sql.push_str(" AND status = 'done'"),
+        TaskView::Exact(s) => {
+            sql.push_str(" AND status = ?");
+            owned.push(Box::new(s.as_str()));
+        }
     }
     if let Some(p) = f.plan {
         sql.push_str(" AND plan_id = ?");

@@ -14,7 +14,7 @@ pub enum Format {
 #[command(
     name = "dp",
     version,
-    about = "project plan, task and decision tracker"
+    about = "project development plan, task and decision tracker"
 )]
 pub struct Cli {
     /// Output format: table, json, or markdown
@@ -92,12 +92,9 @@ pub enum TaskCommands {
         /// Show only overdue tasks
         #[arg(long)]
         overdue: bool,
-        /// Only tasks with status active
-        #[arg(long)]
-        active: bool,
-        /// Show only completed tasks
-        #[arg(long)]
-        done: bool,
+        /// Filter by status: todo / active / blocked / done (default: pending)
+        #[arg(long, value_parser = parse_status)]
+        status: Option<TaskStatus>,
         /// Filter by task type: feature / bug / chore / refactor / docs
         #[arg(long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,

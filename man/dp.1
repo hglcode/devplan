@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-04" "dp 0.13.0" "User Commands"
+.TH DP 1 "2026-10-05" "dp 0.13.1" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -76,11 +76,10 @@ Only tasks attached to plan \fIID\fR.
 Only tasks whose due date lies in the past; combines with the view flags
 below.
 .TP
-\fB\-\-active\fR
-Only tasks with status \fIactive\fR (currently being worked on).
-.TP
-\fB\-\-done\fR
-Only completed tasks; takes precedence over \fB\-\-active\fR.
+\fB\-\-status\fR \fISTATUS\fR
+Only tasks with the given status: \fItodo\fR, \fIactive\fR, \fIblocked\fR
+or \fIdone\fR (default view remains pending, attention\-ordered). This
+replaces the former \fB\-\-active\fR and \fB\-\-done\fR flags.
 .TP
 \fB\-\-type\fR \fITYPE\fR
 Only tasks of the given type: \fIfeature\fR, \fIbug\fR, \fIchore\fR,
