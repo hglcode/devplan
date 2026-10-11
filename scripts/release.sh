@@ -5,7 +5,7 @@
 set -euo pipefail
 
 VERSION="${1:?用法: release.sh <version> <tag-message> [commit-message]}"
-VERSION="${VERSION#v}"    # 剥掉误传的 v 前缀,在 TAG= 定义之前
+VERSION="${VERSION#v}" # 剥掉误传的 v 前缀,在 TAG= 定义之前
 TAG_MSG="${2:?缺 tag message}"
 COMMIT_MSG="${3:-Release ${VERSION}}"
 TAG="v${VERSION}"
@@ -15,11 +15,13 @@ cd "$(dirname "$0")/.."
 echo "=== [1/7] 前置检查 ==="
 # 替换原步骤 1 的工作区检查:
 if ! git diff --quiet -- . ':!CHANGELOG.md' || ! git diff --cached --quiet -- . ':!CHANGELOG.md'; then
-    echo "✗ 有 CHANGELOG 之外的未提交改动,先 commit"; exit 1
+    echo "✗ 有 CHANGELOG 之外的未提交改动,先 commit"
+    exit 1
 fi
 
 echo "=== [2/7] 质量门 ==="
 cargo fmt --check
+cargo deny check
 cargo clippy --workspace --all-targets -- -D warnings
 cargo nextest run
 
@@ -38,13 +40,16 @@ git push
 echo "=== [6/7] tag(describe 确认后才推) ==="
 git tag -a "${TAG}" -m "${TAG_MSG}"
 DESCRIBE=$(git describe --tags)
-[[ "${DESCRIBE}" == "${TAG}" ]] || { echo "✗ describe=${DESCRIBE} ≠ ${TAG},tag 未落在 HEAD"; exit 1; }
+[[ "${DESCRIBE}" == "${TAG}" ]] || {
+    echo "✗ describe=${DESCRIBE} ≠ ${TAG},tag 未落在 HEAD"
+    exit 1
+}
 git push origin "${TAG}"
 
 echo "=== [7/7] 发布 + 本机同步 ==="
 cargo publish
 cargo install --force --path .
-dp generate fish > ~/.config/fish/completions/dp.fish
+dp generate fish >~/.config/fish/completions/dp.fish
 cp man/dp.1 ~/.local/share/man/man1/ 2>/dev/null || true
 
 echo ""

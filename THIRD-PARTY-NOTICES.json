@@ -1,0 +1,1064 @@
+[
+  {
+    "name": "aho-corasick",
+    "version": "1.1.5",
+    "authors": "Andrew Gallant <jamslam@gmail.com>",
+    "repository": "https://github.com/BurntSushi/aho-corasick",
+    "license": "MIT OR Unlicense",
+    "license_file": null,
+    "description": "Fast multiple substring searching."
+  },
+  {
+    "name": "android_system_properties",
+    "version": "0.1.6",
+    "authors": "Nicolas Silva <nical@fastmail.com>",
+    "repository": "https://github.com/nical/android_system_properties",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Minimal Android system properties wrapper"
+  },
+  {
+    "name": "anstream",
+    "version": "1.0.0",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/anstyle.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "IO stream adapters for writing colored text that will gracefully degrade according to your terminal's capabilities."
+  },
+  {
+    "name": "anstyle",
+    "version": "1.0.14",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/anstyle.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "ANSI text styling"
+  },
+  {
+    "name": "anstyle-parse",
+    "version": "1.0.0",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/anstyle.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Parse ANSI Style Escapes"
+  },
+  {
+    "name": "anstyle-query",
+    "version": "1.1.5",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/anstyle.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Look up colored console capabilities"
+  },
+  {
+    "name": "anstyle-wincon",
+    "version": "3.0.11",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/anstyle.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Styling legacy Windows terminals"
+  },
+  {
+    "name": "anyhow",
+    "version": "1.0.104",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/anyhow",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Flexible concrete Error type built on std::error::Error"
+  },
+  {
+    "name": "assert_cmd",
+    "version": "2.2.2",
+    "authors": "Pascal Hertleif <killercup@gmail.com>|Ed Page <eopage@gmail.com>",
+    "repository": "https://github.com/assert-rs/assert_cmd.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Test CLI Applications."
+  },
+  {
+    "name": "autocfg",
+    "version": "1.5.1",
+    "authors": "Josh Stone <cuviper@gmail.com>",
+    "repository": "https://github.com/cuviper/autocfg",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Automatic cfg for Rust compiler features"
+  },
+  {
+    "name": "bitflags",
+    "version": "2.13.2",
+    "authors": "The Rust Project Developers",
+    "repository": "https://github.com/bitflags/bitflags",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A macro to generate structures which behave like bitflags."
+  },
+  {
+    "name": "bstr",
+    "version": "1.13.1",
+    "authors": "Andrew Gallant <jamslam@gmail.com>",
+    "repository": "https://github.com/BurntSushi/bstr",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A string type that is not required to be valid UTF-8."
+  },
+  {
+    "name": "bumpalo",
+    "version": "3.20.3",
+    "authors": "Nick Fitzgerald <fitzgen@gmail.com>",
+    "repository": "https://github.com/fitzgen/bumpalo",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A fast bump allocation arena for Rust."
+  },
+  {
+    "name": "cc",
+    "version": "1.6.0",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/cc-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A build-time dependency for Cargo build scripts to assist in invoking the native C compiler to compile native C code into a static archive to be linked into Rust code."
+  },
+  {
+    "name": "cfg-if",
+    "version": "1.0.5",
+    "authors": "Alex Crichton <alex@alexcrichton.com>",
+    "repository": "https://github.com/rust-lang/cfg-if",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A macro to ergonomically define an item depending on a large number of #[cfg] parameters. Structured like an if-else chain, the first matching branch is the item that gets emitted."
+  },
+  {
+    "name": "chrono",
+    "version": "0.4.45",
+    "authors": null,
+    "repository": "https://github.com/chronotope/chrono",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Date and time library for Rust"
+  },
+  {
+    "name": "clap",
+    "version": "4.6.7",
+    "authors": null,
+    "repository": "https://github.com/clap-rs/clap",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A simple to use, efficient, and full-featured Command Line Argument Parser"
+  },
+  {
+    "name": "clap_builder",
+    "version": "4.6.7",
+    "authors": null,
+    "repository": "https://github.com/clap-rs/clap",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A simple to use, efficient, and full-featured Command Line Argument Parser"
+  },
+  {
+    "name": "clap_complete",
+    "version": "4.6.11",
+    "authors": null,
+    "repository": "https://github.com/clap-rs/clap",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Generate shell completion scripts for your clap::Command"
+  },
+  {
+    "name": "clap_derive",
+    "version": "4.6.7",
+    "authors": null,
+    "repository": "https://github.com/clap-rs/clap",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Parse command line argument by defining a struct, derive crate."
+  },
+  {
+    "name": "clap_lex",
+    "version": "1.1.1",
+    "authors": null,
+    "repository": "https://github.com/clap-rs/clap",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Minimal, flexible command line parser"
+  },
+  {
+    "name": "clap_mangen",
+    "version": "0.3.3",
+    "authors": null,
+    "repository": "https://github.com/clap-rs/clap",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A manpage generator for clap"
+  },
+  {
+    "name": "colorchoice",
+    "version": "1.0.5",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/anstyle.git",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Global override of color control"
+  },
+  {
+    "name": "comfy-table",
+    "version": "8.0.1",
+    "authors": "Arne Beer <contact@arne.beer>",
+    "repository": "https://github.com/nukesor/comfy-table",
+    "license": "MIT",
+    "license_file": null,
+    "description": "An easy to use library for building beautiful tables with automatic content wrapping"
+  },
+  {
+    "name": "core-foundation-sys",
+    "version": "0.8.7",
+    "authors": "The Servo Project Developers",
+    "repository": "https://github.com/servo/core-foundation-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Bindings to Core Foundation for macOS"
+  },
+  {
+    "name": "crossterm",
+    "version": "0.29.0",
+    "authors": "T. Post",
+    "repository": "https://github.com/crossterm-rs/crossterm",
+    "license": "MIT",
+    "license_file": null,
+    "description": "A crossplatform terminal library for manipulating terminals."
+  },
+  {
+    "name": "crossterm_winapi",
+    "version": "0.9.1",
+    "authors": "T. Post",
+    "repository": "https://github.com/crossterm-rs/crossterm-winapi",
+    "license": "MIT",
+    "license_file": null,
+    "description": "WinAPI wrapper that provides some basic simple abstractions around common WinAPI calls"
+  },
+  {
+    "name": "devplan",
+    "version": "0.15.1",
+    "authors": null,
+    "repository": "https://github.com/hglcode/devplan",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Project dev plan / todo / done / decision tracker"
+  },
+  {
+    "name": "difflib",
+    "version": "0.4.0",
+    "authors": "Dima Kudosh <dimakudosh@gmail.com>",
+    "repository": "https://github.com/DimaKudosh/difflib",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Port of Python's difflib library to Rust."
+  },
+  {
+    "name": "document-features",
+    "version": "0.2.12",
+    "authors": "Slint Developers <info@slint.dev>",
+    "repository": "https://github.com/slint-ui/document-features",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Extract documentation for the feature flags from comments in Cargo.toml"
+  },
+  {
+    "name": "errno",
+    "version": "0.3.14",
+    "authors": "Chris Wong <lambda.fairy@gmail.com>|Dan Gohman <dev@sunfishcode.online>",
+    "repository": "https://github.com/lambda-fairy/rust-errno",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Cross-platform interface to the `errno` variable."
+  },
+  {
+    "name": "fallible-iterator",
+    "version": "0.3.0",
+    "authors": "Steven Fackler <sfackler@gmail.com>",
+    "repository": "https://github.com/sfackler/rust-fallible-iterator",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Fallible iterator traits"
+  },
+  {
+    "name": "fallible-streaming-iterator",
+    "version": "0.1.9",
+    "authors": "Steven Fackler <sfackler@gmail.com>",
+    "repository": "https://github.com/sfackler/fallible-streaming-iterator",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Fallible streaming iteration"
+  },
+  {
+    "name": "fastrand",
+    "version": "2.5.0",
+    "authors": "Stjepan Glavina <stjepang@gmail.com>",
+    "repository": "https://github.com/smol-rs/fastrand",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A simple and fast random number generator"
+  },
+  {
+    "name": "find-msvc-tools",
+    "version": "0.1.14",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/cc-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Find windows-specific tools, read MSVC versions from the registry and from COM interfaces"
+  },
+  {
+    "name": "float-cmp",
+    "version": "0.10.0",
+    "authors": "Mike Dilger <mike@mikedilger.com>",
+    "repository": "https://github.com/mikedilger/float-cmp",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Floating point approximate comparison traits"
+  },
+  {
+    "name": "foldhash",
+    "version": "0.2.0",
+    "authors": "Orson Peters <orsonpeters@gmail.com>",
+    "repository": "https://github.com/orlp/foldhash",
+    "license": "Zlib",
+    "license_file": null,
+    "description": "A fast, non-cryptographic, minimally DoS-resistant hashing algorithm."
+  },
+  {
+    "name": "futures-core",
+    "version": "0.3.34",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/futures-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "The core traits and types in for the `futures` library."
+  },
+  {
+    "name": "futures-task",
+    "version": "0.3.34",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/futures-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Tools for working with tasks."
+  },
+  {
+    "name": "futures-util",
+    "version": "0.3.34",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/futures-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Common utilities and extension traits for the futures-rs library."
+  },
+  {
+    "name": "getrandom",
+    "version": "0.4.3",
+    "authors": "The Rand Project Developers",
+    "repository": "https://github.com/rust-random/getrandom",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A small cross-platform library for retrieving random data from system source"
+  },
+  {
+    "name": "hashbrown",
+    "version": "0.16.1",
+    "authors": "Amanieu d'Antras <amanieu@gmail.com>",
+    "repository": "https://github.com/rust-lang/hashbrown",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A Rust port of Google's SwissTable hash map"
+  },
+  {
+    "name": "hashbrown",
+    "version": "0.17.1",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/hashbrown",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A Rust port of Google's SwissTable hash map"
+  },
+  {
+    "name": "hashlink",
+    "version": "0.12.2",
+    "authors": null,
+    "repository": "https://github.com/djc/hashlink",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "HashMap-like containers that hold their key-value pairs in a user controllable order"
+  },
+  {
+    "name": "heck",
+    "version": "0.5.0",
+    "authors": null,
+    "repository": "https://github.com/withoutboats/heck",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "heck is a case conversion library."
+  },
+  {
+    "name": "iana-time-zone",
+    "version": "0.1.65",
+    "authors": "Andrew Straw <strawman@astraw.com>|René Kijewski <rene.kijewski@fu-berlin.de>|Ryan Lopopolo <rjl@hyperbo.la>",
+    "repository": "https://github.com/strawlab/iana-time-zone",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "get the IANA time zone for the current system"
+  },
+  {
+    "name": "iana-time-zone-haiku",
+    "version": "0.1.2",
+    "authors": "René Kijewski <crates.io@k6i.de>",
+    "repository": "https://github.com/strawlab/iana-time-zone",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "iana-time-zone support crate for Haiku OS"
+  },
+  {
+    "name": "is_terminal_polyfill",
+    "version": "1.70.2",
+    "authors": null,
+    "repository": "https://github.com/polyfill-rs/is_terminal_polyfill",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Polyfill for `is_terminal` stdlib feature for use with older MSRVs"
+  },
+  {
+    "name": "itoa",
+    "version": "1.0.18",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/itoa",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Fast integer primitive to string conversion"
+  },
+  {
+    "name": "js-sys",
+    "version": "0.3.106",
+    "authors": "The wasm-bindgen Developers",
+    "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/js-sys",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Bindings for all JS global objects and functions in all JS environments like Node.js and browsers, built on `#[wasm_bindgen]` using the `wasm-bindgen` crate."
+  },
+  {
+    "name": "libc",
+    "version": "0.2.190",
+    "authors": null,
+    "repository": "https://github.com/rust-lang/libc",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Raw FFI bindings to platform libraries like libc."
+  },
+  {
+    "name": "libsqlite3-sys",
+    "version": "0.38.2",
+    "authors": "The rusqlite developers",
+    "repository": "https://github.com/rusqlite/rusqlite",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Native bindings to the libsqlite3 library"
+  },
+  {
+    "name": "linux-raw-sys",
+    "version": "0.12.1",
+    "authors": "Dan Gohman <dev@sunfishcode.online>",
+    "repository": "https://github.com/sunfishcode/linux-raw-sys",
+    "license": "Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT",
+    "license_file": null,
+    "description": "Generated bindings for Linux's userspace API"
+  },
+  {
+    "name": "litrs",
+    "version": "1.0.0",
+    "authors": "Lukas Kalbertodt <lukas.kalbertodt@gmail.com>",
+    "repository": "https://github.com/LukasKalbertodt/litrs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Parse and inspect Rust literals (i.e. tokens in the Rust programming language representing fixed values). Particularly useful for proc macros, but can also be used outside of a proc-macro context."
+  },
+  {
+    "name": "lock_api",
+    "version": "0.4.14",
+    "authors": "Amanieu d'Antras <amanieu@gmail.com>",
+    "repository": "https://github.com/Amanieu/parking_lot",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Wrappers to create fully-featured Mutex and RwLock types. Compatible with no_std."
+  },
+  {
+    "name": "log",
+    "version": "0.4.34",
+    "authors": "The Rust Project Developers",
+    "repository": "https://github.com/rust-lang/log",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A lightweight logging facade for Rust"
+  },
+  {
+    "name": "memchr",
+    "version": "2.8.3",
+    "authors": "Andrew Gallant <jamslam@gmail.com>|bluss",
+    "repository": "https://github.com/BurntSushi/memchr",
+    "license": "MIT OR Unlicense",
+    "license_file": null,
+    "description": "Provides extremely fast (uses SIMD on x86_64, aarch64 and wasm32) routines for 1, 2 or 3 byte search and single substring search."
+  },
+  {
+    "name": "normalize-line-endings",
+    "version": "0.3.0",
+    "authors": "Richard Dodd <richdodj@gmail.com>",
+    "repository": "https://github.com/derekdreery/normalize-line-endings",
+    "license": "Apache-2.0",
+    "license_file": null,
+    "description": "Takes an iterator over chars and returns a new iterator with all line endings (\\r, \\n, or \\r\\n) as \\n"
+  },
+  {
+    "name": "num-traits",
+    "version": "0.2.19",
+    "authors": "The Rust Project Developers",
+    "repository": "https://github.com/rust-num/num-traits",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Numeric traits for generic mathematics"
+  },
+  {
+    "name": "once_cell",
+    "version": "1.21.4",
+    "authors": "Aleksey Kladov <aleksey.kladov@gmail.com>",
+    "repository": "https://github.com/matklad/once_cell",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Single assignment cells and lazy values."
+  },
+  {
+    "name": "once_cell_polyfill",
+    "version": "1.70.2",
+    "authors": null,
+    "repository": "https://github.com/polyfill-rs/once_cell_polyfill",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Polyfill for `OnceCell` stdlib feature for use with older MSRVs"
+  },
+  {
+    "name": "parking_lot",
+    "version": "0.12.5",
+    "authors": "Amanieu d'Antras <amanieu@gmail.com>",
+    "repository": "https://github.com/Amanieu/parking_lot",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "More compact and efficient implementations of the standard synchronization primitives."
+  },
+  {
+    "name": "parking_lot_core",
+    "version": "0.9.12",
+    "authors": "Amanieu d'Antras <amanieu@gmail.com>",
+    "repository": "https://github.com/Amanieu/parking_lot",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "An advanced API for creating custom synchronization primitives."
+  },
+  {
+    "name": "pin-project-lite",
+    "version": "0.2.17",
+    "authors": null,
+    "repository": "https://github.com/taiki-e/pin-project-lite",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A lightweight version of pin-project written with declarative macros."
+  },
+  {
+    "name": "pkg-config",
+    "version": "0.3.34",
+    "authors": "Alex Crichton <alex@alexcrichton.com>",
+    "repository": "https://github.com/rust-lang/pkg-config-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A library to run the pkg-config system tool at build time in order to be used in Cargo build scripts."
+  },
+  {
+    "name": "predicates",
+    "version": "3.1.4",
+    "authors": "Nick Stevens <nick@bitcurry.com>",
+    "repository": "https://github.com/assert-rs/predicates-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "An implementation of boolean-valued predicate functions."
+  },
+  {
+    "name": "predicates-core",
+    "version": "1.0.10",
+    "authors": null,
+    "repository": "https://github.com/assert-rs/predicates-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "An API for boolean-valued predicate functions."
+  },
+  {
+    "name": "predicates-tree",
+    "version": "1.0.13",
+    "authors": null,
+    "repository": "https://github.com/assert-rs/predicates-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Render boolean-valued predicate functions results as a tree."
+  },
+  {
+    "name": "proc-macro2",
+    "version": "1.0.107",
+    "authors": "David Tolnay <dtolnay@gmail.com>|Alex Crichton <alex@alexcrichton.com>",
+    "repository": "https://github.com/dtolnay/proc-macro2",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A substitute implementation of the compiler's `proc_macro` API to decouple token-based libraries from the procedural macro use case."
+  },
+  {
+    "name": "quote",
+    "version": "1.0.47",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/quote",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Quasi-quoting macro quote!(...)"
+  },
+  {
+    "name": "r-efi",
+    "version": "6.0.0",
+    "authors": null,
+    "repository": "https://github.com/r-efi/r-efi",
+    "license": "Apache-2.0 OR LGPL-2.1-or-later OR MIT",
+    "license_file": null,
+    "description": "UEFI Reference Specification Protocol Constants and Definitions"
+  },
+  {
+    "name": "redox_syscall",
+    "version": "0.5.18",
+    "authors": "Jeremy Soller <jackpot51@gmail.com>",
+    "repository": "https://gitlab.redox-os.org/redox-os/syscall",
+    "license": "MIT",
+    "license_file": null,
+    "description": "A Rust library to access raw Redox system calls"
+  },
+  {
+    "name": "regex",
+    "version": "1.13.1",
+    "authors": "The Rust Project Developers|Andrew Gallant <jamslam@gmail.com>",
+    "repository": "https://github.com/rust-lang/regex",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "An implementation of regular expressions for Rust. This implementation uses finite automata and guarantees linear time matching on all inputs."
+  },
+  {
+    "name": "regex-automata",
+    "version": "0.4.18",
+    "authors": "The Rust Project Developers|Andrew Gallant <jamslam@gmail.com>",
+    "repository": "https://github.com/rust-lang/regex",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Automata construction and matching using regular expressions."
+  },
+  {
+    "name": "regex-syntax",
+    "version": "0.8.11",
+    "authors": "The Rust Project Developers|Andrew Gallant <jamslam@gmail.com>",
+    "repository": "https://github.com/rust-lang/regex",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A regular expression parser."
+  },
+  {
+    "name": "roff",
+    "version": "1.1.1",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/roff-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "ROFF (man page format) generation library"
+  },
+  {
+    "name": "rsqlite-vfs",
+    "version": "0.1.1",
+    "authors": null,
+    "repository": null,
+    "license": "MIT",
+    "license_file": null,
+    "description": "Helping to implement SQLite VFS."
+  },
+  {
+    "name": "rusqlite",
+    "version": "0.40.2",
+    "authors": "The rusqlite developers",
+    "repository": "https://github.com/rusqlite/rusqlite",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Ergonomic wrapper for SQLite"
+  },
+  {
+    "name": "rustix",
+    "version": "1.1.5",
+    "authors": "Dan Gohman <dev@sunfishcode.online>|Jakub Konka <kubkon@jakubkonka.com>",
+    "repository": "https://github.com/bytecodealliance/rustix",
+    "license": "Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT",
+    "license_file": null,
+    "description": "Safe Rust bindings to POSIX/Unix/Linux/Winsock-like syscalls"
+  },
+  {
+    "name": "rustversion",
+    "version": "1.0.23",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/rustversion",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Conditional compilation according to rustc compiler version"
+  },
+  {
+    "name": "scopeguard",
+    "version": "1.2.0",
+    "authors": "bluss",
+    "repository": "https://github.com/bluss/scopeguard",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A RAII scope guard that will run a given closure when it goes out of scope, even if the code between panics (assuming unwinding panic).  Defines the macros `defer!`, `defer_on_unwind!`, `defer_on_success!` as shorthands for guards with one of the implemented strategies."
+  },
+  {
+    "name": "serde",
+    "version": "1.0.229",
+    "authors": "Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/serde-rs/serde",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A generic serialization/deserialization framework"
+  },
+  {
+    "name": "serde_core",
+    "version": "1.0.229",
+    "authors": "Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/serde-rs/serde",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Serde traits only, with no support for derive -- use the `serde` crate instead"
+  },
+  {
+    "name": "serde_derive",
+    "version": "1.0.229",
+    "authors": "Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/serde-rs/serde",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Macros 1.1 implementation of #[derive(Serialize, Deserialize)]"
+  },
+  {
+    "name": "serde_json",
+    "version": "1.0.151",
+    "authors": "Erick Tryzelaar <erick.tryzelaar@gmail.com>|David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/serde-rs/json",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A JSON serialization file format"
+  },
+  {
+    "name": "shlex",
+    "version": "2.0.1",
+    "authors": "comex <comexk@gmail.com>|Fenhl <fenhl@fenhl.net>|Adrian Taylor <adetaylor@chromium.org>|Alex Touchet <alextouchet@outlook.com>|Daniel Parks <dp+git@oxidized.org>|Garrett Berg <googberg@gmail.com>",
+    "repository": "https://github.com/comex/rust-shlex",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Split a string into shell words, like Python's shlex."
+  },
+  {
+    "name": "slab",
+    "version": "0.4.12",
+    "authors": "Carl Lerche <me@carllerche.com>",
+    "repository": "https://github.com/tokio-rs/slab",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Pre-allocated storage for a uniform data type"
+  },
+  {
+    "name": "smallvec",
+    "version": "1.16.2",
+    "authors": "The Servo Project Developers",
+    "repository": "https://github.com/servo/rust-smallvec",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "'Small vector' optimization: store up to a small number of items on the stack"
+  },
+  {
+    "name": "sqlite-wasm-rs",
+    "version": "0.5.5",
+    "authors": "Spxg <unsafe@outlook.es>",
+    "repository": "https://github.com/Spxg/sqlite-wasm-rs",
+    "license": "MIT",
+    "license_file": null,
+    "description": "`wasm32-unknown-unknown` bindings to the libsqlite3 library."
+  },
+  {
+    "name": "strsim",
+    "version": "0.11.1",
+    "authors": "Danny Guo <danny@dannyguo.com>|maxbachmann <oss@maxbachmann.de>",
+    "repository": "https://github.com/rapidfuzz/strsim-rs",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Implementations of string similarity metrics. Includes Hamming, Levenshtein, OSA, Damerau-Levenshtein, Jaro, Jaro-Winkler, and Sørensen-Dice."
+  },
+  {
+    "name": "syn",
+    "version": "2.0.119",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/syn",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Parser for Rust source code"
+  },
+  {
+    "name": "syn",
+    "version": "3.0.6",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/syn",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Parser for Rust source code"
+  },
+  {
+    "name": "tempfile",
+    "version": "3.27.0",
+    "authors": "Steven Allen <steven@stebalien.com>|The Rust Project Developers|Ashley Mannix <ashleymannix@live.com.au>|Jason White <me@jasonwhite.io>",
+    "repository": "https://github.com/Stebalien/tempfile",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A library for managing temporary files and directories."
+  },
+  {
+    "name": "terminal_size",
+    "version": "0.4.4",
+    "authors": "Andrew Chin <achin@eminence32.net>",
+    "repository": "https://github.com/eminence/terminal-size",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Gets the size of your Linux or Windows terminal"
+  },
+  {
+    "name": "termtree",
+    "version": "0.5.1",
+    "authors": null,
+    "repository": "https://github.com/rust-cli/termtree",
+    "license": "MIT",
+    "license_file": null,
+    "description": "Visualize tree-like data on the command-line"
+  },
+  {
+    "name": "thiserror",
+    "version": "2.0.21",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/thiserror",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "derive(Error)"
+  },
+  {
+    "name": "thiserror-impl",
+    "version": "2.0.21",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/thiserror",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Implementation detail of the `thiserror` crate"
+  },
+  {
+    "name": "unicode-ident",
+    "version": "1.0.26",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/unicode-ident",
+    "license": "(Apache-2.0 OR MIT) AND Unicode-3.0",
+    "license_file": null,
+    "description": "Determine whether characters have the XID_Start or XID_Continue properties according to Unicode Standard Annex #31"
+  },
+  {
+    "name": "unicode-segmentation",
+    "version": "1.13.3",
+    "authors": "kwantam <kwantam@gmail.com>|Manish Goregaokar <manishsmail@gmail.com>",
+    "repository": "https://github.com/unicode-rs/unicode-segmentation",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "This crate provides Grapheme Cluster, Word and Sentence boundaries according to Unicode Standard Annex #29 rules."
+  },
+  {
+    "name": "unicode-width",
+    "version": "0.2.2",
+    "authors": "kwantam <kwantam@gmail.com>|Manish Goregaokar <manishsmail@gmail.com>",
+    "repository": "https://github.com/unicode-rs/unicode-width",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Determine displayed width of `char` and `str` types according to Unicode Standard Annex #11 rules."
+  },
+  {
+    "name": "utf8parse",
+    "version": "0.2.2",
+    "authors": "Joe Wilm <joe@jwilm.com>|Christian Duerr <contact@christianduerr.com>",
+    "repository": "https://github.com/alacritty/vte",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Table-driven UTF-8 parser"
+  },
+  {
+    "name": "vcpkg",
+    "version": "0.2.15",
+    "authors": "Jim McGrath <jimmc2@gmail.com>",
+    "repository": "https://github.com/mcgoo/vcpkg-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A library to find native dependencies in a vcpkg tree at build time in order to be used in Cargo build scripts."
+  },
+  {
+    "name": "wait-timeout",
+    "version": "0.2.1",
+    "authors": "Alex Crichton <alex@alexcrichton.com>",
+    "repository": "https://github.com/alexcrichton/wait-timeout",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "A crate to wait on a child process with a timeout specified across Unix and Windows platforms."
+  },
+  {
+    "name": "wasm-bindgen",
+    "version": "0.2.129",
+    "authors": "The wasm-bindgen Developers",
+    "repository": "https://github.com/wasm-bindgen/wasm-bindgen",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Easy support for interacting between JS and Rust."
+  },
+  {
+    "name": "wasm-bindgen-macro",
+    "version": "0.2.129",
+    "authors": "The wasm-bindgen Developers",
+    "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/macro",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Definition of the `#[wasm_bindgen]` attribute, an internal dependency"
+  },
+  {
+    "name": "wasm-bindgen-macro-support",
+    "version": "0.2.129",
+    "authors": "The wasm-bindgen Developers",
+    "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/main/crates/macro-support",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Implementation APIs for the `#[wasm_bindgen]` attribute"
+  },
+  {
+    "name": "wasm-bindgen-shared",
+    "version": "0.2.129",
+    "authors": "The wasm-bindgen Developers",
+    "repository": "https://github.com/wasm-bindgen/wasm-bindgen/tree/master/crates/shared",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Shared support between wasm-bindgen and wasm-bindgen cli, an internal dependency."
+  },
+  {
+    "name": "winapi",
+    "version": "0.3.9",
+    "authors": "Peter Atashian <retep998@gmail.com>",
+    "repository": "https://github.com/retep998/winapi-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Raw FFI bindings for all of Windows API."
+  },
+  {
+    "name": "winapi-i686-pc-windows-gnu",
+    "version": "0.4.0",
+    "authors": "Peter Atashian <retep998@gmail.com>",
+    "repository": "https://github.com/retep998/winapi-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Import libraries for the i686-pc-windows-gnu target. Please don't use this crate directly, depend on winapi instead."
+  },
+  {
+    "name": "winapi-x86_64-pc-windows-gnu",
+    "version": "0.4.0",
+    "authors": "Peter Atashian <retep998@gmail.com>",
+    "repository": "https://github.com/retep998/winapi-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Import libraries for the x86_64-pc-windows-gnu target. Please don't use this crate directly, depend on winapi instead."
+  },
+  {
+    "name": "windows-core",
+    "version": "0.62.2",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Core type support for COM and Windows"
+  },
+  {
+    "name": "windows-implement",
+    "version": "0.60.2",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "The implement macro for the Windows crates"
+  },
+  {
+    "name": "windows-interface",
+    "version": "0.59.3",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "The interface macro for the Windows crates"
+  },
+  {
+    "name": "windows-link",
+    "version": "0.2.1",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Linking for Windows"
+  },
+  {
+    "name": "windows-result",
+    "version": "0.4.1",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Windows error handling"
+  },
+  {
+    "name": "windows-strings",
+    "version": "0.5.1",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Windows string types"
+  },
+  {
+    "name": "windows-sys",
+    "version": "0.61.2",
+    "authors": null,
+    "repository": "https://github.com/microsoft/windows-rs",
+    "license": "Apache-2.0 OR MIT",
+    "license_file": null,
+    "description": "Rust for Windows"
+  },
+  {
+    "name": "zmij",
+    "version": "1.0.23",
+    "authors": "David Tolnay <dtolnay@gmail.com>",
+    "repository": "https://github.com/dtolnay/zmij",
+    "license": "MIT",
+    "license_file": null,
+    "description": "A double-to-string conversion algorithm based on Schubfach and xjb"
+  }
+]

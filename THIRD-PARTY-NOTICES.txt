@@ -1,0 +1,8 @@
+(Apache-2.0 OR MIT) AND Unicode-3.0 (1): unicode-ident
+Apache-2.0 (1): normalize-line-endings
+Apache-2.0 OR Apache-2.0 WITH LLVM-exception OR MIT (2): linux-raw-sys, rustix
+Apache-2.0 OR LGPL-2.1-or-later OR MIT (1): r-efi
+Apache-2.0 OR MIT (95): android_system_properties, anstream, anstyle, anstyle-parse, anstyle-query, anstyle-wincon, anyhow, assert_cmd, autocfg, bitflags, bstr, bumpalo, cc, cfg-if, chrono, clap, clap_builder, clap_complete, clap_derive, clap_lex, clap_mangen, colorchoice, core-foundation-sys, document-features, errno, fallible-iterator, fallible-streaming-iterator, fastrand, find-msvc-tools, futures-core, futures-task, futures-util, getrandom, hashbrown, hashbrown, hashlink, heck, iana-time-zone, iana-time-zone-haiku, is_terminal_polyfill, itoa, js-sys, libc, litrs, lock_api, log, num-traits, once_cell, once_cell_polyfill, parking_lot, parking_lot_core, pin-project-lite, pkg-config, predicates, predicates-core, predicates-tree, proc-macro2, quote, regex, regex-automata, regex-syntax, roff, rustversion, scopeguard, serde, serde_core, serde_derive, serde_json, shlex, smallvec, syn, syn, tempfile, terminal_size, thiserror, thiserror-impl, unicode-segmentation, unicode-width, utf8parse, vcpkg, wait-timeout, wasm-bindgen, wasm-bindgen-macro, wasm-bindgen-macro-support, wasm-bindgen-shared, winapi, winapi-i686-pc-windows-gnu, winapi-x86_64-pc-windows-gnu, windows-core, windows-implement, windows-interface, windows-link, windows-result, windows-strings, windows-sys
+MIT (15): comfy-table, crossterm, crossterm_winapi, devplan, difflib, float-cmp, libsqlite3-sys, redox_syscall, rsqlite-vfs, rusqlite, slab, sqlite-wasm-rs, strsim, termtree, zmij
+MIT OR Unlicense (2): aho-corasick, memchr
+Zlib (1): foldhash

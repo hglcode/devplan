@@ -105,3 +105,8 @@ dp generate bash | zsh | fish | elvish | powershell | man
 ```
 
 See `man dp` (or `man ./man/dp.1` from the repo) for the full manual.
+
+## License
+
+This project is licensed under the MIT License.
+See [THIRD-PARTY-NOTICES](./THIRD-PARTY-NOTICES.txt) for third-party dependency licenses.

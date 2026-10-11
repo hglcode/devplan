@@ -1,0 +1,88 @@
+# Configuration file for `prek`, a git hook framework written in Rust.
+# See https://prek.j178.dev for more information.
+#:schema https://www.schemastore.org/prek.json
+
+minimum_prek_version = "0.5.5"
+default_stages = ["pre-commit"]
+
+[[repos]]
+repo = "local"
+hooks = [
+  {
+    id = "rust-fmt",
+    name = "cargo fmt",
+    entry = "cargo fmt --all",
+    language = "system",
+    types = ["rust"],
+    pass_filenames = false,
+    stages = ["pre-commit"]
+  },
+  {
+    id = "sh-fmt",
+    name = "shfmt",
+    entry = "shfmt -i 4 -w",
+    language = "system",
+    types = ["shell"],
+    stages = ["pre-commit"]
+  },
+  {
+    id = "sh-lint",
+    name = "shellcheck",
+    entry = "shellcheck",
+    language = "system",
+    types = ["shell"],
+    stages = ["pre-commit"]
+  },
+  {
+    id = "py-fmt",
+    name = "ruff format",
+    entry = "ruff format",
+    language = "system",
+    types = ["python"],
+    stages = ["pre-commit"]
+  },
+  {
+    id = "py-lint",
+    name = "ruff check",
+    entry = "ruff check --fix",
+    language = "system",
+    types = ["python"],
+    stages = ["pre-commit"]
+  },
+  {
+    id = "rust-fmt-check",
+    name = "cargo fmt check (push guard)",
+    entry = "cargo fmt --all -- --check",
+    language = "system",
+    pass_filenames = false,
+    always_run = true,
+    stages = ["pre-push"]
+  },
+  {
+    id = "cargo-clippy",
+    name = "cargo clippy",
+    entry = "cargo clippy --workspace --all-targets -- -D warnings",
+    language = "system",
+    pass_filenames = false,
+    always_run = true,
+    stages = ["pre-push"]
+  },
+  {
+    id = "cargo-nextest",
+    name = "cargo nextest",
+    entry = "cargo nextest run --workspace",
+    language = "system",
+    pass_filenames = false,
+    always_run = true,
+    stages = ["pre-push"]
+  },
+  {
+    id = "cargo-deny",
+    name = "cargo deny",
+    entry = "cargo deny check",
+    language = "system",
+    pass_filenames = false,
+    always_run = true,
+    stages = ["pre-push"]
+  }
+]
