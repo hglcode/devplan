@@ -46,15 +46,16 @@ Attach the task to plan \fIID\fR (must exist).
 \fB\-\-due\fR \fIDATE\fR
 Due date, \fIYYYY\-MM\-DD\fR.
 .TP
-\fB\-p\fR, \fB\-\-priority\fR \fIP\fR
+\fB\-p\fR, \fB\-\-prio\fR, \fB\-\-priority\fR \fIP\fR
 Priority; see
 .BR PRIORITIES .
 .TP
-\fB\-\-tag\fR \fILIST\fR
-Comma\-separated tags; surrounding whitespace is trimmed.
+\fB\-\-tags\fR \fILIST\fR
+Comma\-separated tags; surrounding whitespace is trimmed. Aliases:
+\fB\-\-tag\fR, \fB\-\-label\fR, \fB\-\-labels\fR.
 .TP
-\fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
-Long description, shown by \fBdp task show\fR.
+\fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
+Long description, shown by \fBdp task show\fR. Alias: \fB\-\-description\fR.
 .TP
 \fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 Task type: \fIfeature\fR, \fIbug\fR, \fIchore\fR, \fIrefactor\fR or
@@ -152,17 +153,17 @@ back\-to\-todo\-reason). Requires \fB\-\-status\fR; cleared on the next
 transition — process\-scoped, unlike the permanent
 \fIresolution_note\fR.
 .TP
-\fB\-p\fR, \fB\-\-priority\fR \fIP\fR
-New priority.
+\fB\-p\fR, \fB\-\-prio\fR \fIP\fR
+New priority. Aliases: \fB\-\-priority\fR.
 .TP
 \fB\-\-due\fR \fIDATE\fR
 New due date.
 .TP
-\fB\-\-tag\fR \fILIST\fR
-Replace the tag list.
+\fB\-\-tags\fR \fILIST\fR
+Replace the tag list. Aliases: \fB\-\-tag\fR, \fB\-\-label\fR, \fB\-\-labels\fR.
 .TP
-\fB\-d\fR, \fB\-\-description\fR \fITEXT\fR
-New description.
+\fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
+New description. Alias: \fB\-\-description\fR.
 .TP
 \fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 New task type.
@@ -181,8 +182,8 @@ progress of their tasks; archiving is a deliberate act.
 .TP
 .BI "add " TITLE
 Create a plan; accepts \fB\-\-adr\fR \fIID\fR (decision origin),
-\fB\-\-due\fR \fIDATE\fR, \fB\-p\fR/\fB\-\-priority\fR and
-\fB\-d\fR/\fB\-\-description\fR \fITEXT\fR.
+\fB\-\-due\fR \fIDATE\fR, \fB\-p\fR/\fB\-\-prio\fR and
+\fB\-d\fR/\fB\-\-desc\fR \fITEXT\fR.
 .TP
 .B list
 Summarize plans with per\-plan progress (done/total, percentage).
@@ -297,7 +298,7 @@ Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR
 .nf
 dp init
 dp plan add "Q4 refactor auth" --due 2026-12-31 -p high
-dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high --tag auth,backend -d "OAuth2 auth code flow"
+dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high --tags auth,backend -d "OAuth2 auth code flow"
 dp task list
 dp task start 2
 dp task mod 2 --status blocked --note "waiting on external API"

@@ -74,7 +74,7 @@ pub enum TaskCommands {
         #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
         /// Comma-separated tags
-        #[arg(long, alias = "tag", alias = "label", alias = "labels")]
+        #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
         /// Long description
         #[arg(short, long = "desc", alias = "description")]
@@ -156,7 +156,7 @@ pub enum TaskCommands {
         status: Option<TaskStatus>,
         #[arg(long = "note")]
         status_note: Option<String>,
-        #[arg(long, alias = "tag", alias = "label", alias = "labels")]
+        #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,

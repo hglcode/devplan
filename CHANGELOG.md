@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.15.2] — 2026-10-13
+
+### Changed
+
+- primary long names shortened for AI-agent ergonomics: `--prio`,
+  `--tags`, `--desc` (add/mod/plan add); former names remain as hidden
+  aliases — `--priority`, `--tag`, `--description`, plus `--label` and
+  `--labels` for the GitHub-style vocabulary. Nothing breaks: every
+  historical or commonly-guessed spelling keeps working
+
 ## [0.15.1] — 2026-10-05
 
 ### Added
