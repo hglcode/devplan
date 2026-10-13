@@ -71,13 +71,13 @@ pub enum TaskCommands {
         #[arg(long = "due", value_parser = parse_date)]
         due_date: Option<NaiveDate>,
         /// Priority: low/normal/high/urgent or 0/1/2/3
-        #[arg(short, long, value_parser = parse_priority)]
+        #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
         /// Comma-separated tags
-        #[arg(long = "tag")]
+        #[arg(long, alias = "tag", alias = "label", alias = "labels")]
         tags: Option<String>,
         /// Long description
-        #[arg(short, long)]
+        #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor/docs
         #[arg(short, long = "type", value_parser = parse_task_type)]
@@ -149,16 +149,16 @@ pub enum TaskCommands {
         title: Option<String>,
         #[arg(long = "due", value_parser = parse_date)]
         due_date: Option<NaiveDate>,
-        #[arg(short, long, value_parser = parse_priority)]
+        #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
         /// todo / active / blocked / done
         #[arg(short, long, value_parser = parse_status)]
         status: Option<TaskStatus>,
         #[arg(long = "note")]
         status_note: Option<String>,
-        #[arg(long = "tag")]
+        #[arg(long, alias = "tag", alias = "label", alias = "labels")]
         tags: Option<String>,
-        #[arg(short, long)]
+        #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor / docs
         #[arg(short, long = "type", value_parser = parse_task_type)]
@@ -190,9 +190,9 @@ pub enum PlanCommands {
         start_date: Option<NaiveDate>,
         #[arg(long = "due", value_parser = parse_date)]
         due_date: Option<NaiveDate>,
-        #[arg(short, long, value_parser = parse_priority)]
+        #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
-        #[arg(short, long)]
+        #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
     },
     List {
