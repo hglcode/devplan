@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-06" "dp 0.15.1" "User Commands"
+.TH DP 1 "2026-10-14" "dp 0.15.3" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -24,6 +24,25 @@ to version control or add it to
 .I .gitignore
 as you prefer. Inspect the data directly with
 .BR sqlite3 (1).
+.PP
+.B COMMAND ALIASES.
+Common verbs accept short forms, useful for muscle memory and tab
+completion of habit:
+.B task ls
+(list),
+.B task new
+(add),
+.B task up
+/
+.B task edit
+(mod),
+.B gen
+(generate) \(em and likewise on
+.B plan
+and
+.B adr .
+Aliases are accepted everywhere the primary name is; the primary names
+are what appear in help and are recommended in scripts.
 .SH COMMANDS
 .TP
 .B init
@@ -46,16 +65,18 @@ Attach the task to plan \fIID\fR (must exist).
 \fB\-\-due\fR \fIDATE\fR
 Due date, \fIYYYY\-MM\-DD\fR.
 .TP
-\fB\-p\fR, \fB\-\-prio\fR, \fB\-\-priority\fR \fIP\fR
+\fB\-p\fR, \fB\-\-prio\fR \fIP\fR
 Priority; see
 .BR PRIORITIES .
+Alias: \fB\-\-priority\fR.
 .TP
 \fB\-\-tags\fR \fILIST\fR
 Comma\-separated tags; surrounding whitespace is trimmed. Aliases:
 \fB\-\-tag\fR, \fB\-\-label\fR, \fB\-\-labels\fR.
 .TP
 \fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
-Long description, shown by \fBdp task show\fR. Alias: \fB\-\-description\fR.
+Long description, shown by \fBdp task show\fR. Alias:
+\fB\-\-description\fR.
 .TP
 \fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 Task type: \fIfeature\fR, \fIbug\fR, \fIchore\fR, \fIrefactor\fR or
@@ -118,7 +139,7 @@ Mark a task as done with resolution \fIabandoned\fR and record
 \fIdone_at\fR: the task was deliberately dropped unfinished.
 \fB\-\-note\fR \fITEXT\fR records why \(em the top forgettable. Excluded
 from the done counters in \fBdp stats\fR (output), but still listed by
-\fBdp task list \-\-status done\fR (history)
+\fBdp task list \-\-status done\fR (history).
 .TP
 .BI "duplicate " ID
 Close a task as a duplicate of another: resolution \fIduplicated\fR.
@@ -154,13 +175,14 @@ transition — process\-scoped, unlike the permanent
 \fIresolution_note\fR.
 .TP
 \fB\-p\fR, \fB\-\-prio\fR \fIP\fR
-New priority. Aliases: \fB\-\-priority\fR.
+New priority. Alias: \fB\-\-priority\fR.
 .TP
 \fB\-\-due\fR \fIDATE\fR
 New due date.
 .TP
 \fB\-\-tags\fR \fILIST\fR
-Replace the tag list. Aliases: \fB\-\-tag\fR, \fB\-\-label\fR, \fB\-\-labels\fR.
+Replace the tag list. Aliases: \fB\-\-tag\fR, \fB\-\-label\fR,
+\fB\-\-labels\fR.
 .TP
 \fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
 New description. Alias: \fB\-\-description\fR.
@@ -310,9 +332,10 @@ dp adr add "Use SQLite" --context "Need zero-config embedded storage" --decision
 dp adr accept 1
 dp adr supersede 1 4
 dp stats
+dp task ls -n 5
 dp task list --format=markdown
 dp stats --format=json | jq .
-dp generate fish > $HOME/.config/fish/completions/dp.fish
+dp gen fish > $HOME/.config/fish/completions/dp.fish
 .fi
 .SH FILES
 .TP
@@ -336,5 +359,7 @@ exits 0 on success (including \-\-help and \-\-version), 1 on runtime
 failure with a diagnostic on stderr (database not initialized, unknown
 id, invalid date or status, plan referenced by \fBdp task add \-\-plan\fR
 does not exist), and 2 on usage errors detected by the argument parser.
+Piped output closed early (e.g.\& \fBdp gen man | head\fR) terminates
+silently per Unix convention.
 .SH SEE ALSO
 .BR sqlite3 (1), git (1)
