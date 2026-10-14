@@ -18,7 +18,13 @@ pub enum Format {
 )]
 pub struct Cli {
     /// Output format: table, json, or markdown
-    #[arg(long, value_enum, default_value = "table", global = true)]
+    #[arg(
+        long,
+        alias = "fmt",
+        value_enum,
+        default_value = "table",
+        global = true
+    )]
     pub format: Format,
     #[command(subcommand)]
     pub command: Commands,
