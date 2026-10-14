@@ -51,6 +51,7 @@ pub enum Commands {
     Stats,
 
     // Generate shell completion or man doc
+    #[command(alias = "gen")]
     Generate {
         /// Target: a shell for completions, or "man" for a manual page
         #[arg(value_enum)]
@@ -61,6 +62,7 @@ pub enum Commands {
 #[derive(Debug, Subcommand)]
 pub enum TaskCommands {
     /// Add a new task
+    #[command(alias = "new")]
     Add {
         /// Task title
         title: String,
@@ -85,6 +87,7 @@ pub enum TaskCommands {
     },
 
     /// List tasks
+    #[command(alias = "ls")]
     List {
         /// Filter by plan id
         #[arg(long)]
@@ -143,6 +146,7 @@ pub enum TaskCommands {
     },
 
     /// Modify a task's fields
+    #[command(aliases = ["up", "update", "edit", "modify"])]
     Mod {
         id: i64,
         #[arg(long)]
@@ -181,6 +185,7 @@ pub enum GenerateTarget {
 
 #[derive(Debug, Subcommand)]
 pub enum PlanCommands {
+    #[command(alias = "new")]
     Add {
         title: String,
         #[arg(long = "adr")]
@@ -195,6 +200,7 @@ pub enum PlanCommands {
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
     },
+    #[command(alias = "ls")]
     List {
         /// Limit output to the first N plans (after ordering)
         #[arg(short = 'n', long, value_parser = clap::value_parser!(i64).range(1..))]
@@ -208,6 +214,7 @@ pub enum PlanCommands {
 
 #[derive(Debug, Subcommand)]
 pub enum AdrCommands {
+    #[command(alias = "new")]
     Add {
         title: String,
         /// Background / problem statement
@@ -220,6 +227,7 @@ pub enum AdrCommands {
         #[arg(long)]
         consequence: Option<String>,
     },
+    #[command(alias = "ls")]
     List {
         /// Limit output to the first N decisions(ADRs) (after ordering)
         #[arg(short = 'n', long, value_parser = clap::value_parser!(i64).range(1..))]

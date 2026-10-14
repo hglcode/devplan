@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.15.3] — 2026-10-14
+
+### Added
+
+- command alias net: `ls` (list), `new` (add), `up`/`update`/`edit`/
+  `modify` (mod), `gen` (generate) — on task, plan and adr alike;
+  primary names unchanged, aliases hidden (muscle memory + agent
+  guesses), guarded by a regression test
+
+### Fixed
+
+- piped output no longer errors on early close (`dp gen man | head`
+  exits silently per Unix convention — SIGPIPE default restored)
+
 ## [0.15.2] — 2026-10-13
 
 ### Changed

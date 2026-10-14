@@ -424,3 +424,30 @@ fn list_limit_truncates_with_notice() {
     assert!(s.contains("task2"));
     assert!(s.contains("task3").not()); // 第三条被截
 }
+
+#[test]
+fn command_aliases_resolve() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    // add 走别名 new,list 走别名 ls:
+    cmd()
+        .arg("task")
+        .arg("new")
+        .arg("via-alias")
+        .assert()
+        .success();
+    let out = cmd()
+        .arg("task")
+        .arg("ls")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    assert!(String::from_utf8(out).unwrap().contains("via-alias"));
+}
