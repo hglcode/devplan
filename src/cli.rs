@@ -168,6 +168,8 @@ pub enum TaskCommands {
         status_note: Option<String>,
         #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
+        #[arg(long, aliases = ["dep", "depends-on"])]
+        depends: Option<i64>,
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor / docs

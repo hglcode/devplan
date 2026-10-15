@@ -451,3 +451,76 @@ fn command_aliases_resolve() {
         .clone();
     assert!(String::from_utf8(out).unwrap().contains("via-alias"));
 }
+
+#[test]
+fn task_dependency_is_soft_and_self_rejected() {
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("task-a")
+        .assert()
+        .success();
+    cmd()
+        .arg("task")
+        .arg("add")
+        .arg("task-b")
+        .assert()
+        .success();
+
+    // mod 建立依赖(B 依赖 A):
+    cmd()
+        .arg("task")
+        .arg("mod")
+        .arg("2")
+        .arg("--depends-on")
+        .arg("1")
+        .assert()
+        .success();
+
+    // 软语义:B 的 show 显示依赖(未满足态):
+    let out = cmd()
+        .arg("task")
+        .arg("show")
+        .arg("2")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let s = String::from_utf8(out).unwrap();
+    assert!(s.contains("Depends on: #1"));
+    assert!(s.contains("todo")); // A 还没 done,未满足
+
+    // done A → B 的依赖转为满足:
+    cmd().arg("task").arg("done").arg("1").assert().success();
+    let out = cmd()
+        .arg("task")
+        .arg("show")
+        .arg("2")
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let s = String::from_utf8(out).unwrap();
+    assert!(s.contains("Depends on: #1"));
+    assert!(s.contains("✓"));
+
+    // 自依赖拒绝:
+    cmd()
+        .arg("task")
+        .arg("mod")
+        .arg("2")
+        .arg("--depends-on")
+        .arg("2")
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("cannot depend on itself"));
+}

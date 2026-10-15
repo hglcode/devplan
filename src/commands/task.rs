@@ -28,6 +28,7 @@ pub struct ModifyArgs {
     pub stat: Option<TaskStatus>,
     pub note: Option<String>,
     pub tags: Option<String>,
+    pub deps: Option<i64>,
     pub desc: Option<String>,
     pub plan: Option<i64>,
 }
@@ -142,6 +143,15 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
             println!("    Note:     {note}");
         }
     }
+    if let Some(dep) = t.depends_on {
+        let status = repo::task::get(conn, dep)?.status;
+        let mark = if status == TaskStatus::Done {
+            "✓"
+        } else {
+            "未满足"
+        };
+        println!("  Depends on: #{dep} ({status}, {mark})");
+    }
     if !t.description.is_empty() {
         println!("  Description:");
         for line in t.description.lines() {
@@ -223,6 +233,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         stat,
         note,
         tags,
+        deps,
         desc,
         plan,
     } = args;
@@ -237,6 +248,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         || prio.is_some()
         || stat.is_some()
         || tags.is_some()
+        || deps.is_some()
         || desc.is_some()
         || plan.is_some();
     let update = TaskUpdate {
@@ -247,6 +259,7 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         status: stat,
         status_note: note,
         tags: tags.map(|t| split_tags(&t)),
+        depends: deps,
         description: desc,
         plan,
     };
@@ -304,6 +317,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             status,
             status_note,
             tags,
+            depends,
             description,
             task_type,
             plan,
@@ -318,6 +332,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
                 stat: status,
                 note: status_note,
                 tags,
+                deps: depends,
                 desc: description,
                 plan,
             },

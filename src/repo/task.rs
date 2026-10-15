@@ -6,7 +6,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, priority, tags, due_date, started_at, done_at, created_at, updated_at";
+const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, depends_on, priority, tags, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
@@ -46,6 +46,7 @@ pub struct TaskUpdate {
     pub tags: Option<Vec<String>>,
     pub description: Option<String>,
     pub plan: Option<i64>,
+    pub depends: Option<i64>,
 }
 
 pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
@@ -161,6 +162,13 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     let mut sets: Vec<String> = Vec::new();
     let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
 
+    if let Some(dep) = u.depends {
+        if dep == id {
+            anyhow::bail!("task cannot depend on itself");
+        }
+        get(conn, dep)?; // FK 预检,同 plan 预检模式
+    }
+
     if let Some(title) = &u.title
         && *title != existing.title
     {
@@ -207,6 +215,13 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
         sets.push("tags = ?".into());
         owned.push(Box::new(join_tags(tags)));
     }
+    if let Some(deps) = u.depends
+        && Some(deps) != existing.depends_on
+    {
+        sets.push("depends_on = ?".into());
+        owned.push(Box::new(u.depends.unwrap()));
+    }
+
     if let Some(desc) = &u.description
         && *desc != existing.description
     {
@@ -293,11 +308,11 @@ fn now_ts() -> String {
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
     let status: String = row.get(5)?;
     let resolution: Option<String> = row.get(7)?;
-    let prio: i64 = row.get(10)?;
-    let tags: String = row.get(11)?;
+    let prio: i64 = row.get(11)?;
+    let tags: String = row.get(12)?;
     let typ: String = row.get(2)?;
-    let due: Option<String> = row.get(12)?;
-    let start: Option<String> = row.get(13)?;
+    let due: Option<String> = row.get(13)?;
+    let start: Option<String> = row.get(14)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
@@ -309,13 +324,14 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         resolution: resolution.and_then(|r| Resolution::from_label(&r)),
         resolution_note: row.get(8)?,
         duplicate_of: row.get(9)?,
+        depends_on: row.get(10)?,
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         started_at: start,
-        done_at: row.get(14)?,
-        created_at: row.get(15)?,
-        updated_at: row.get(16)?,
+        done_at: row.get(15)?,
+        created_at: row.get(16)?,
+        updated_at: row.get(17)?,
     })
 }
 
