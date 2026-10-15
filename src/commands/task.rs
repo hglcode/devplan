@@ -16,6 +16,7 @@ pub struct AddArgs {
     pub due_date: Option<NaiveDate>,
     pub priority: Option<Priority>,
     pub tags: Option<String>,
+    pub deps: Option<i64>,
     pub desc: Option<String>,
 }
 
@@ -41,6 +42,7 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
         due_date,
         priority,
         tags,
+        deps,
         desc,
     } = args;
     let id = repo::task::add(
@@ -52,6 +54,7 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
             due_date,
             priority: priority.unwrap_or_default(),
             tags: tags.map(|t| split_tags(&t)).unwrap_or_default(),
+            depends: deps,
             description: desc.as_deref().unwrap_or(""),
         },
     )?;
@@ -281,6 +284,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             due_date,
             priority,
             tags,
+            depends,
             description,
             task_type,
         } => add(
@@ -292,6 +296,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
                 due_date,
                 priority,
                 tags,
+                deps: depends,
                 desc: description,
             },
         ),

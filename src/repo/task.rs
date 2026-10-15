@@ -15,6 +15,7 @@ pub struct NewTask<'a> {
     pub due_date: Option<NaiveDate>,
     pub priority: Priority,
     pub tags: Vec<String>,
+    pub depends: Option<i64>,
     pub description: &'a str,
 }
 
@@ -54,11 +55,12 @@ pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
         crate::repo::plan::get(conn, plan_id)?; // clean "plan #N not found" instead of raw FK error
     }
     conn.execute(
-        "INSERT INTO tasks (plan_id, type, title, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+        "INSERT INTO tasks (plan_id, type, title, depends_on, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
         params![
             t.plan,
             t.task_type.as_str(),
             t.title,
+            t.depends,
             t.description,
             t.priority.as_int(),
             t.due_date.map(|d| d.to_string()),
@@ -354,6 +356,7 @@ mod tests {
             due_date: None,
             priority: Priority::Normal,
             tags: vec![],
+            depends: None,
             description: "",
         }
     }

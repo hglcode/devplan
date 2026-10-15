@@ -84,6 +84,9 @@ pub enum TaskCommands {
         /// Comma-separated tags
         #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
+        /// Depends on task id
+        #[arg(long = "deps", aliases = ["dep", "depends", "depends-on"])]
+        depends: Option<i64>,
         /// Long description
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
@@ -154,22 +157,30 @@ pub enum TaskCommands {
     /// Modify a task's fields
     #[command(aliases = ["up", "update", "edit", "modify"])]
     Mod {
+        /// ID number
         id: i64,
         #[arg(long)]
+        /// Title content
         title: Option<String>,
+        /// Planned due date, YYYY-MM-DD (schedule window right edge)
         #[arg(long = "due", value_parser = parse_date)]
         due_date: Option<NaiveDate>,
+        /// Priority: urgent, high, normal, low
         #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
-        /// todo / active / blocked / done
+        /// Status: todo / active / blocked / done
         #[arg(short, long, value_parser = parse_status)]
+        /// Note content
         status: Option<TaskStatus>,
         #[arg(long = "note")]
         status_note: Option<String>,
+        /// Tags/Labels
         #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
-        #[arg(long, aliases = ["dep", "depends-on"])]
+        /// Depends on task id
+        #[arg(long = "deps", aliases = ["dep", "depends", "depends-on"])]
         depends: Option<i64>,
+        /// Description content
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
         /// Type: feature / bug / chore / refactor / docs
@@ -195,16 +206,21 @@ pub enum GenerateTarget {
 pub enum PlanCommands {
     #[command(alias = "new")]
     Add {
+        /// Title content
         title: String,
+        /// ID number of ADR(architecture decision record)
         #[arg(long = "adr")]
         adr_id: Option<i64>,
         /// Planned start date, YYYY-MM-DD (schedule window left edge)
         #[arg(long = "start", value_parser = parse_date)]
         start_date: Option<NaiveDate>,
+        /// Planned due date, YYYY-MM-DD (schedule window right edge)
         #[arg(long = "due", value_parser = parse_date)]
         due_date: Option<NaiveDate>,
+        /// Priority: urgent, high, normal, low
         #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
+        /// Description content
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
     },
@@ -243,6 +259,7 @@ pub enum AdrCommands {
     },
     /// Mark a proposed (or rejected) decision as accepted
     Accept {
+        /// ID number
         id: i64,
         /// Review rationale recorded with the acceptance
         #[arg(long)]
@@ -251,6 +268,7 @@ pub enum AdrCommands {
 
     /// Reject a proposed decision (may be re-accepted later — verdicts can be revisited)
     Reject {
+        /// ID number
         id: i64,
         /// Review rationale recorded with the rejection
         #[arg(long)]
