@@ -14,17 +14,18 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
     match fmt {
         Format::Json => println!("{}", serde_json::to_string_pretty(tasks)?),
         Format::Markdown => {
-            println!("| ID | Plan | Prio | Due | Status | Title | Tags |");
-            println!("| -- | ---- | ---- | --- | ------ | ----- | ---- |");
+            println!("| ID | Plan | Prio | Due | Status | Title | Deps | Tags |");
+            println!("| -- | ---- | ---- | --- | ------ | ----- | ---- | ---- |");
             for t in tasks {
                 println!(
-                    "| {} | {} | {} | {} | {} | {} | {} |",
+                    "| {} | {} | {} | {} | {} | {} | {} | {} |",
                     t.id,
                     t.plan_id.map_or_else(|| "-".into(), |p| p.to_string()),
                     t.priority,
                     t.due_date.map_or_else(|| "-".into(), |d| d.to_string()),
                     t.status,
                     t.title.replace('|', "\\|"),
+                    t.depends_on.map_or_else(|| "-".into(), |d| d.to_string()),
                     t.tags.join(", ")
                 );
             }
@@ -32,7 +33,9 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
         Format::Table => {
             let mut table = comfy_table::Table::new();
             table.load_style(UTF8_FULL);
-            table.set_header(vec!["ID", "Plan", "Prio", "Due", "Status", "Title", "Tags"]);
+            table.set_header(vec![
+                "ID", "Plan", "Prio", "Due", "Status", "Title", "Deps", "Tags",
+            ]);
             for t in tasks {
                 table.add_row(vec![
                     t.id.to_string(),
@@ -41,6 +44,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
                     t.due_date.map(|d| d.to_string()).unwrap_or_default(),
                     t.status.to_string(),
                     t.title.clone(),
+                    t.depends_on.map(|d| d.to_string()).unwrap_or_default(),
                     t.tags.join(", "),
                 ]);
             }
