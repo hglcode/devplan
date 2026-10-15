@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.16.0] — 2026-10-15
+
+### Added
+
+- soft task dependencies (schema migration v9): `--depends-on <ID>` on
+  `dp task mod` declares what a task waits on; `dp task show` renders
+  `Depends on: #N (status, met/unmet)` — informational, never enforced.
+  Self-dependency refused; single dependency per task (multi-dependency
+  would need a join table, deferred). ADR-008
+
 ## [0.15.3] — 2026-10-14
 
 ### Added
