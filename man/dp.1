@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-15" "dp 0.16.0" "User Commands"
+.TH DP 1 "2026-10-15" "dp 0.16.1" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -73,6 +73,11 @@ Alias: \fB\-\-priority\fR.
 \fB\-\-tags\fR \fILIST\fR
 Comma\-separated tags; surrounding whitespace is trimmed. Aliases:
 \fB\-\-tag\fR, \fB\-\-label\fR, \fB\-\-labels\fR.
+.TP
+\fB\-\-deps\fR \fIID\fR
+Soft dependency: the task waits on task \fIID\fR, rendered by
+\fBdp task show\fR. Aliases: \fB\-\-dep\fR, \fB\-\-depends\fR,
+\fB\-\-depends\-on\fR.
 .TP
 \fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
 Long description, shown by \fBdp task show\fR. Alias:
@@ -156,17 +161,18 @@ Change the given fields of a task; omitted flags leave the field
 unchanged. With no flags at all, prints \(dqNothing to modify: no fields
 given\(dq; with flags whose values equal the current ones, prints a notice
 instead of writing. \fB\-\-note\fR requires \fB\-\-status\fR;
-\fB\-\-depends\-on\fR refuses self\-reference.
+\fB\-\-note\fR requires \fB\-\-status\fR; \fB\-\-deps\fR refuses
+self\-reference.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
 Reassign the task to plan \fIID\fR (must exist).
 .TP
-\fB\-\-depends\fR \fIID\fR
+\fB\-\-deps\fR \fIID\fR
 Soft dependency: the task waits on task \fIID\fR. Shown by
 \fBdp task show\fR as \(dqDepends on: #ID (status, met/unmet)\(dq \(em
 informational only, never enforced. Aliases: \fB\-\-dep\fR,
-\fB\-\-depends\-on\fR.
+\fB\-\-depends\fR, \fB\-\-depends\-on\fR.
 .TP
 \fB\-\-title\fR \fITEXT\fR
 New title.

@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.16.1] — 2026-10-16
+
+### Added
+
+- `dp task add --deps <ID>`: declare a soft dependency at creation
+  time, matching the mod path from 0.16.0
+
+### Changed
+
+- primary long name unified to `--deps` on both add and mod
+  (0.16.0 shipped `--depends` as mod's primary); all spellings
+  (`--dep`/`--depends`/`--depends-on`) accepted as aliases
+
 ## [0.16.0] — 2026-10-15
 
 ### Added
