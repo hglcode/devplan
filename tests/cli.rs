@@ -495,7 +495,8 @@ fn task_dependency_is_soft_and_self_rejected() {
         .stdout
         .clone();
     let s = String::from_utf8(out).unwrap();
-    assert!(s.contains("Depends on: #1"));
+    assert!(s.contains("Depends on:"));
+    assert!(s.contains("#1 (todo, 未满足)")); // 状态按测试里 #1 的实际状态来
     assert!(s.contains("todo")); // A 还没 done,未满足
 
     // done A → B 的依赖转为满足:
@@ -510,7 +511,7 @@ fn task_dependency_is_soft_and_self_rejected() {
         .stdout
         .clone();
     let s = String::from_utf8(out).unwrap();
-    assert!(s.contains("Depends on: #1"));
+    assert!(s.contains("#1 (done, ✓)"));
     assert!(s.contains("✓"));
 
     // 自依赖拒绝:

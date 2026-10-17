@@ -10,7 +10,17 @@ use rusqlite::Connection;
 use crate::cli::{Commands, Format};
 use crate::models::Task;
 
-fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
+fn print_tasks(conn: &Connection, tasks: &[Task], fmt: Format) -> Result<()> {
+    let ids: Vec<i64> = tasks.iter().map(|t| t.id).collect();
+    let deps = crate::repo::task::deps_map(conn, &ids)?;
+    let dep_of = |id: i64| {
+        deps.get(&id).map(|v| {
+            v.iter()
+                .map(std::string::ToString::to_string)
+                .collect::<Vec<_>>()
+                .join(",")
+        })
+    };
     match fmt {
         Format::Json => println!("{}", serde_json::to_string_pretty(tasks)?),
         Format::Markdown => {
@@ -25,7 +35,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
                     t.due_date.map_or_else(|| "-".into(), |d| d.to_string()),
                     t.status,
                     t.title.replace('|', "\\|"),
-                    t.depends_on.map_or_else(|| "-".into(), |d| d.to_string()),
+                    dep_of(t.id).unwrap_or_else(|| "-".into()),
                     t.tags.join(", ")
                 );
             }
@@ -44,7 +54,7 @@ fn print_tasks(tasks: &[Task], fmt: Format) -> Result<()> {
                     t.due_date.map(|d| d.to_string()).unwrap_or_default(),
                     t.status.to_string(),
                     t.title.clone(),
-                    t.depends_on.map(|d| d.to_string()).unwrap_or_default(),
+                    dep_of(t.id).unwrap_or_default(),
                     t.tags.join(", "),
                 ]);
             }

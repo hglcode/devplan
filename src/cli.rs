@@ -3,6 +3,38 @@ use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 
 use crate::models::{Priority, TaskStatus, TaskType};
 
+/// Comma-separated prerequisite task ids, e.g. `--deps 27,26`.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DepIds(Vec<i64>);
+
+impl DepIds {
+    pub fn into_ids(self) -> Vec<i64> {
+        self.0
+    }
+}
+
+impl std::str::FromStr for DepIds {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut ids: Vec<i64> = s
+            .split(',')
+            .map(str::trim) // "27, 26" is fine
+            .filter(|p| !p.is_empty()) // "27," is fine
+            .map(|p| {
+                p.parse::<i64>()
+                    .map_err(|e| format!("invalid task id '{p}': {e}"))
+            })
+            .collect::<Result<Vec<_>, _>>()?;
+        if let Some(&bad) = ids.iter().find(|&&i| i <= 0) {
+            return Err(format!("task id must be positive, got '{bad}'"));
+        }
+        ids.sort_unstable();
+        ids.dedup();
+        Ok(Self(ids))
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, ValueEnum)]
 pub enum Format {
     Table,
@@ -84,9 +116,9 @@ pub enum TaskCommands {
         /// Comma-separated tags
         #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
-        /// Depends on task id
-        #[arg(long = "deps", aliases = ["dep", "depends", "depends-on"])]
-        depends: Option<i64>,
+        /// Comma-separated prerequisite task ids (e.g. 27,26)
+        #[arg(long = "deps", value_name = "IDS", aliases = ["dep", "depends", "depends-on"])]
+        depends: Option<DepIds>,
         /// Long description
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
@@ -177,9 +209,9 @@ pub enum TaskCommands {
         /// Tags/Labels
         #[arg(long, aliases = ["tag", "label", "labels"])]
         tags: Option<String>,
-        /// Depends on task id
-        #[arg(long = "deps", aliases = ["dep", "depends", "depends-on"])]
-        depends: Option<i64>,
+        /// Comma-separated prerequisite task ids (e.g. 27,26)
+        #[arg(long = "deps", value_name = "IDS", aliases = ["dep", "depends", "depends-on"])]
+        depends: Option<DepIds>,
         /// Description content
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
@@ -314,4 +346,23 @@ fn parse_status(s: &str) -> Result<TaskStatus, String> {
 fn parse_task_type(s: &str) -> Result<TaskType, String> {
     TaskType::from_label(s)
         .ok_or_else(|| format!("type must be feature/bug/chore/refactor/docs, got '{s}'"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn dep_ids_parses_csv() {
+        let ids = |s: &str| s.parse::<DepIds>().unwrap().into_ids();
+        assert_eq!(ids("27, 26,"), vec![26, 27]);
+        assert_eq!(ids("26,26"), vec![26]);
+        assert!(ids("").is_empty());
+        assert!(ids(",").is_empty());
+    }
+    #[test]
+    fn dep_ids_rejects_garbage() {
+        for bad in ["0", "-1", "x", "1,x"] {
+            assert!(bad.parse::<DepIds>().is_err(), "{bad}");
+        }
+    }
 }

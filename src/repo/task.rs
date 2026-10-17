@@ -6,7 +6,7 @@ use rusqlite::{Connection, OptionalExtension, params};
 use crate::error::DpError;
 use crate::models::{Priority, Resolution, Task, TaskStatus, TaskType, join_tags, split_tags};
 
-const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, depends_on, priority, tags, due_date, started_at, done_at, created_at, updated_at";
+const COLS: &str = "id, plan_id, type, title, description, status, status_note, resolution, resolution_note, duplicate_of, priority, tags, due_date, started_at, done_at, created_at, updated_at";
 
 pub struct NewTask<'a> {
     pub title: &'a str,
@@ -15,7 +15,6 @@ pub struct NewTask<'a> {
     pub due_date: Option<NaiveDate>,
     pub priority: Priority,
     pub tags: Vec<String>,
-    pub depends: Option<i64>,
     pub description: &'a str,
 }
 
@@ -47,7 +46,6 @@ pub struct TaskUpdate {
     pub tags: Option<Vec<String>>,
     pub description: Option<String>,
     pub plan: Option<i64>,
-    pub depends: Option<i64>,
 }
 
 pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
@@ -55,12 +53,11 @@ pub fn add(conn: &Connection, t: &NewTask) -> Result<i64> {
         crate::repo::plan::get(conn, plan_id)?; // clean "plan #N not found" instead of raw FK error
     }
     conn.execute(
-        "INSERT INTO tasks (plan_id, type, title, depends_on, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+        "INSERT INTO tasks (plan_id, type, title, description, priority, due_date, tags) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
         params![
             t.plan,
             t.task_type.as_str(),
             t.title,
-            t.depends,
             t.description,
             t.priority.as_int(),
             t.due_date.map(|d| d.to_string()),
@@ -164,13 +161,6 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     let mut sets: Vec<String> = Vec::new();
     let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
 
-    if let Some(dep) = u.depends {
-        if dep == id {
-            anyhow::bail!("task cannot depend on itself");
-        }
-        get(conn, dep)?; // FK 预检,同 plan 预检模式
-    }
-
     if let Some(title) = &u.title
         && *title != existing.title
     {
@@ -216,12 +206,6 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
     {
         sets.push("tags = ?".into());
         owned.push(Box::new(join_tags(tags)));
-    }
-    if let Some(deps) = u.depends
-        && Some(deps) != existing.depends_on
-    {
-        sets.push("depends_on = ?".into());
-        owned.push(Box::new(u.depends.unwrap()));
     }
 
     if let Some(desc) = &u.description
@@ -310,11 +294,11 @@ fn now_ts() -> String {
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
     let status: String = row.get(5)?;
     let resolution: Option<String> = row.get(7)?;
-    let prio: i64 = row.get(11)?;
-    let tags: String = row.get(12)?;
+    let prio: i64 = row.get(10)?;
+    let tags: String = row.get(11)?;
     let typ: String = row.get(2)?;
-    let due: Option<String> = row.get(13)?;
-    let start: Option<String> = row.get(14)?;
+    let due: Option<String> = row.get(12)?;
+    let start: Option<String> = row.get(13)?;
     Ok(Task {
         id: row.get(0)?,
         plan_id: row.get(1)?,
@@ -326,15 +310,104 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         resolution: resolution.and_then(|r| Resolution::from_label(&r)),
         resolution_note: row.get(8)?,
         duplicate_of: row.get(9)?,
-        depends_on: row.get(10)?,
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
         due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
         started_at: start,
-        done_at: row.get(15)?,
-        created_at: row.get(16)?,
-        updated_at: row.get(17)?,
+        done_at: row.get(14)?,
+        created_at: row.get(15)?,
+        updated_at: row.get(16)?,
     })
+}
+
+pub fn set_deps(conn: &Connection, task_id: i64, deps: &[i64]) -> Result<()> {
+    if deps.contains(&task_id) {
+        anyhow::bail!("task #{task_id} cannot depend on itself");
+    }
+    for &dep in deps {
+        get(conn, dep)?; // 存在性,干净报错
+    }
+    for &dep in deps {
+        if dep_reaches(conn, dep, task_id)? {
+            anyhow::bail!("dependency cycle: task #{dep} already depends on task #{task_id}");
+        }
+    }
+    let tx = conn.unchecked_transaction()?;
+    tx.execute("DELETE FROM task_deps WHERE task_id = ?1", params![task_id])?;
+    {
+        let mut stmt = tx.prepare("INSERT INTO task_deps (task_id, depends_on) VALUES (?1, ?2)")?;
+        for &dep in deps {
+            stmt.execute(params![task_id, dep])?;
+        }
+    }
+    Ok(tx.commit()?)
+}
+
+/// 沿依赖方向走:d 出发能否到达 target(加边 task_id→d 成环 ⟺ d 已可达 task_id)
+fn dep_reaches(conn: &Connection, from: i64, target: i64) -> Result<bool> {
+    let mut stmt = conn.prepare("SELECT depends_on FROM task_deps WHERE task_id = ?1")?;
+    let (mut seen, mut stack) = (std::collections::HashSet::new(), vec![from]);
+    while let Some(cur) = stack.pop() {
+        if cur == target {
+            return Ok(true);
+        }
+        if !seen.insert(cur) {
+            continue;
+        }
+        for dep in stmt.query_map(params![cur], |r| r.get::<_, i64>(0))? {
+            stack.push(dep?);
+        }
+    }
+    Ok(false)
+}
+
+pub fn deps_of(conn: &Connection, task_id: i64) -> Result<Vec<Task>> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {COLS} FROM tasks JOIN task_deps d ON d.depends_on = tasks.id
+         WHERE d.task_id = ?1 ORDER BY d.depends_on"
+    ))?;
+    let rows = stmt.query_map(params![task_id], map_row)?;
+    let mut out = Vec::new();
+    for r in rows {
+        out.push(r?);
+    }
+    Ok(out)
+}
+
+pub fn deps_map(
+    conn: &Connection,
+    ids: &[i64],
+) -> Result<std::collections::HashMap<i64, Vec<i64>>> {
+    let mut map = std::collections::HashMap::new();
+    if ids.is_empty() {
+        return Ok(map); // IN () 是非法 SQL
+    }
+    let placeholders = vec!["?"; ids.len()].join(",");
+    let sql = format!(
+        "SELECT task_id, depends_on FROM task_deps WHERE task_id IN ({placeholders}) ORDER BY depends_on"
+    );
+    let mut stmt = conn.prepare(&sql)?;
+    let rows = stmt.query_map(rusqlite::params_from_iter(ids.iter()), |r| {
+        Ok((r.get::<_, i64>(0)?, r.get::<_, i64>(1)?))
+    })?;
+    for row in rows {
+        let (task, dep) = row?;
+        map.entry(task).or_default().push(dep);
+    }
+    Ok(map)
+}
+
+pub fn dependents_of(conn: &Connection, task_id: i64) -> Result<Vec<Task>> {
+    let mut stmt = conn.prepare(&format!(
+        "SELECT {COLS} FROM tasks JOIN task_deps d ON d.task_id = tasks.id
+         WHERE d.depends_on = ?1 ORDER BY d.task_id"
+    ))?;
+    let rows = stmt.query_map(params![task_id], map_row)?;
+    let mut out = Vec::new();
+    for r in rows {
+        out.push(r?);
+    }
+    Ok(out)
 }
 
 #[cfg(test)]
@@ -356,7 +429,6 @@ mod tests {
             due_date: None,
             priority: Priority::Normal,
             tags: vec![],
-            depends: None,
             description: "",
         }
     }
@@ -491,5 +563,67 @@ mod tests {
             )
             .unwrap();
         assert_ne!(before, after); // ★ trigger 刷新了时间戳
+    }
+
+    #[test]
+    fn migration_v10_moves_single_deps_to_table() {
+        let c = Connection::open_in_memory().unwrap();
+        const LEGACY: &[&str] = &[
+            include_str!("../../sql/v1.sql"),
+            include_str!("../../sql/v2.sql"),
+            include_str!("../../sql/v3.sql"),
+            include_str!("../../sql/v4.sql"),
+            include_str!("../../sql/v5.sql"),
+            include_str!("../../sql/v6.sql"),
+            include_str!("../../sql/v7.sql"),
+            include_str!("../../sql/v8.sql"),
+            include_str!("../../sql/v9.sql"),
+        ];
+        for sql in LEGACY {
+            c.execute_batch(sql).unwrap();
+        }
+        c.execute(
+            "INSERT INTO tasks (id, title, depends_on) VALUES (1,'a',NULL),(2,'b',1)",
+            [],
+        )
+        .unwrap();
+        c.execute("PRAGMA user_version = 9", []).unwrap();
+        crate::db::migrate(&c).unwrap();
+        let n: i64 = c
+            .query_row("SELECT COUNT(*) FROM task_deps", [], |r| r.get(0))
+            .unwrap();
+        assert_eq!(n, 1); // (2,1) 落表
+        let mut stmt = c.prepare("PRAGMA table_info(tasks)").unwrap();
+        let has = stmt
+            .query_map([], |r| r.get::<_, String>(1))
+            .unwrap()
+            .filter_map(Result::ok)
+            .any(|col| col == "depends_on");
+        assert!(!has); // 旧列消失
+    }
+
+    #[test]
+    fn set_deps_roundtrip_clear_and_rejects() {
+        let c = conn();
+        let a = add(&c, &sample("a")).unwrap();
+        let b = add(&c, &sample("b")).unwrap();
+        set_deps(&c, b, &[a]).unwrap();
+        assert_eq!(deps_of(&c, b).unwrap().len(), 1);
+        set_deps(&c, b, &[]).unwrap(); // 清空
+        assert!(deps_of(&c, b).unwrap().is_empty());
+        assert!(set_deps(&c, a, &[a]).is_err()); // 自依赖
+        assert!(set_deps(&c, a, &[999]).is_err()); // 不存在
+        set_deps(&c, b, &[a]).unwrap();
+        assert!(set_deps(&c, a, &[b]).is_err()); // 两步成环
+    }
+
+    #[test]
+    fn delete_task_cascades_deps() {
+        let c = conn();
+        let a = add(&c, &sample("a")).unwrap();
+        let b = add(&c, &sample("b")).unwrap();
+        set_deps(&c, b, &[a]).unwrap();
+        delete(&c, a).unwrap();
+        assert!(deps_of(&c, b).unwrap().is_empty()); // CASCADE 双向清
     }
 }

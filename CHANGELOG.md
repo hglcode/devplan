@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.17.0] - 2026-10-17
+
+### Added
+
+- `--deps` accepts comma-separated task ids (`--deps 27,26`); `task mod --deps ""` clears all dependencies
+- `task show` renders dependencies one per line with status and satisfaction mark, plus a `Blocks:` line for reverse dependents
+- Deps column in `task list`/`search` shows multiple ids
+
+### Changed
+
+- Schema v10: dependencies moved from single column `tasks.depends_on` to the `task_deps` relation table; existing data migrates automatically on first run
+
+### Breaking
+
+- `--deps` takes a comma-separated id list (previously `27,26` was rejected as invalid)
+- JSON task objects no longer carry `depends_on`; dependencies are a separate relation
+
 ## [0.16.1] — 2026-10-16
 
 ### Added

@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-15" "dp 0.16.1" "User Commands"
+.TH DP 1 "2026-10-17" "dp 0.17.0" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -74,10 +74,13 @@ Alias: \fB\-\-priority\fR.
 Comma\-separated tags; surrounding whitespace is trimmed. Aliases:
 \fB\-\-tag\fR, \fB\-\-label\fR, \fB\-\-labels\fR.
 .TP
-\fB\-\-deps\fR \fIID\fR
-Soft dependency: the task waits on task \fIID\fR, rendered by
-\fBdp task show\fR. Aliases: \fB\-\-dep\fR, \fB\-\-depends\fR,
-\fB\-\-depends\-on\fR.
+\fB\-\-deps\fR \fIIDS\fR
+Comma\-separated prerequisite task ids (e.g.\& \fI27,26\fR): the task
+waits on each of them. Whitespace around ids is tolerated, duplicates
+collapse; every id must be positive and already exist \(em the task is
+created only after the whole set checks out. See
+.BR DEPENDENCIES .
+Aliases: \fB\-\-dep\fR, \fB\-\-depends\fR, \fB\-\-depends\-on\fR.
 .TP
 \fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
 Long description, shown by \fBdp task show\fR. Alias:
@@ -93,7 +96,8 @@ Print tasks (table by default; see \fB\-\-format\fR). The default view is
 pending tasks — \fItodo\fR, \fIactive\fR and \fIblocked\fR — ordered by
 attention: \fIactive\fR first (work in progress), then \fIblocked\fR
 (needs unblocking), then \fItodo\fR (queued), then by priority (urgent
-first), due date (tasks without one last), and id.
+first), due date (tasks without one last), and id. The \fIDeps\fR
+column lists each task's prerequisite ids.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
@@ -118,7 +122,11 @@ Cap output at the first N rows (after ordering).
 .TP
 .BI "show " ID
 Print one task in full detail: status and its note, started/done
-timestamps, resolution with note and duplicate linkage.
+timestamps, resolution with note and duplicate linkage, and
+dependencies: \(dqDepends on:\(dq followed by one indented line per
+prerequisite \(em \(dq#ID (status, ✓)\(dq when it is done (dependency
+met), \(dq#ID (status, 未满足)\(dq when not \(em plus a \(dqBlocks:\(dq
+line listing the tasks waiting on this one.
 .TP
 .BI "search " TEXT
 Find tasks by free text: matches title, description, status and
@@ -160,19 +168,22 @@ y/N); \fB\-\-force\fR skips the prompt.
 Change the given fields of a task; omitted flags leave the field
 unchanged. With no flags at all, prints \(dqNothing to modify: no fields
 given\(dq; with flags whose values equal the current ones, prints a notice
-instead of writing. \fB\-\-note\fR requires \fB\-\-status\fR;
-\fB\-\-note\fR requires \fB\-\-status\fR; \fB\-\-deps\fR refuses
-self\-reference.
+instead of writing (a given \fB\-\-deps\fR always applies).
+\fB\-\-note\fR requires \fB\-\-status\fR; see
+.B DEPENDENCIES
+for the dependency rules.
 .RS
 .TP
 \fB\-\-plan\fR \fIID\fR
 Reassign the task to plan \fIID\fR (must exist).
 .TP
-\fB\-\-deps\fR \fIID\fR
-Soft dependency: the task waits on task \fIID\fR. Shown by
-\fBdp task show\fR as \(dqDepends on: #ID (status, met/unmet)\(dq \(em
-informational only, never enforced. Aliases: \fB\-\-dep\fR,
-\fB\-\-depends\fR, \fB\-\-depends\-on\fR.
+\fB\-\-deps\fR \fIIDS\fR
+Replace the dependency set with the comma\-separated task ids
+(e.g.\& \fI27,26\fR). An empty value (\fB\-\-deps \(dq\(dq\fR) clears all
+dependencies. Refuses self\-reference and any set that would form a
+cycle. Omitting the flag leaves dependencies unchanged. See
+.BR DEPENDENCIES .
+Aliases: \fB\-\-dep\fR, \fB\-\-depends\fR, \fB\-\-depends\-on\fR.
 .TP
 \fB\-\-title\fR \fITEXT\fR
 New title.
@@ -217,8 +228,9 @@ progress of their tasks; archiving is a deliberate act.
 .TP
 .BI "add " TITLE
 Create a plan; accepts \fB\-\-adr\fR \fIID\fR (decision origin),
-\fB\-\-due\fR \fIDATE\fR, \fB\-p\fR/\fB\-\-prio\fR and
-\fB\-d\fR/\fB\-\-desc\fR \fITEXT\fR.
+\fB\-\-start\fR \fIDATE\fR and \fB\-\-due\fR \fIDATE\fR (the schedule
+window), \fB\-p\fR/\fB\-\-prio\fR and \fB\-d\fR/\fB\-\-desc\fR
+\fITEXT\fR.
 .TP
 .B list
 Summarize plans with per\-plan progress (done/total, percentage).
@@ -229,9 +241,9 @@ Cap output at the first N rows (after ordering).
 .RE
 .TP
 .BI "show " ID
-Print one task in full detail: status and its note, started/done
-timestamps, resolution with note and duplicate linkage, and dependency
-status.
+Print one plan in full: schedule window (start/due dates), status,
+priority, created date and description, followed by the plan's pending
+tasks as a table and a done count for the plan.
 .TP
 .BI "archive " ID
 Archive a plan — the container is closed for deliberate reasons; an
@@ -330,6 +342,23 @@ Plans are containers with status \fIopen\fR or \fIarchived\fR
 .PP
 Decisions move \fIproposed\fR -> \fIaccepted\fR -> \fIsuperseded\fR
 (\fIrejected\fR is revisitable).
+.SH DEPENDENCIES
+A task's dependencies are the tasks it waits on, declared with
+\fB\-\-deps\fR \fIIDS\fR on
+.B "task add"
+and
+.B "task mod"
+as one comma\-separated id list (e.g.\& \fI27,26\fR). They are soft:
+informational only, never enforced \(em nothing changes a task's status
+because of its dependencies. \fBdp task list\fR carries them in the
+\fIDeps\fR column; \fBdp task show\fR renders each prerequisite with
+its status and a met/unmet mark, and lists the tasks this one blocks.
+The rules: ids must be positive and must exist; a task cannot depend
+on itself; the relation must stay acyclic \(em \fBtask mod \-\-deps\fR
+rejects a set that would close a cycle; an empty list on \fBtask mod\fR
+clears the set; \fBtask add\fR creates the task only after all
+prerequisites check out. Deleting a task removes its dependency links
+in both directions.
 .SH EXAMPLES
 .nf
 dp init
@@ -338,7 +367,9 @@ dp task add "Implement OAuth login" --plan 1 --due 2026-10-15 -p high --tags aut
 dp task list
 dp task start 2
 dp task mod 2 --status blocked --note "waiting on external API"
-dp task mod 3 --depends-on 2
+dp task mod 3 --deps 1,2
+dp task show 3
+dp task mod 3 --deps ""
 dp task list --overdue
 dp task done 2
 dp task duplicate 5 --of 3 --note "same flow, #3 has tests"
@@ -373,8 +404,9 @@ fail and point at the current directory as the place to run
 exits 0 on success (including \-\-help and \-\-version), 1 on runtime
 failure with a diagnostic on stderr (database not initialized, unknown
 id, invalid date or status, plan referenced by \fBdp task add \-\-plan\fR
-does not exist), and 2 on usage errors detected by the argument parser.
-Piped output closed early (e.g.\& \fBdp gen man | head\fR) terminates
-silently per Unix convention.
+or a prerequisite given via \fB\-\-deps\fR does not exist, a
+\fB\-\-deps\fR set that would form a cycle), and 2 on usage errors
+detected by the argument parser. Piped output closed early
+(e.g.\& \fBdp gen man | head\fR) terminates silently per Unix convention.
 .SH SEE ALSO
 .BR sqlite3 (1), git (1)

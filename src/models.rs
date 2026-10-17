@@ -254,7 +254,6 @@ pub struct Task {
     pub resolution: Option<Resolution>,
     pub resolution_note: Option<String>,
     pub duplicate_of: Option<i64>,
-    pub depends_on: Option<i64>,
     pub priority: Priority,
     pub tags: Vec<String>,
     pub due_date: Option<NaiveDate>,
