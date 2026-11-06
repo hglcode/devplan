@@ -15,7 +15,11 @@ const MIGRATIONS: &[&str] = &[
     include_str!("../sql/v7.sql"),
     include_str!("../sql/v8.sql"),
     include_str!("../sql/v9.sql"),
+    include_str!("../sql/v10.sql"),
 ];
+
+/// 当前 schema 版本(= 迁移数,即 PRAGMA user_version)。export 头与 import 版本门共用。
+pub const SCHEMA_VERSION: i64 = MIGRATIONS.len() as i64;
 
 fn db_path() -> Result<PathBuf> {
     let cwd = std::env::current_dir()?;

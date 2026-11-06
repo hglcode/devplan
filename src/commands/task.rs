@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 use rusqlite::Connection;
 use std::io::Write;
 
-use crate::cli::{Format, TaskCommands};
+use crate::cli::{DepIds, Format, TaskCommands};
 use crate::commands::print_tasks;
 use crate::models::{Priority, Resolution, TaskStatus, TaskType, split_tags};
 use crate::repo;
@@ -16,7 +16,7 @@ pub struct AddArgs {
     pub due_date: Option<NaiveDate>,
     pub priority: Option<Priority>,
     pub tags: Option<String>,
-    pub deps: Option<i64>,
+    pub deps: Option<Vec<i64>>,
     pub desc: Option<String>,
 }
 
@@ -29,7 +29,7 @@ pub struct ModifyArgs {
     pub stat: Option<TaskStatus>,
     pub note: Option<String>,
     pub tags: Option<String>,
-    pub deps: Option<i64>,
+    pub deps: Option<Vec<i64>>,
     pub desc: Option<String>,
     pub plan: Option<i64>,
 }
@@ -45,6 +45,10 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
         deps,
         desc,
     } = args;
+    let deps = deps.unwrap_or_default(); // add 语境: None 与 [] 同义
+    for &dep in &deps {
+        repo::task::get(conn, dep)?; // 存在性预检,typo 不留半成品
+    }
     let id = repo::task::add(
         conn,
         &NewTask {
@@ -54,10 +58,12 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
             due_date,
             priority: priority.unwrap_or_default(),
             tags: tags.map(|t| split_tags(&t)).unwrap_or_default(),
-            depends: deps,
             description: desc.as_deref().unwrap_or(""),
         },
     )?;
+    if !deps.is_empty() {
+        repo::task::set_deps(conn, id, &deps)?;
+    }
     println!("Added task #{id}: {title}");
     Ok(())
 }
@@ -91,7 +97,7 @@ pub fn list(
     } else {
         tasks
     };
-    print_tasks(&tasks, fmt)
+    print_tasks(conn, &tasks, fmt)
 }
 
 pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
@@ -146,14 +152,26 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
             println!("    Note:     {note}");
         }
     }
-    if let Some(dep) = t.depends_on {
-        let status = repo::task::get(conn, dep)?.status;
-        let mark = if status == TaskStatus::Done {
-            "✓"
-        } else {
-            "未满足"
-        };
-        println!("  Depends on: #{dep} ({status}, {mark})");
+    let deps = repo::task::deps_of(conn, id)?;
+    if !deps.is_empty() {
+        println!("  Depends on:");
+        for d in &deps {
+            let mark = if d.status == TaskStatus::Done {
+                "✓"
+            } else {
+                "未满足"
+            };
+            println!("    #{} ({}, {})", d.id, d.status, mark);
+        }
+    }
+    let blocks = repo::task::dependents_of(conn, id)?;
+    if !blocks.is_empty() {
+        let ids = blocks
+            .iter()
+            .map(|t| format!("#{}", t.id))
+            .collect::<Vec<_>>()
+            .join(", ");
+        println!("  Blocks:     {ids}");
     }
     if !t.description.is_empty() {
         println!("  Description:");
@@ -166,7 +184,7 @@ pub fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
 
 pub fn search(conn: &Connection, text: &str, fmt: Format) -> Result<()> {
     let tasks = repo::task::search(conn, text)?;
-    print_tasks(&tasks, fmt)
+    print_tasks(conn, &tasks, fmt)
 }
 
 pub fn start(conn: &Connection, id: i64) -> Result<()> {
@@ -262,16 +280,19 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         status: stat,
         status_note: note,
         tags: tags.map(|t| split_tags(&t)),
-        depends: deps,
         description: desc,
         plan,
     };
-    if provided && repo::task::update(conn, id, &update)? {
+    let updated = provided && repo::task::update(conn, id, &update)?;
+    if let Some(d) = &deps {
+        repo::task::set_deps(conn, id, d)?; // Some(vec![]) 即清空
+    }
+    if updated || deps.is_some() {
         println!("Updated task #{id}");
     } else if provided {
-        println!("Nothing to modify: values already as requested"); // 有 flag 但值未变
+        println!("Nothing to modify: values already as requested");
     } else {
-        println!("Nothing to modify: no fields given"); // 零 flag
+        println!("Nothing to modify: no fields given");
     }
     Ok(())
 }
@@ -296,7 +317,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
                 due_date,
                 priority,
                 tags,
-                deps: depends,
+                deps: depends.map(DepIds::into_ids),
                 desc: description,
             },
         ),
@@ -337,7 +358,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
                 stat: status,
                 note: status_note,
                 tags,
-                deps: depends,
+                deps: depends.map(DepIds::into_ids),
                 desc: description,
                 plan,
             },

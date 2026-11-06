@@ -68,7 +68,6 @@ mod tests {
             due_date: None,
             priority: Priority::Normal,
             tags: vec![],
-            depends: None,
             description: "",
         }
     }
