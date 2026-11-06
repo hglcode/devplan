@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-10-17" "dp 0.17.0" "User Commands"
+.TH DP 1 "2026-11-06" "dp 0.18.0" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -288,6 +288,25 @@ Print counters: open plans, todo / active / blocked / overdue tasks,
 and tasks done today, in the last 7 days, and in total. Tasks finished
 with resolution \fIabandoned\fR are excluded from the done counters.
 .TP
+.B export
+Print the entire database to stdout as one JSON document: the schema
+version, all plans, all tasks (each with its dependencies embedded as
+an id array), and all ADRs. Rows are ordered by id, so exports of an
+unchanged database are identical and diffable \(em suitable for
+version control or feeding other tools. Always JSON, regardless of
+\fB\-\-format\fR. \fBdp import\fR is the inverse.
+.TP
+.BI "import " FILE
+Replace the database contents with a snapshot from
+.BR "dp export" :
+all current plans, tasks, dependencies and ADRs are deleted, then the
+file's rows are inserted with their original ids (references stay
+intact; the next added task continues after the highest imported id).
+Asks for confirmation after showing both sides' counts;
+\fB\-\-force\fR skips the prompt. The file's schema version must match
+this dp. Runs in a single transaction \(em a failed import (dangling
+references, invalid values) leaves the database untouched.
+.TP
 .BI "generate " TARGET
 Print a completion script for
 .IR bash ", " zsh ", " fish ", " elvish " or " powershell
@@ -381,6 +400,8 @@ dp stats
 dp task ls -n 5
 dp task list --format=markdown
 dp stats --format=json | jq .
+dp export > snapshot.json
+dp import snapshot.json
 dp gen fish > $HOME/.config/fish/completions/dp.fish
 .fi
 .SH FILES
@@ -405,7 +426,8 @@ exits 0 on success (including \-\-help and \-\-version), 1 on runtime
 failure with a diagnostic on stderr (database not initialized, unknown
 id, invalid date or status, plan referenced by \fBdp task add \-\-plan\fR
 or a prerequisite given via \fB\-\-deps\fR does not exist, a
-\fB\-\-deps\fR set that would form a cycle), and 2 on usage errors
+\fB\-\-deps\fR set that would form a cycle, \fBdp import\fR on an
+unreadable, invalid or version\-mismatched file), and 2 on usage errors
 detected by the argument parser. Piped output closed early
 (e.g.\& \fBdp gen man | head\fR) terminates silently per Unix convention.
 .SH SEE ALSO

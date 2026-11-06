@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.18.0] — 2026-11-06
+
+### Added
+
+- `dp export`: whole-database JSON snapshot to stdout — schema version, plans, tasks (dependencies embedded as id arrays) and ADRs, id-ordered for stable diffs
+- `dp import FILE`: replace-only restore from a `dp export` file — original ids preserved, single transaction (a failed import leaves the database untouched), confirmation prompt with `--force` to skip; rejects files whose schema version does not match
+
 ## [0.17.0] - 2026-10-17
 
 ### Added

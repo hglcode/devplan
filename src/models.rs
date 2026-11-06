@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 // ─────────────────────────────────────────────
 // 优先级:0-3,数字越大越紧急(与 DB 刻度一致)
@@ -301,4 +301,69 @@ pub fn split_tags(s: &str) -> Vec<String> {
 
 pub fn join_tags(tags: &[String]) -> String {
     tags.join(",")
+}
+
+// ─────────────────────────────────────────────
+// 全库快照(dp export / dp import)— 列值原样直通
+// 枚举列是 String、priority 是 INTEGER,合法性交 SQLite CHECK;
+// 不与领域枚举的序列化形状耦合(plans.status 库内是 'active',
+// 而领域枚举序列化成 "open"——直通才过得了 CHECK)。
+// 由此换来 export → import → export 字节级一致。
+// ─────────────────────────────────────────────
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Snapshot {
+    pub schema_version: i64,
+    pub plans: Vec<PlanRow>,
+    pub tasks: Vec<TaskRow>,
+    pub adrs: Vec<AdrRow>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PlanRow {
+    pub id: i64,
+    pub adr_id: Option<i64>,
+    pub title: String,
+    pub description: String,
+    pub status: String,
+    pub priority: i64,
+    pub start_date: Option<String>,
+    pub due_date: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TaskRow {
+    pub id: i64,
+    pub plan_id: Option<i64>,
+    pub r#type: String,
+    pub title: String,
+    pub description: String,
+    pub status: String,
+    pub status_note: String,
+    pub resolution: Option<String>,
+    pub resolution_note: String,
+    pub duplicate_of: Option<i64>,
+    pub priority: i64,
+    pub tags: Vec<String>,
+    pub due_date: Option<String>,
+    pub started_at: Option<String>,
+    pub done_at: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+    pub deps: Vec<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdrRow {
+    pub id: i64,
+    pub title: String,
+    pub context: String,
+    pub decision: String,
+    pub consequence: String,
+    pub rationale: String,
+    pub status: String,
+    pub superseded_by: Option<i64>,
+    pub decided_at: Option<String>,
+    pub created_at: String,
 }

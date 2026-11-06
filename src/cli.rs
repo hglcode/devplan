@@ -88,6 +88,19 @@ pub enum Commands {
     /// Show project stats
     Stats,
 
+    /// Export the whole database as one JSON document to stdout
+    Export,
+
+    /// Replace the database contents from a dp export file
+    Import {
+        /// Path to a JSON file produced by `dp export`
+        file: String,
+
+        /// Skip the confirmation prompt
+        #[arg(long)]
+        force: bool,
+    },
+
     // Generate shell completion or man doc
     #[command(alias = "gen")]
     Generate {
