@@ -57,7 +57,7 @@ pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {COLS_P}, v.total_tasks, v.done_tasks, v.progress_pct
          FROM plans p JOIN v_plan_progress v ON v.id = p.id
-         ORDER BY (p.status = 'active') DESC, p.priority DESC, p.id DESC",
+         ORDER BY (p.status = 'open') DESC, p.priority DESC, p.id DESC",
     ))?;
     let rows = stmt.query_map([], |row| {
         Ok(PlanSummary {
