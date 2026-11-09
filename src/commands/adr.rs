@@ -4,7 +4,15 @@ use rusqlite::Connection;
 
 use crate::cli::{AdrCommands, Format};
 use crate::repo;
-use crate::repo::adr::NewAdr;
+use crate::repo::adr::{AdrUpdate, NewAdr};
+
+pub struct ModifyAdrArgs {
+    pub id: i64,
+    pub title: Option<String>,
+    pub context: Option<String>,
+    pub decision: Option<String>,
+    pub consequence: Option<String>,
+}
 
 pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
     match cmd {
@@ -33,10 +41,26 @@ pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
         }
         AdrCommands::Supersede { old, new } => {
             repo::adr::supersede(conn, old, new)?;
-            println!("Adr #{old} superseded by #{new}");
+            println!("ADR #{old} superseded by #{new}");
             Ok(())
         }
         AdrCommands::Show { id } => show(conn, id, fmt),
+        AdrCommands::Mod {
+            id,
+            title,
+            context,
+            decision,
+            consequence,
+        } => modify(
+            conn,
+            ModifyAdrArgs {
+                id,
+                title,
+                context,
+                decision,
+                consequence,
+            },
+        ),
     }
 }
 
@@ -57,6 +81,32 @@ fn add(
         },
     )?;
     println!("Added decision #{id}: {title}");
+    Ok(())
+}
+
+pub fn modify(conn: &Connection, args: ModifyAdrArgs) -> Result<()> {
+    let ModifyAdrArgs {
+        id,
+        title,
+        context,
+        decision,
+        consequence,
+    } = args;
+    let provided =
+        title.is_some() || context.is_some() || decision.is_some() || consequence.is_some();
+    let update = AdrUpdate {
+        title,
+        context,
+        decision,
+        consequence,
+    };
+    if provided && repo::adr::update(conn, id, &update)? {
+        println!("Updated ADR #{id}");
+    } else if provided {
+        println!("Nothing to modify: values already as requested");
+    } else {
+        println!("Nothing to modify: no fields given");
+    }
     Ok(())
 }
 

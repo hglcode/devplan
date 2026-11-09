@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.19.0] — 2026-11-09
+
+### Added
+
+- `dp plan mod`: edit a plan's title, description, priority, schedule window (start/due), decision origin and status (open/archived — the way back from `plan archive`)
+- `dp adr mod`: edit a decision record's content (title, context, decision, consequence); verdicts and rationale still move only through accept/reject/supersede
+
+### Fixed
+
+- `dp plan list` sorting referenced the pre-v3 status vocabulary ('active'), so archived plans never sank below open ones; open plans now sort first as intended
+
 ## [0.18.0] — 2026-11-06
 
 ### Added

@@ -6,8 +6,19 @@ use rusqlite::Connection;
 use crate::cli::{Format, PlanCommands};
 use crate::models::{Plan, PlanStatus, Priority, Task};
 use crate::repo;
-use crate::repo::plan::NewPlan;
+use crate::repo::plan::{NewPlan, PlanUpdate};
 use crate::repo::task::{TaskFilter, TaskView};
+
+pub struct ModifyPlanArgs {
+    pub id: i64,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub priority: Option<Priority>,
+    pub start_date: Option<NaiveDate>,
+    pub due_date: Option<NaiveDate>,
+    pub adr_id: Option<i64>,
+    pub status: Option<PlanStatus>,
+}
 
 pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
     match cmd {
@@ -30,6 +41,28 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
         PlanCommands::List { limit } => list(conn, limit, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
         PlanCommands::Archive { id } => archive(conn, id),
+        PlanCommands::Mod {
+            id,
+            title,
+            description,
+            priority,
+            start_date,
+            due_date,
+            adr_id,
+            status,
+        } => modify(
+            conn,
+            ModifyPlanArgs {
+                id,
+                title,
+                description,
+                priority,
+                start_date,
+                due_date,
+                adr_id,
+                status,
+            },
+        ),
     }
 }
 
@@ -54,6 +87,43 @@ fn add(
         },
     )?;
     println!("Added plan #{id}: {title}");
+    Ok(())
+}
+
+pub fn modify(conn: &Connection, args: ModifyPlanArgs) -> Result<()> {
+    let ModifyPlanArgs {
+        id,
+        title,
+        description,
+        priority,
+        start_date,
+        due_date,
+        adr_id,
+        status,
+    } = args;
+    let provided = title.is_some()
+        || description.is_some()
+        || priority.is_some()
+        || start_date.is_some()
+        || due_date.is_some()
+        || adr_id.is_some()
+        || status.is_some();
+    let update = PlanUpdate {
+        title,
+        description,
+        priority,
+        start_date,
+        due_date,
+        adr_id,
+        status,
+    };
+    if provided && repo::plan::update(conn, id, &update)? {
+        println!("Updated plan #{id}");
+    } else if provided {
+        println!("Nothing to modify: values already as requested");
+    } else {
+        println!("Nothing to modify: no fields given");
+    }
     Ok(())
 }
 

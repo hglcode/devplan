@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rusqlite::{Connection, OptionalExtension, params};
+use rusqlite::{Connection, OptionalExtension, params, types::ToSql};
 
 use crate::error::DpError;
 use crate::models::{Adr, AdrStatus};
@@ -13,6 +13,14 @@ pub struct NewAdr<'a> {
     pub consequence: &'a str,
 }
 
+#[derive(Debug, Default, Clone)]
+pub struct AdrUpdate {
+    pub title: Option<String>,
+    pub context: Option<String>,
+    pub decision: Option<String>,
+    pub consequence: Option<String>,
+}
+
 pub fn add(conn: &Connection, d: &NewAdr) -> Result<i64> {
     conn.execute(
         "INSERT INTO adrs (title, context, decision, consequence)
@@ -20,6 +28,52 @@ pub fn add(conn: &Connection, d: &NewAdr) -> Result<i64> {
         params![d.title, d.context, d.decision, d.consequence],
     )?;
     Ok(conn.last_insert_rowid())
+}
+
+/// Applies the non-None fields. Content only — verdicts and their rationale
+/// are review history and move exclusively through accept/reject/supersede.
+/// (adrs has no updated_at column; there is nothing to timestamp here.)
+/// Returns false when there was nothing to change.
+pub fn update(conn: &Connection, id: i64, u: &AdrUpdate) -> Result<bool> {
+    let existing = get(conn, id)?;
+
+    let mut sets: Vec<String> = Vec::new();
+    let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
+
+    if let Some(title) = &u.title
+        && *title != existing.title
+    {
+        sets.push("title = ?".into());
+        owned.push(Box::new(title.clone()));
+    }
+    if let Some(context) = &u.context
+        && *context != existing.context
+    {
+        sets.push("context = ?".into());
+        owned.push(Box::new(context.clone()));
+    }
+    if let Some(decision) = &u.decision
+        && *decision != existing.decision
+    {
+        sets.push("decision = ?".into());
+        owned.push(Box::new(decision.clone()));
+    }
+    if let Some(consequence) = &u.consequence
+        && *consequence != existing.consequence
+    {
+        sets.push("consequence = ?".into());
+        owned.push(Box::new(consequence.clone()));
+    }
+
+    if sets.is_empty() {
+        return Ok(false);
+    }
+
+    owned.push(Box::new(id));
+    let sql = format!("UPDATE adrs SET {} WHERE id = ?", sets.join(", "));
+    let args: Vec<&dyn ToSql> = owned.iter().map(std::convert::AsRef::as_ref).collect();
+    conn.execute(&sql, args.as_slice())?;
+    Ok(true)
 }
 
 pub fn get(conn: &Connection, id: i64) -> Result<Adr> {
@@ -188,5 +242,34 @@ mod tests {
         let d = get(&c, a).unwrap();
         assert_eq!(d.status, AdrStatus::Accepted);
         assert_eq!(d.rationale, "revisited — now it fits");
+    }
+
+    #[test]
+    fn adr_update_content_and_noop() {
+        let c = conn();
+        let id = add_one(&c, "T");
+        let u = AdrUpdate {
+            title: Some("T2".into()),
+            context: Some("ctx2".into()),
+            ..Default::default()
+        };
+        assert!(update(&c, id, &u).unwrap());
+        let d = get(&c, id).unwrap();
+        assert_eq!(d.title, "T2");
+        assert_eq!(d.context, "ctx2");
+        assert_eq!(d.decision, "dec"); // 未给,原样
+        // 同值再跑 → false;零字段 → false
+        assert!(!update(&c, id, &u).unwrap());
+        assert!(!update(&c, id, &AdrUpdate::default()).unwrap());
+    }
+
+    #[test]
+    fn adr_update_missing_id_is_clean_error() {
+        let c = conn();
+        let u = AdrUpdate {
+            title: Some("x".into()),
+            ..Default::default()
+        };
+        assert!(update(&c, 999, &u).is_err());
     }
 }
