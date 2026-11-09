@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-11-06" "dp 0.18.0" "User Commands"
+.TH DP 1 "2026-11-09" "dp 0.19.0" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -248,6 +248,37 @@ tasks as a table and a done count for the plan.
 .BI "archive " ID
 Archive a plan — the container is closed for deliberate reasons; an
 archived plan with partial progress is legitimate history.
+.TP
+.BI "mod " ID
+Change the given fields of a plan; omitted flags leave the field
+unchanged, with the same no\-flags / no\-change notices as
+.BR "task mod ."
+\fB\-\-status\fR moves between \fIopen\fR and \fIarchived\fR \(em the
+same transition \fBdp plan archive\fR performs, plus the way back;
+reassigning \fB\-\-adr\fR requires the decision to exist.
+.RS
+.TP
+\fB\-\-title\fR \fITEXT\fR
+New title.
+.TP
+\fB\-d\fR, \fB\-\-desc\fR \fITEXT\fR
+New description. Alias: \fB\-\-description\fR.
+.TP
+\fB\-p\fR, \fB\-\-prio\fR \fIP\fR
+New priority. Alias: \fB\-\-priority\fR.
+.TP
+\fB\-\-start\fR \fIDATE\fR
+New start date (schedule window left edge).
+.TP
+\fB\-\-due\fR \fIDATE\fR
+New due date (deadline).
+.TP
+\fB\-\-adr\fR \fIID\fR
+New decision origin (must exist).
+.TP
+\fB\-s\fR, \fB\-\-status\fR \fISTATUS\fR
+\fIopen\fR or \fIarchived\fR.
+.RE
 .RE
 .TP
 .B adr
@@ -281,6 +312,30 @@ Cap output at the first N rows (after ordering).
 .BI "supersede " "OLD NEW"
 Mark OLD as superseded by NEW. NEW must already be accepted; a decision
 cannot supersede itself, and only once.
+.TP
+.BI "mod " ID
+Change the content of a decision record: title, context, decision or
+consequence; omitted flags leave the field unchanged, with the same
+no\-flags / no\-change notices as
+.BR "task mod ."
+Verdicts and their rationale are review history \(em they move only
+through
+.BR accept / reject / supersede ,
+never through mod.
+.RS
+.TP
+\fB\-\-title\fR \fITEXT\fR
+New title.
+.TP
+\fB\-\-context\fR \fITEXT\fR
+New background / problem statement.
+.TP
+\fB\-\-decision\fR \fITEXT\fR
+New decision text.
+.TP
+\fB\-\-consequence\fR \fITEXT\fR
+New consequences / follow\-ups.
+.RE
 .RE
 .TP
 .B stats
@@ -402,6 +457,8 @@ dp task list --format=markdown
 dp stats --format=json | jq .
 dp export > snapshot.json
 dp import snapshot.json
+dp plan mod 1 --due 2027-01-15 -p urgent
+dp adr mod 2 --consequence "revised: see follow-up ADR"
 dp gen fish > $HOME/.config/fish/completions/dp.fish
 .fi
 .SH FILES

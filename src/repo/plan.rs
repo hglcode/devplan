@@ -1,5 +1,6 @@
 use anyhow::Result;
 use chrono::NaiveDate;
+use rusqlite::types::ToSql;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
 
@@ -16,6 +17,17 @@ pub struct NewPlan {
     pub start_date: Option<NaiveDate>,
     pub due_date: Option<NaiveDate>,
     pub priority: Priority,
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct PlanUpdate {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub priority: Option<Priority>,
+    pub start_date: Option<NaiveDate>,
+    pub due_date: Option<NaiveDate>,
+    pub adr_id: Option<i64>,
+    pub status: Option<PlanStatus>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -57,7 +69,7 @@ pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
     let mut stmt = conn.prepare(&format!(
         "SELECT {COLS_P}, v.total_tasks, v.done_tasks, v.progress_pct
          FROM plans p JOIN v_plan_progress v ON v.id = p.id
-         ORDER BY (p.status = 'active') DESC, p.priority DESC, p.id DESC",
+         ORDER BY (p.status = 'open') DESC, p.priority DESC, p.id DESC",
     ))?;
     let rows = stmt.query_map([], |row| {
         Ok(PlanSummary {
@@ -72,6 +84,68 @@ pub fn list(conn: &Connection) -> Result<Vec<PlanSummary>> {
         out.push(r?);
     }
     Ok(out)
+}
+
+/// Applies the non-None fields. Returns false when there was nothing to change.
+pub fn update(conn: &Connection, id: i64, u: &PlanUpdate) -> Result<bool> {
+    let existing = get(conn, id)?;
+
+    let mut sets: Vec<String> = Vec::new();
+    let mut owned: Vec<Box<dyn ToSql>> = Vec::new();
+
+    if let Some(title) = &u.title
+        && *title != existing.title
+    {
+        sets.push("title = ?".into());
+        owned.push(Box::new(title.clone()));
+    }
+    if let Some(desc) = &u.description
+        && *desc != existing.description
+    {
+        sets.push("description = ?".into());
+        owned.push(Box::new(desc.clone()));
+    }
+    if let Some(p) = u.priority
+        && p != existing.priority
+    {
+        sets.push("priority = ?".into());
+        owned.push(Box::new(p.as_int()));
+    }
+    if let Some(s) = u.start_date
+        && Some(s) != existing.start_date
+    {
+        sets.push("start_date = ?".into());
+        owned.push(Box::new(s.to_string()));
+    }
+    if let Some(d) = u.due_date
+        && Some(d) != existing.due_date
+    {
+        sets.push("due_date = ?".into());
+        owned.push(Box::new(d.to_string()));
+    }
+    if let Some(a) = u.adr_id {
+        crate::repo::adr::get(conn, a)?; // clean "ADR #N not found" instead of raw FK error
+        if Some(a) != existing.adr_id {
+            sets.push("adr_id = ?".into());
+            owned.push(Box::new(a));
+        }
+    }
+    if let Some(s) = u.status
+        && s != existing.status
+    {
+        sets.push("status = ?".into());
+        owned.push(Box::new(s.as_str().to_string()));
+    }
+
+    if sets.is_empty() {
+        return Ok(false);
+    }
+
+    owned.push(Box::new(id));
+    let sql = format!("UPDATE plans SET {} WHERE id = ?", sets.join(", "));
+    let args: Vec<&dyn ToSql> = owned.iter().map(std::convert::AsRef::as_ref).collect();
+    conn.execute(&sql, args.as_slice())?;
+    Ok(true)
 }
 
 pub fn set_status(conn: &Connection, id: i64, status: PlanStatus) -> Result<()> {
@@ -108,6 +182,7 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Plan> {
 mod tests {
     use super::*;
     use crate::db::migrate;
+    use crate::repo::adr::{self, NewAdr};
     use rusqlite::Connection;
 
     fn conn() -> Connection {
@@ -134,5 +209,85 @@ mod tests {
         let s = list(&c).unwrap(); // ← 不是 plan::list
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].total_tasks, 0); // 顺手断言视图列读取(空计划的 progress 边界)
+    }
+
+    #[test]
+    fn plan_update_partial_fields_and_noop() {
+        let c = conn();
+        let id = add(
+            &c,
+            &NewPlan {
+                title: "p".into(),
+                adr_id: None,
+                description: "d".into(),
+                start_date: None,
+                due_date: None,
+                priority: Priority::Normal,
+            },
+        )
+        .unwrap();
+        let u = PlanUpdate {
+            title: Some("renamed".into()),
+            priority: Some(Priority::Urgent),
+            ..Default::default()
+        };
+        assert!(update(&c, id, &u).unwrap());
+        let p = get(&c, id).unwrap();
+        assert_eq!(p.title, "renamed");
+        assert_eq!(p.priority, Priority::Urgent);
+        assert_eq!(p.description, "d"); // 未给,原样
+        // 同值再跑 → false,无写入
+        assert!(!update(&c, id, &u).unwrap());
+        // 零字段 → false
+        assert!(!update(&c, id, &PlanUpdate::default()).unwrap());
+    }
+
+    #[test]
+    fn plan_update_status_window_and_adr_link() {
+        let c = conn();
+        let id = add(
+            &c,
+            &NewPlan {
+                title: "p".into(),
+                adr_id: None,
+                description: String::new(),
+                start_date: None,
+                due_date: None,
+                priority: Priority::Normal,
+            },
+        )
+        .unwrap();
+        let a = adr::add(
+            &c,
+            &NewAdr {
+                title: "A",
+                context: "ctx",
+                decision: "dec",
+                consequence: "",
+            },
+        )
+        .unwrap();
+        let u = PlanUpdate {
+            adr_id: Some(a),
+            status: Some(PlanStatus::Archived),
+            start_date: Some(NaiveDate::from_ymd_opt(2026, 11, 1).unwrap()),
+            due_date: Some(NaiveDate::from_ymd_opt(2026, 11, 30).unwrap()),
+            ..Default::default()
+        };
+        assert!(update(&c, id, &u).unwrap());
+        let p = get(&c, id).unwrap();
+        assert_eq!(p.status, PlanStatus::Archived);
+        assert_eq!(p.adr_id, Some(a));
+        assert_eq!(
+            p.start_date.map(|d| d.to_string()),
+            Some("2026-11-01".into())
+        );
+
+        // 悬空 ADR 引用 → 干净报错
+        let bad = PlanUpdate {
+            adr_id: Some(9999),
+            ..Default::default()
+        };
+        assert!(update(&c, id, &bad).is_err());
     }
 }

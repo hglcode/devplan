@@ -1,7 +1,9 @@
+//! dp — project dev plan tracker.
+
 use chrono::NaiveDate;
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 
-use crate::models::{Priority, TaskStatus, TaskType};
+use crate::models::{PlanStatus, Priority, TaskStatus, TaskType};
 
 /// Comma-separated prerequisite task ids, e.g. `--deps 27,26`.
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -160,7 +162,7 @@ pub enum TaskCommands {
         limit: Option<i64>,
     },
 
-    /// Show one task in description
+    /// Show one task in full detail
     Show { id: i64 },
 
     /// Search tasks by text: title, description, status/resolution notes
@@ -204,8 +206,8 @@ pub enum TaskCommands {
     Mod {
         /// ID number
         id: i64,
-        #[arg(long)]
         /// Title content
+        #[arg(long)]
         title: Option<String>,
         /// Planned due date, YYYY-MM-DD (schedule window right edge)
         #[arg(long = "due", value_parser = parse_date)]
@@ -215,8 +217,8 @@ pub enum TaskCommands {
         priority: Option<Priority>,
         /// Status: todo / active / blocked / done
         #[arg(short, long, value_parser = parse_status)]
-        /// Note content
         status: Option<TaskStatus>,
+        /// Note content (accompanies a status change)
         #[arg(long = "note")]
         status_note: Option<String>,
         /// Tags/Labels
@@ -279,12 +281,40 @@ pub enum PlanCommands {
     Show { id: i64 },
     /// Mark a plan as Archived
     Archive { id: i64 },
+    /// Modify a plan's fields
+    #[command(aliases = ["up", "update", "edit", "modify"])]
+    Mod {
+        /// ID number
+        id: i64,
+        /// Title content
+        #[arg(long)]
+        title: Option<String>,
+        /// Priority: urgent, high, normal, low
+        #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
+        priority: Option<Priority>,
+        /// Planned start date, YYYY-MM-DD (schedule window left edge)
+        #[arg(long = "start", value_parser = parse_date)]
+        start_date: Option<NaiveDate>,
+        /// Planned due date, YYYY-MM-DD (schedule window right edge)
+        #[arg(long = "due", value_parser = parse_date)]
+        due_date: Option<NaiveDate>,
+        /// Description content
+        #[arg(short, long = "desc", alias = "description")]
+        description: Option<String>,
+        /// Reassign the decision origin (must exist)
+        #[arg(long = "adr")]
+        adr_id: Option<i64>,
+        /// Status: open / archived
+        #[arg(short, long, value_parser = parse_plan_status)]
+        status: Option<PlanStatus>,
+    },
 }
 
 #[derive(Debug, Subcommand)]
 pub enum AdrCommands {
     #[command(alias = "new")]
     Add {
+        /// Decision title
         title: String,
         /// Background / problem statement
         #[arg(long)]
@@ -320,11 +350,30 @@ pub enum AdrCommands {
         rationale: Option<String>,
     },
 
-    /// Mark an old decision as superseded by an accepted newer one
+    /// Supersede OLD with NEW (NEW must be accepted)
     Supersede { old: i64, new: i64 },
 
     /// Show one ADR in full, including rationale
     Show { id: i64 },
+
+    /// Modify a decision record's content (verdicts move only through accept/reject/supersede)
+    #[command(aliases = ["up", "update", "edit", "modify"])]
+    Mod {
+        /// ID number
+        id: i64,
+        /// Title content
+        #[arg(long)]
+        title: Option<String>,
+        /// Background / problem statement
+        #[arg(long)]
+        context: Option<String>,
+        /// The decision made
+        #[arg(long)]
+        decision: Option<String>,
+        /// Consequences / follow-ups
+        #[arg(long)]
+        consequence: Option<String>,
+    },
 }
 
 pub fn build() -> clap::Command {
@@ -354,6 +403,10 @@ fn parse_priority(s: &str) -> Result<Priority, String> {
 fn parse_status(s: &str) -> Result<TaskStatus, String> {
     TaskStatus::from_label(s)
         .ok_or_else(|| format!("status must be todo/active/blocked/done, got '{s}'"))
+}
+
+fn parse_plan_status(s: &str) -> Result<PlanStatus, String> {
+    PlanStatus::from_label(s).ok_or_else(|| format!("status must be open/archived, got '{s}'"))
 }
 
 fn parse_task_type(s: &str) -> Result<TaskType, String> {
