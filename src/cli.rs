@@ -218,7 +218,7 @@ pub enum TaskCommands {
         /// Status: todo / active / blocked / done
         #[arg(short, long, value_parser = parse_status)]
         status: Option<TaskStatus>,
-        /// Note content (accompanies a status change)
+        /// Note content (the current status's explanation; updatable on its own)
         #[arg(long = "note")]
         status_note: Option<String>,
         /// Tags/Labels

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.20.0] — 2026-11-09
+
+### Changed
+
+- `dp task mod --note` no longer requires `--status`: the status note can be
+  updated in place (e.g. a long-running blocker's reason changed, or clear it
+  with `--note ""`); it is still cleared on the next status transition
+
 ## [0.19.0] — 2026-11-09
 
 ### Added
