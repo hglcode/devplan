@@ -258,16 +258,12 @@ pub fn modify(conn: &Connection, args: ModifyArgs) -> Result<()> {
         desc,
         plan,
     } = args;
-    if note.is_some() && stat.is_none() {
-        anyhow::bail!(
-            "--note accompanies a status change: dp task mod {id} --status <s> --note \"...\""
-        );
-    }
     let provided = title.is_some()
         || task_type.is_some()
         || due_date.is_some()
         || prio.is_some()
         || stat.is_some()
+        || note.is_some()
         || tags.is_some()
         || deps.is_some()
         || desc.is_some()

@@ -185,6 +185,7 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
         sets.push("priority = ?".into());
         owned.push(Box::new(p.as_int()));
     }
+    let status_moves = u.status.is_some_and(|s| s != existing.status);
     if let Some(s) = u.status
         && s != existing.status
     {
@@ -201,6 +202,16 @@ pub fn update(conn: &Connection, id: i64, u: &TaskUpdate) -> Result<bool> {
             _ => sets.push("done_at = NULL".into()),
         }
     }
+    // 状态未动也允许单独修 note(说明是当前状态的属性,不必随转移才存在;
+    // 含"同值 --status + --note"与 --note "" 手动清空两种形态)
+    if !status_moves
+        && let Some(sn) = &u.status_note
+        && Some(sn) != existing.status_note.as_ref()
+    {
+        sets.push("status_note = ?".into());
+        owned.push(Box::new(sn.clone()));
+    }
+
     if let Some(tags) = &u.tags
         && *tags != existing.tags
     {
@@ -625,5 +636,73 @@ mod tests {
         set_deps(&c, b, &[a]).unwrap();
         delete(&c, a).unwrap();
         assert!(deps_of(&c, b).unwrap().is_empty()); // CASCADE 双向清
+    }
+
+    #[test]
+    fn note_updates_without_transition() {
+        let c = conn();
+        let id = add(&c, &sample("t")).unwrap();
+        // 转移 + note 基线
+        update(
+            &c,
+            id,
+            &TaskUpdate {
+                status: Some(TaskStatus::Blocked),
+                status_note: Some("等外部 API".into()),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        // 状态不动,单独改 note → true
+        assert!(
+            update(
+                &c,
+                id,
+                &TaskUpdate {
+                    status_note: Some("等 PR 合并".into()),
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+        );
+        let t = get(&c, id).unwrap();
+        assert_eq!(t.status_note.as_deref(), Some("等 PR 合并"));
+        // 同值 status + 新 note → 也写(第 3 层限制的回归绊线)
+        assert!(
+            update(
+                &c,
+                id,
+                &TaskUpdate {
+                    status: Some(TaskStatus::Blocked),
+                    status_note: Some("等审核".into()),
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+        );
+        // --note "" 手动清空
+        assert!(
+            update(
+                &c,
+                id,
+                &TaskUpdate {
+                    status_note: Some(String::new()),
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+        );
+        // 转移仍强制清空(没给 note → '')
+        update(
+            &c,
+            id,
+            &TaskUpdate {
+                status: Some(TaskStatus::Active),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let t = get(&c, id).unwrap();
+        assert_eq!(t.status_note.as_deref(), Some(""));
     }
 }

@@ -168,8 +168,7 @@ y/N); \fB\-\-force\fR skips the prompt.
 Change the given fields of a task; omitted flags leave the field
 unchanged. With no flags at all, prints \(dqNothing to modify: no fields
 given\(dq; with flags whose values equal the current ones, prints a notice
-instead of writing (a given \fB\-\-deps\fR always applies).
-\fB\-\-note\fR requires \fB\-\-status\fR; see
+instead of writing (a given \fB\-\-deps\fR always applies). See
 .B DEPENDENCIES
 for the dependency rules.
 .RS
@@ -193,10 +192,11 @@ New status; see
 .BR STATES .
 .TP
 \fB\-\-note\fR \fITEXT\fR
-The reason for a status transition (blocked\-why, active\-context,
-back\-to\-todo\-reason). Requires \fB\-\-status\fR; cleared on the next
-transition — process\-scoped, unlike the permanent
-\fIresolution_note\fR.
+Note attached to the current status (blocked\-why, active\-context).
+Updatable on its own \(em with or without \fB\-\-status\fR, e.g. to
+revise a long\-running blocker's reason (\fB\-\-note \(dq\(dq\fR
+clears it); still cleared on the next transition \(em process\-scoped,
+unlike the permanent \fIresolution_note\fR.
 .TP
 \fB\-p\fR, \fB\-\-prio\fR \fIP\fR
 New priority. Alias: \fB\-\-priority\fR.
@@ -405,7 +405,7 @@ axis classifies finished work: \fIdone\fR (completed), \fIabandoned\fR
 to \fIdone\fR by default. Verdicts carry their reasons:
 \fIresolution_note\fR is permanent (recorded by \fB\-\-note\fR on
 done/abandon/duplicate), \fIstatus_note\fR is process\-scoped (recorded
-by \fBmod \-\-status \-\-note\fR, cleared on the next transition). A task
+by \fBmod \-\-note\fR, cleared on the next transition). A task
 is overdue when its due date lies in the past and it is not done. The
 boundary is completion: \fIabandoned\fR is excluded from output stats,
 \fIduplicated\fR counts \(em the work was real, just misdirected; both
