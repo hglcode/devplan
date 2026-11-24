@@ -18,6 +18,7 @@ pub struct AddArgs {
     pub tags: Option<String>,
     pub deps: Option<Vec<i64>>,
     pub desc: Option<String>,
+    pub id_only: bool,
 }
 
 pub struct ModifyArgs {
@@ -44,6 +45,7 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
         tags,
         deps,
         desc,
+        id_only,
     } = args;
     let deps = deps.unwrap_or_default(); // add 语境: None 与 [] 同义
     for &dep in &deps {
@@ -64,7 +66,11 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
     if !deps.is_empty() {
         repo::task::set_deps(conn, id, &deps)?;
     }
-    println!("Added task #{id}: {title}");
+    if id_only {
+        println!("{id}");
+    } else {
+        println!("Added task #{id}: {title}");
+    }
     Ok(())
 }
 
@@ -304,6 +310,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
             depends,
             description,
             task_type,
+            id_only,
         } => add(
             conn,
             AddArgs {
@@ -315,6 +322,7 @@ pub fn run(conn: &Connection, cmd: TaskCommands, fmt: Format) -> Result<()> {
                 tags,
                 deps: depends.map(DepIds::into_ids),
                 desc: description,
+                id_only,
             },
         ),
         TaskCommands::List {

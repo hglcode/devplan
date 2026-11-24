@@ -21,12 +21,14 @@ pub fn run(conn: &Connection, cmd: AdrCommands, fmt: Format) -> Result<()> {
             context,
             decision,
             consequence,
+            id_only,
         } => add(
             conn,
             &title,
             &context,
             &decision,
             consequence.as_deref().unwrap_or(""),
+            id_only,
         ),
         AdrCommands::List { limit } => list(conn, limit, fmt),
         AdrCommands::Accept { id, rationale } => {
@@ -70,6 +72,7 @@ fn add(
     context: &str,
     decision: &str,
     consequence: &str,
+    id_only: bool,
 ) -> Result<()> {
     let id = repo::adr::add(
         conn,
@@ -80,7 +83,11 @@ fn add(
             consequence,
         },
     )?;
-    println!("Added decision #{id}: {title}");
+    if id_only {
+        println!("{id}");
+    } else {
+        println!("Added decision #{id}: {title}");
+    }
     Ok(())
 }
 

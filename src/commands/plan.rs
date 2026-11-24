@@ -9,6 +9,16 @@ use crate::repo;
 use crate::repo::plan::{NewPlan, PlanUpdate};
 use crate::repo::task::{TaskFilter, TaskView};
 
+struct AddArgs {
+    title: String,
+    adr_id: Option<i64>,
+    start_date: Option<NaiveDate>,
+    due_date: Option<NaiveDate>,
+    priority: Option<Priority>,
+    description: Option<String>,
+    id_only: bool,
+}
+
 pub struct ModifyPlanArgs {
     pub id: i64,
     pub title: Option<String>,
@@ -29,14 +39,18 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
             due_date,
             priority,
             description,
+            id_only,
         } => add(
             conn,
-            &title,
-            adr_id,
-            start_date,
-            due_date,
-            priority,
-            description,
+            AddArgs {
+                title,
+                adr_id,
+                start_date,
+                due_date,
+                priority,
+                description,
+                id_only,
+            },
         ),
         PlanCommands::List { limit } => list(conn, limit, fmt),
         PlanCommands::Show { id } => show(conn, id, fmt),
@@ -66,15 +80,16 @@ pub fn run(conn: &Connection, cmd: PlanCommands, fmt: Format) -> Result<()> {
     }
 }
 
-fn add(
-    conn: &Connection,
-    title: &str,
-    adr_id: Option<i64>,
-    start_date: Option<NaiveDate>,
-    due_date: Option<NaiveDate>,
-    priority: Option<Priority>,
-    description: Option<String>,
-) -> Result<()> {
+fn add(conn: &Connection, args: AddArgs) -> Result<()> {
+    let AddArgs {
+        title,
+        adr_id,
+        start_date,
+        due_date,
+        priority,
+        description,
+        id_only,
+    } = args;
     let id = repo::plan::add(
         conn,
         &NewPlan {
@@ -86,7 +101,11 @@ fn add(
             priority: priority.unwrap_or_default(),
         },
     )?;
-    println!("Added plan #{id}: {title}");
+    if id_only {
+        println!("{id}");
+    } else {
+        println!("Added plan #{id}: {title}");
+    }
     Ok(())
 }
 

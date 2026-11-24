@@ -1,5 +1,5 @@
 .\" dp(1) — manual page for dp, the project dev plan tracker.
-.TH DP 1 "2026-11-09" "dp 0.19.0" "User Commands"
+.TH DP 1 "2026-11-25" "dp 0.21.0" "User Commands"
 .SH NAME
 dp \- project dev plan, task and decision tracker
 .SH SYNOPSIS
@@ -40,9 +40,17 @@ completion of habit:
 (generate) \(em and likewise on
 .B plan
 and
-.B adr .
+.BR adr .
 Aliases are accepted everywhere the primary name is; the primary names
 are what appear in help and are recommended in scripts.
+.PP
+.B DASH-PREFIXED ARGUMENTS.
+A positional value that begins with a dash (e.g.\& a title like
+\(dq\-\-xxx\(dq) is parsed as a flag by default; separate it with
+.BR \-\- :
+\(dqpdp task add \-p high \-\- \-\-xxx\(dq. Everything after
+.B \-\-
+is taken as an argument, so flags must precede it.
 .SH COMMANDS
 .TP
 .B init
@@ -89,6 +97,10 @@ Long description, shown by \fBdp task show\fR. Alias:
 \fB\-t\fR, \fB\-\-type\fR \fITYPE\fR
 Task type: \fIfeature\fR, \fIbug\fR, \fIchore\fR, \fIrefactor\fR or
 \fIdocs\fR (default \fIfeature\fR).
+.TP
+\fB\-\-id\-only\fR
+Print only the new task's id on stdout (for script capture); the
+default confirmation line is unchanged.
 .RE
 .TP
 .B list
@@ -230,7 +242,8 @@ progress of their tasks; archiving is a deliberate act.
 Create a plan; accepts \fB\-\-adr\fR \fIID\fR (decision origin),
 \fB\-\-start\fR \fIDATE\fR and \fB\-\-due\fR \fIDATE\fR (the schedule
 window), \fB\-p\fR/\fB\-\-prio\fR and \fB\-d\fR/\fB\-\-desc\fR
-\fITEXT\fR.
+\fITEXT\fR. \fB\-\-id\-only\fR prints just the new plan's id on
+stdout for script capture.
 .TP
 .B list
 Summarize plans with per\-plan progress (done/total, percentage).
@@ -289,6 +302,8 @@ Operate on decision records (ADRs), displayed as \fIADR\-NNN\fR
 .BI "add " TITLE
 Record a decision. \fB\-\-context\fR \fITEXT\fR and \fB\-\-decision\fR
 \fITEXT\fR are required; \fB\-\-consequence\fR \fITEXT\fR is optional.
+\fB\-\-id\-only\fR prints just the new record's id on stdout for
+script capture.
 .TP
 .BI "accept " ID
 Accept a proposed (or rejected — verdicts can be revisited) decision.
@@ -454,6 +469,9 @@ dp adr supersede 1 4
 dp stats
 dp task ls -n 5
 dp task list --format=markdown
+ID=$(dp task add "wire up CI" --id-only)
+dp task start "$ID"
+dp task add -- "--dash-prefixed title"
 dp stats --format=json | jq .
 dp export > snapshot.json
 dp import snapshot.json

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.21.0] — 2026-11-25
+
+### Added
+
+- `--id-only` on `dp task/plan/adr add`: print only the new id on stdout,
+  for script capture (`ID=$(dp task add "x" --id-only)`)
+
 ## [0.20.0] — 2026-11-09
 
 ### Changed
