@@ -144,7 +144,7 @@ fn list(conn: &Connection, limit: Option<i64>, fmt: Format) -> Result<()> {
                 table.add_row(vec![
                     d.id.to_string(),
                     d.status.to_string(),
-                    d.superseded_by.map(|s| s.to_string()).unwrap_or_default(),
+                    d.superseded_by.map_or_default(|s| s.to_string()),
                     d.decided_at.clone().unwrap_or_else(|| "-".into()),
                     d.title.clone(),
                 ]);

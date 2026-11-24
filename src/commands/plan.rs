@@ -164,7 +164,7 @@ fn list(conn: &Connection, limit: Option<i64>, fmt: Format) -> Result<()> {
                     p.id.to_string(),
                     p.status.to_string(),
                     p.priority.to_string(),
-                    p.due_date.map(|d| d.to_string()).unwrap_or_default(),
+                    p.due_date.map_or_default(|d| d.to_string()),
                     s.progress_pct.to_string(),
                     p.title.clone(),
                 ]);
@@ -234,7 +234,7 @@ fn show(conn: &Connection, id: i64, fmt: Format) -> Result<()> {
                 t.id.to_string(),
                 t.status.to_string(),
                 t.priority.to_string(),
-                t.due_date.map(|d| d.to_string()).unwrap_or_default(),
+                t.due_date.map_or_default(|d| d.to_string()),
                 t.title.clone(),
             ]);
         }

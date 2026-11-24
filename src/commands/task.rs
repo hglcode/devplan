@@ -57,7 +57,7 @@ pub fn add(conn: &Connection, args: AddArgs) -> Result<()> {
             task_type: task_type.unwrap_or_default(),
             due_date,
             priority: priority.unwrap_or_default(),
-            tags: tags.map(|t| split_tags(&t)).unwrap_or_default(),
+            tags: tags.map_or_default(|t| split_tags(&t)),
             description: desc.as_deref().unwrap_or(""),
         },
     )?;
