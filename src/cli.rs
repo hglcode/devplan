@@ -140,6 +140,9 @@ pub enum TaskCommands {
         /// Type: feature / bug / chore / refactor/docs
         #[arg(short, long = "type", value_parser = parse_task_type)]
         task_type: Option<TaskType>,
+        /// Print only the new id (script-friendly capture)
+        #[arg(long)]
+        id_only: bool,
     },
 
     /// List tasks
@@ -270,6 +273,9 @@ pub enum PlanCommands {
         /// Description content
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
+        /// Print only the new id (script-friendly capture)
+        #[arg(long)]
+        id_only: bool,
     },
     #[command(alias = "ls")]
     List {
@@ -325,6 +331,9 @@ pub enum AdrCommands {
         /// Consequences / follow-ups
         #[arg(long)]
         consequence: Option<String>,
+        /// Print only the new id (script-friendly capture)
+        #[arg(long)]
+        id_only: bool,
     },
     #[command(alias = "ls")]
     List {

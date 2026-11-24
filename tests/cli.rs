@@ -525,3 +525,28 @@ fn task_dependency_is_soft_and_self_rejected() {
         .failure()
         .stderr(predicates::str::contains("cannot depend on itself"));
 }
+
+#[test]
+fn add_id_only_prints_bare_id() {
+    // 环境构造对齐 add_list_done_flow（同款 helper/目录准备）
+    let dir = tempfile::tempdir().unwrap();
+    let cmd = || {
+        let mut c = Command::cargo_bin("dp").unwrap();
+        c.current_dir(&dir);
+        c
+    };
+    cmd().arg("init").assert().success();
+    let out = cmd()
+        .args(["task", "add", "x", "--id-only"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let id: i64 = stdout
+        .trim()
+        .parse()
+        .unwrap_or_else(|_| panic!("not a bare id: {stdout:?}"));
+    assert!(id > 0);
+    // plan：cmd.args(["plan", "add", "p", "--id-only"]) 同断言
+    // adr：cmd.args(["adr", "add", "a", "--context", "c", "--decision", "d", "--id-only"]) 同断言
+}

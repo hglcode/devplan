@@ -50,9 +50,9 @@ fn print_tasks(conn: &Connection, tasks: &[Task], fmt: Format) -> Result<()> {
             for t in tasks {
                 table.add_row(vec![
                     t.id.to_string(),
-                    t.plan_id.map(|p| p.to_string()).unwrap_or_default(),
+                    t.plan_id.map_or_default(|p| p.to_string()),
                     t.priority.to_string(),
-                    t.due_date.map(|d| d.to_string()).unwrap_or_default(),
+                    t.due_date.map_or_default(|d| d.to_string()),
                     t.status.to_string(),
                     t.title.clone(),
                     dep_of(t.id).unwrap_or_default(),

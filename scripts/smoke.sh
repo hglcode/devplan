@@ -69,3 +69,26 @@ expect_fail dp plan mod 1 --adr 999      # ADR #999 not found
 expect_fail dp plan mod 1 --status bogus # usage error (exit 2)
 
 echo "=== plan/adr mod smoke OK ==="
+
+# --- 0.21.0 add id-only ---
+ID=$(dp task add "script capture" --id-only)
+[[ "$ID" =~ ^[0-9]+$ ]] || {
+    echo "id-only broke: '$ID'"
+    exit 1
+}
+dp task mod "$ID" --status "done" # 闭环用一下拿到的 ID
+PID=$(dp plan add "cap" --id-only)
+[[ "$PID" =~ ^[0-9]+$ ]] || exit 1
+AID=$(dp adr add cap --context c --decision d --id-only)
+[[ "$AID" =~ ^[0-9]+$ ]] || exit 1
+
+echo "=== add id-only smoke OK ==="
+
+# --- -- separator for dash-prefixed positionals ---
+DASH=$(dp task add --id-only -- "--dash-title")
+[[ "$DASH" =~ ^[0-9]+$ ]] || {
+    echo "-- separator broke: '$DASH'"
+    exit 1
+}
+
+echo "=== dash separator smoke OK ==="
