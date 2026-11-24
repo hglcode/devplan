@@ -83,3 +83,12 @@ AID=$(dp adr add cap --context c --decision d --id-only)
 [[ "$AID" =~ ^[0-9]+$ ]] || exit 1
 
 echo "=== add id-only smoke OK ==="
+
+# --- -- separator for dash-prefixed positionals ---
+DASH=$(dp task add --id-only -- "--dash-title")
+[[ "$DASH" =~ ^[0-9]+$ ]] || {
+    echo "-- separator broke: '$DASH'"
+    exit 1
+}
+
+echo "=== dash separator smoke OK ==="
