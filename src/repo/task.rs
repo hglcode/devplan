@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::NaiveDate;
+use jiff::civil::Date;
 use rusqlite::types::ToSql;
 use rusqlite::{Connection, OptionalExtension, params};
 
@@ -12,7 +12,7 @@ pub struct NewTask<'a> {
     pub title: &'a str,
     pub plan: Option<i64>,
     pub task_type: TaskType,
-    pub due_date: Option<NaiveDate>,
+    pub due_date: Option<Date>,
     pub priority: Priority,
     pub tags: Vec<String>,
     pub description: &'a str,
@@ -39,7 +39,7 @@ pub enum TaskView {
 pub struct TaskUpdate {
     pub title: Option<String>,
     pub task_type: Option<TaskType>,
-    pub due_date: Option<NaiveDate>,
+    pub due_date: Option<Date>,
     pub priority: Option<Priority>,
     pub status: Option<TaskStatus>,
     pub status_note: Option<String>,
@@ -299,7 +299,9 @@ pub fn count_done(conn: &Connection, plan_id: i64) -> Result<i64> {
 }
 
 fn now_ts() -> String {
-    chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+    jiff::ZonedDateTime::now()
+        .strftime("%Y-%m-%d %H:%M:%S")
+        .to_string()
 }
 
 fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
@@ -323,7 +325,7 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Task> {
         duplicate_of: row.get(9)?,
         priority: Priority::from_int(prio).unwrap_or_default(),
         tags: split_tags(&tags),
-        due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
+        due_date: due.and_then(|s| Date::strptime("%Y-%m-%d", &s).ok()),
         started_at: start,
         done_at: row.get(14)?,
         created_at: row.get(15)?,

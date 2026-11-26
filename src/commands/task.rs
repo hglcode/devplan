@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::NaiveDate;
+use jiff::civil::Date;
 use rusqlite::Connection;
 use std::io::Write;
 
@@ -13,7 +13,7 @@ pub struct AddArgs {
     pub title: String,
     pub plan: Option<i64>,
     pub task_type: Option<TaskType>,
-    pub due_date: Option<NaiveDate>,
+    pub due_date: Option<Date>,
     pub priority: Option<Priority>,
     pub tags: Option<String>,
     pub deps: Option<Vec<i64>>,
@@ -25,7 +25,7 @@ pub struct ModifyArgs {
     pub id: i64,
     pub title: Option<String>,
     pub task_type: Option<TaskType>,
-    pub due_date: Option<NaiveDate>,
+    pub due_date: Option<Date>,
     pub prio: Option<Priority>,
     pub stat: Option<TaskStatus>,
     pub note: Option<String>,

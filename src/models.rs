@@ -1,4 +1,4 @@
-use chrono::NaiveDate;
+use jiff::civil::Date;
 use serde::{Deserialize, Serialize};
 
 // ─────────────────────────────────────────────
@@ -256,7 +256,7 @@ pub struct Task {
     pub duplicate_of: Option<i64>,
     pub priority: Priority,
     pub tags: Vec<String>,
-    pub due_date: Option<NaiveDate>,
+    pub due_date: Option<Date>,
     pub started_at: Option<String>,
     pub done_at: Option<String>,
     pub created_at: String,
@@ -271,8 +271,8 @@ pub struct Plan {
     pub description: String,
     pub status: PlanStatus,
     pub priority: Priority,
-    pub due_date: Option<NaiveDate>,
-    pub start_date: Option<NaiveDate>,
+    pub due_date: Option<Date>,
+    pub start_date: Option<Date>,
     pub created_at: String,
     pub updated_at: String,
 }

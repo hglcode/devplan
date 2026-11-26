@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::NaiveDate;
+use jiff::civil::Date;
 use rusqlite::types::ToSql;
 use rusqlite::{Connection, OptionalExtension, params};
 use serde::Serialize;
@@ -14,8 +14,8 @@ pub struct NewPlan {
     pub title: String,
     pub adr_id: Option<i64>,
     pub description: String,
-    pub start_date: Option<NaiveDate>,
-    pub due_date: Option<NaiveDate>,
+    pub start_date: Option<Date>,
+    pub due_date: Option<Date>,
     pub priority: Priority,
 }
 
@@ -24,8 +24,8 @@ pub struct PlanUpdate {
     pub title: Option<String>,
     pub description: Option<String>,
     pub priority: Option<Priority>,
-    pub start_date: Option<NaiveDate>,
-    pub due_date: Option<NaiveDate>,
+    pub start_date: Option<Date>,
+    pub due_date: Option<Date>,
     pub adr_id: Option<i64>,
     pub status: Option<PlanStatus>,
 }
@@ -171,8 +171,8 @@ fn map_row(row: &rusqlite::Row) -> rusqlite::Result<Plan> {
         description: row.get(3)?,
         status: PlanStatus::from_label(&status).unwrap_or(PlanStatus::Open),
         priority: Priority::from_int(prio).unwrap_or_default(),
-        start_date: start.and_then(|s: String| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
-        due_date: due.and_then(|s| NaiveDate::parse_from_str(&s, "%Y-%m-%d").ok()),
+        start_date: start.and_then(|s: String| Date::strptime("%Y-%m-%d", &s).ok()),
+        due_date: due.and_then(|s| Date::strptime("%Y-%m-%d", &s).ok()),
         created_at: row.get(8)?,
         updated_at: row.get(9)?,
     })
@@ -270,8 +270,8 @@ mod tests {
         let u = PlanUpdate {
             adr_id: Some(a),
             status: Some(PlanStatus::Archived),
-            start_date: Some(NaiveDate::from_ymd_opt(2026, 11, 1).unwrap()),
-            due_date: Some(NaiveDate::from_ymd_opt(2026, 11, 30).unwrap()),
+            start_date: Some(jiff::civil::date(2026, 11, 1)),
+            due_date: Some(jiff::civil::date(2026, 11, 30)),
             ..Default::default()
         };
         assert!(update(&c, id, &u).unwrap());

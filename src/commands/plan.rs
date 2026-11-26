@@ -1,6 +1,6 @@
 use anyhow::Result;
-use chrono::NaiveDate;
 use comfy_table::{Table, presets::UTF8_FULL};
+use jiff::civil::Date;
 use rusqlite::Connection;
 
 use crate::cli::{Format, PlanCommands};
@@ -12,8 +12,8 @@ use crate::repo::task::{TaskFilter, TaskView};
 struct AddArgs {
     title: String,
     adr_id: Option<i64>,
-    start_date: Option<NaiveDate>,
-    due_date: Option<NaiveDate>,
+    start_date: Option<Date>,
+    due_date: Option<Date>,
     priority: Option<Priority>,
     description: Option<String>,
     id_only: bool,
@@ -24,8 +24,8 @@ pub struct ModifyPlanArgs {
     pub title: Option<String>,
     pub description: Option<String>,
     pub priority: Option<Priority>,
-    pub start_date: Option<NaiveDate>,
-    pub due_date: Option<NaiveDate>,
+    pub start_date: Option<Date>,
+    pub due_date: Option<Date>,
     pub adr_id: Option<i64>,
     pub status: Option<PlanStatus>,
 }

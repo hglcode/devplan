@@ -1,7 +1,7 @@
 //! dp — project dev plan tracker.
 
-use chrono::NaiveDate;
 use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
+use jiff::civil::Date;
 
 use crate::models::{PlanStatus, Priority, TaskStatus, TaskType};
 
@@ -124,7 +124,7 @@ pub enum TaskCommands {
         plan: Option<i64>,
         /// Due date, YYYY-MM-DD
         #[arg(long = "due", value_parser = parse_date)]
-        due_date: Option<NaiveDate>,
+        due_date: Option<Date>,
         /// Priority: low/normal/high/urgent or 0/1/2/3
         #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
@@ -214,7 +214,7 @@ pub enum TaskCommands {
         title: Option<String>,
         /// Planned due date, YYYY-MM-DD (schedule window right edge)
         #[arg(long = "due", value_parser = parse_date)]
-        due_date: Option<NaiveDate>,
+        due_date: Option<Date>,
         /// Priority: urgent, high, normal, low
         #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
@@ -263,10 +263,10 @@ pub enum PlanCommands {
         adr_id: Option<i64>,
         /// Planned start date, YYYY-MM-DD (schedule window left edge)
         #[arg(long = "start", value_parser = parse_date)]
-        start_date: Option<NaiveDate>,
+        start_date: Option<Date>,
         /// Planned due date, YYYY-MM-DD (schedule window right edge)
         #[arg(long = "due", value_parser = parse_date)]
-        due_date: Option<NaiveDate>,
+        due_date: Option<Date>,
         /// Priority: urgent, high, normal, low
         #[arg(short, long = "prio", alias = "priority", value_parser = parse_priority)]
         priority: Option<Priority>,
@@ -300,10 +300,10 @@ pub enum PlanCommands {
         priority: Option<Priority>,
         /// Planned start date, YYYY-MM-DD (schedule window left edge)
         #[arg(long = "start", value_parser = parse_date)]
-        start_date: Option<NaiveDate>,
+        start_date: Option<Date>,
         /// Planned due date, YYYY-MM-DD (schedule window right edge)
         #[arg(long = "due", value_parser = parse_date)]
-        due_date: Option<NaiveDate>,
+        due_date: Option<Date>,
         /// Description content
         #[arg(short, long = "desc", alias = "description")]
         description: Option<String>,
@@ -393,9 +393,8 @@ pub fn parse() -> Cli {
     Cli::parse()
 }
 
-fn parse_date(s: &str) -> Result<NaiveDate, String> {
-    NaiveDate::parse_from_str(s, "%Y-%m-%d")
-        .map_err(|_| format!("invalid date '{s}', expected YYYY-MM-DD"))
+fn parse_date(s: &str) -> Result<Date, String> {
+    Date::strptime("%Y-%m-%d", s).map_err(|_| format!("invalid date '{s}', expected YYYY-MM-DD"))
 }
 
 fn parse_priority(s: &str) -> Result<Priority, String> {
