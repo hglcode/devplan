@@ -77,7 +77,6 @@ ignore = [
     # RUSTSEC-2026-0543 — chrono is unmaintained (an advisory, not a CVE).
     # Interim stance: keep 0.4.45; jiff migration is tracked (ADR + task).
     # Revisit immediately if an actual chrono vulnerability is published.
-    "RUSTSEC-2026-0543",
 ]
 # If this is true, then cargo deny will use the git executable to fetch advisory database.
 # If this is false, then it uses a built-in git library.
