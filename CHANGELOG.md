@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.22.0] — 2026-11-26
+
+### Changed
+
+- Swapped chrono for jiff 1.x (per ADR #10): stored dates stay TEXT
+  `YYYY-MM-DD`, CLI contracts and `%Y-%m-%d %H:%M:%S` timestamps are
+  unchanged — existing databases keep working, no migration
+- Slimmed the dependency tree: chrono and its transitive dependencies
+  (iana-time-zone, wasm-bindgen chain, ...) dropped out of the lockfile;
+  the `syn 2/3` duplicate warning is gone and the RUSTSEC-2026-0543
+  ignore is no longer needed
+
 ## [0.21.0] — 2026-11-25
 
 ### Added
